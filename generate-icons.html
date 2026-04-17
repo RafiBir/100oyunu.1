@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>İkon Üretici</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #0f172a; color: #e2e8f0; }
+    button { background: #2563eb; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 8px; }
+    .info { color: #94a3b8; margin-bottom: 20px; line-height: 1.6; }
+    .previews { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+    .preview-box { text-align: center; color: #94a3b8; font-size: 0.8rem; }
+    canvas { display: block; border-radius: 8px; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h2>İkon Üretici</h2>
+  <p class="info">
+    4 butona da tıkla → indirilen dosyaları <strong>100 oyunu/icons/</strong> klasörüne koy.
+  </p>
+
+  <button onclick="download('any', 192)">icon-any-192.png</button>
+  <button onclick="download('any', 512)">icon-any-512.png</button>
+  <button onclick="download('maskable', 192)">icon-maskable-192.png</button>
+  <button onclick="download('maskable', 512)">icon-maskable-512.png</button>
+
+  <div class="previews">
+    <div class="preview-box"><canvas id="c-any-192"></canvas>any 192</div>
+    <div class="preview-box"><canvas id="c-any-512" style="width:96px;height:96px"></canvas>any 512</div>
+    <div class="preview-box"><canvas id="c-maskable-192"></canvas>maskable 192</div>
+    <div class="preview-box"><canvas id="c-maskable-512" style="width:96px;height:96px"></canvas>maskable 512</div>
+  </div>
+
+  <script>
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.lineTo(x+w-r, y);
+      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+      ctx.lineTo(x+w, y+h-r);
+      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+      ctx.lineTo(x+r, y+h);
+      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+      ctx.lineTo(x, y+r);
+      ctx.quadraticCurveTo(x, y, x+r, y);
+      ctx.closePath();
+    }
+
+    function drawIcon(canvas, size, maskable) {
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Maskable: tam dolu arka plan (köşe yok), any: köşeli
+      ctx.fillStyle = '#0f172a';
+      if (maskable) {
+        ctx.fillRect(0, 0, size, size);
+      } else {
+        roundRect(ctx, 0, 0, size, size, size * 0.18);
+        ctx.fill();
+      }
+
+      // İç panel — maskable'da biraz daha küçük (safe zone padding)
+      const pad = maskable ? size * 0.18 : size * 0.08;
+      ctx.fillStyle = '#1e293b';
+      roundRect(ctx, pad, pad, size - pad*2, size - pad*2, size * 0.1);
+      ctx.fill();
+
+      // Mini grid
+      const cell  = size * 0.13;
+      const gap   = size * 0.025;
+      const gx    = maskable ? size * 0.22 : size * 0.15;
+      const gy    = maskable ? size * 0.22 : size * 0.14;
+      const colors = ['#1e40af','#1e293b','#1e293b','#166534'];
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          ctx.fillStyle = colors[i*2+j];
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = size * 0.005;
+          roundRect(ctx, gx + j*(cell+gap), gy + i*(cell+gap), cell, cell, size*0.02);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+
+      // "100" yazısı
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = `bold ${size * 0.26}px 'Segoe UI', Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('100', size / 2, maskable ? size * 0.73 : size * 0.72);
+    }
+
+    function download(type, size) {
+      const c = document.createElement('canvas');
+      drawIcon(c, size, type === 'maskable');
+      const a = document.createElement('a');
+      a.download = `icon-${type}-${size}.png`;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+
+    // Önizlemeler
+    drawIcon(document.getElementById('c-any-192'),      192, false);
+    drawIcon(document.getElementById('c-any-512'),      512, false);
+    drawIcon(document.getElementById('c-maskable-192'), 192, true);
+    drawIcon(document.getElementById('c-maskable-512'), 512, true);
+  </script>
+</body>
+</html>

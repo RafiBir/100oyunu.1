@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#0f172a"/>
+  <rect x="40" y="40" width="432" height="432" rx="70" fill="#1e293b"/>
+  <!-- Mini grid ima -->
+  <rect x="80" y="80" width="80" height="80" rx="12" fill="#1e40af" opacity="0.9"/>
+  <rect x="176" y="80" width="80" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <rect x="272" y="80" width="80" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <rect x="368" y="80" width="80" height="80" rx="12" fill="#166534" opacity="0.8"/>
+  <rect x="80" y="176" width="80" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <rect x="176" y="176" width="80" height="80" rx="12" fill="#1e3a5f" opacity="0.9"/>
+  <rect x="272" y="176" width="80" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <rect x="368" y="176" width="80" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <!-- 100 yazısı -->
+  <text x="256" y="400" font-family="'Segoe UI', Arial, sans-serif" font-size="140" font-weight="800"
+        text-anchor="middle" fill="#38bdf8" letter-spacing="-4">100</text>
+</svg>

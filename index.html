@@ -1,0 +1,3932 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="gece">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100 Oyunu</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="100 Oyunu" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <style>
+    /* ── Tema değişkenleri ─────────────────────────────────────── */
+
+    [data-theme="gece"] {
+      --bg:            #0f172a;
+      --surface:       #1e293b;
+      --surface2:      #334155;
+      --border:        #334155;
+      --text:          #e2e8f0;
+      --text-muted:    #94a3b8;
+      --accent:        #38bdf8;
+      --accent-dim:    #0369a1;
+      --cell-empty:    #0f172a;
+      --cell-border:   #1e293b;
+      --cell-hover-bg: #1e3a5f;
+      --cell-filled:   #1e3a5f;
+      --cell-filled-border: #2563eb;
+      --cell-filled-text:   #93c5fd;
+      --cell-last:     #1e40af;
+      --cell-last-border:   #60a5fa;
+      --cell-last-glow:     #3b82f680;
+      --cell-valid:    #0c2a1a;
+      --cell-valid-border:  #22c55e;
+      --cell-valid-hover:   #166534;
+      --flash-bg:      #450a0a;
+      --flash-border:  #ef4444;
+      --overlay-bg:    #00000099;
+      --btn-secondary: #334155;
+      --btn-secondary-text: #e2e8f0;
+      --win-color:     #4ade80;
+      --lose-color:    #f87171;
+    }
+
+    [data-theme="okyanus"] {
+      --bg:            #042f4b;
+      --surface:       #063b5e;
+      --surface2:      #0c4f7a;
+      --border:        #0e6fa3;
+      --text:          #cffafe;
+      --text-muted:    #67e8f9;
+      --accent:        #22d3ee;
+      --accent-dim:    #0891b2;
+      --cell-empty:    #032135;
+      --cell-border:   #063b5e;
+      --cell-hover-bg: #0c4f7a;
+      --cell-filled:   #0a4060;
+      --cell-filled-border: #0891b2;
+      --cell-filled-text:   #a5f3fc;
+      --cell-last:     #0e7490;
+      --cell-last-border:   #22d3ee;
+      --cell-last-glow:     #06b6d480;
+      --cell-valid:    #042f2f;
+      --cell-valid-border:  #10b981;
+      --cell-valid-hover:   #064e3b;
+      --flash-bg:      #4c0519;
+      --flash-border:  #fb7185;
+      --overlay-bg:    #00000099;
+      --btn-secondary: #0c4f7a;
+      --btn-secondary-text: #cffafe;
+      --win-color:     #34d399;
+      --lose-color:    #fb7185;
+    }
+
+    [data-theme="gunbatimi"] {
+      --bg:            #1a0a1e;
+      --surface:       #2d1538;
+      --surface2:      #3d1f50;
+      --border:        #6b3080;
+      --text:          #fde8ff;
+      --text-muted:    #d8b4fe;
+      --accent:        #f472b6;
+      --accent-dim:    #db2777;
+      --cell-empty:    #120816;
+      --cell-border:   #2d1538;
+      --cell-hover-bg: #3d1f50;
+      --cell-filled:   #3d1f50;
+      --cell-filled-border: #a855f7;
+      --cell-filled-text:   #e9d5ff;
+      --cell-last:     #7e22ce;
+      --cell-last-border:   #c084fc;
+      --cell-last-glow:     #a855f780;
+      --cell-valid:    #1a1230;
+      --cell-valid-border:  #f59e0b;
+      --cell-valid-hover:   #2d1f00;
+      --flash-bg:      #3b0a0a;
+      --flash-border:  #f87171;
+      --overlay-bg:    #00000099;
+      --btn-secondary: #3d1f50;
+      --btn-secondary-text: #fde8ff;
+      --win-color:     #fbbf24;
+      --lose-color:    #f87171;
+    }
+
+    /* ── Base ───────────────────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 12px 16px 24px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── Üst bar ────────────────────────────────────────────────── */
+    #top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 8px;
+    }
+
+    #top-bar button {
+      background: var(--btn-secondary);
+      color: var(--btn-secondary-text);
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      min-width: 90px;
+    }
+
+    #top-bar #btn-sound.muted { opacity: 0.45; }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+
+    /* ── XP / Seviye şeridi ─────────────────────────────────────── */
+    #xp-bar-wrap {
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #level-badge {
+      background: var(--accent-dim);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 3px 10px;
+      white-space: nowrap;
+      min-width: 64px;
+      text-align: center;
+    }
+
+    #xp-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(.22,1,.36,1);
+    }
+
+    #xp-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* ── Streak + Mod seçici ─────────────────────────────────────── */
+    #meta-bar {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #streak-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    #streak-badge .flame { font-size: 1rem; }
+    #streak-badge.active-streak { border-color: #f97316; color: #f97316; }
+
+    #mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .mode-tab {
+      padding: 5px 14px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mode-tab.active {
+      background: var(--accent-dim);
+      color: #fff;
+    }
+
+    /* ── Info bar ───────────────────────────────────────────────── */
+    #info-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #current-num {
+      font-size: 1.1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 18px;
+    }
+
+    #current-num span {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    #hint { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+
+    /* Combo göstergesi */
+    #combo-display {
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    #combo-display.hot {
+      background: #7c2d12;
+      border-color: #f97316;
+      color: #fed7aa;
+    }
+
+    #combo-display.fire {
+      background: #7c2d12;
+      border-color: #ef4444;
+      color: #fca5a5;
+      animation: comboPulse 0.5s ease infinite alternate;
+    }
+
+    @keyframes comboPulse {
+      from { box-shadow: 0 0 4px #f9731680; }
+      to   { box-shadow: 0 0 14px #ef444480; }
+    }
+
+    /* Günlük mod header */
+    #daily-header {
+      display: none;
+      width: 100%;
+      max-width: 580px;
+      background: linear-gradient(135deg, var(--accent-dim), var(--surface));
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 8px 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+
+    #daily-header.show { display: block; }
+    #daily-header strong { color: var(--accent); }
+
+    #puzzle-header {
+      display: none;
+      width: 100%;
+      max-width: 580px;
+      background: linear-gradient(135deg, #2d1a00, var(--surface));
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      padding: 8px 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+
+    #puzzle-header.show { display: block; }
+    #puzzle-header strong { color: #fcd34d; }
+    #puzzle-progress { color: var(--text-muted); font-size: 0.85em; margin-left: 6px; }
+
+    /* ── Grid ───────────────────────────────────────────────────── */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 3px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .cell {
+      width: clamp(30px, 7.5vw, 54px);
+      height: clamp(30px, 7.5vw, 54px);
+      background: var(--cell-empty);
+      border: 1px solid var(--cell-border);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(9px, 1.8vw, 14px);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
+      user-select: none;
+      position: relative;
+    }
+
+    .cell:hover:not(.filled) {
+      background: var(--cell-hover-bg);
+      border-color: var(--accent);
+      transform: scale(1.07);
+    }
+
+    .cell.valid {
+      background: var(--cell-valid);
+      border-color: var(--cell-valid-border);
+    }
+
+    .cell.valid:hover {
+      background: var(--cell-valid-hover) !important;
+      border-color: var(--cell-valid-border) !important;
+      transform: scale(1.07);
+    }
+
+    .cell.filled {
+      cursor: default;
+      background: var(--cell-filled);
+      border-color: var(--cell-filled-border);
+      color: var(--cell-filled-text);
+    }
+
+    .cell.last {
+      background: var(--cell-last);
+      border-color: var(--cell-last-border);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--cell-last-glow);
+    }
+
+    /* Zorunlu durak hücreleri */
+    .cell.mandatory {
+      background: #2d1a00;
+      border-color: #f59e0b;
+      color: #fcd34d;
+      font-weight: 800;
+      cursor: default;
+    }
+
+    .cell.mandatory-next {
+      background: #2d1a00;
+      border-color: #f59e0b;
+      color: #fcd34d;
+      font-weight: 800;
+      animation: mandatoryPulse 1s ease infinite alternate;
+    }
+
+    .cell.mandatory-next:hover {
+      transform: scale(1.07);
+      cursor: pointer;
+    }
+
+    @keyframes mandatoryPulse {
+      from { box-shadow: 0 0 4px #f59e0b80; }
+      to   { box-shadow: 0 0 14px #f59e0bcc; border-color: #fbbf24; }
+    }
+
+    .cell.hint-best {
+      background: #1a3a1a;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px #22c55e, 0 0 16px #22c55e99;
+      animation: hintPulse 0.8s ease-in-out infinite alternate;
+      color: #4ade80;
+      font-weight: 700;
+    }
+
+    @keyframes hintPulse {
+      from { box-shadow: 0 0 4px #22c55e80; border-color: #22c55e; }
+      to   { box-shadow: 0 0 20px #22c55ecc; border-color: #4ade80; }
+    }
+
+    #btn-hint-best { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+    #btn-hint-best:hover { background: #166534; }
+
+    .hint-undo-pulse {
+      animation: undoPulse 0.6s ease-in-out infinite !important;
+      outline: 2px solid #22c55e;
+    }
+    @keyframes undoPulse {
+      0%   { box-shadow: 0 0 0 0 #22c55e80; background: var(--btn-secondary); }
+      50%  { box-shadow: 0 0 0 6px #22c55e40; background: #14532d; color: #4ade80; }
+      100% { box-shadow: 0 0 0 0 #22c55e00; background: var(--btn-secondary); }
+    }
+
+    .cell.pop-anim {
+      animation: cellPop 0.22s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @keyframes cellPop {
+      0%   { transform: scale(0.6); opacity: 0.5; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    .cell.flash-invalid { animation: flashRed 0.35s ease; }
+
+    @keyframes flashRed {
+      0%, 100% { background: var(--cell-empty); border-color: var(--cell-border); }
+      50%       { background: var(--flash-bg);   border-color: var(--flash-border); }
+    }
+
+    /* ── Controls ───────────────────────────────────────────────── */
+    #controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    #btn-restart { background: var(--accent-dim); color: #fff; }
+    #btn-hints, #btn-sound { background: var(--btn-secondary); color: var(--btn-secondary-text); }
+    #btn-hints.active { background: var(--cell-valid-hover); color: var(--cell-valid-border); }
+    #btn-undo, #btn-tutorial, #btn-scores, #btn-achievements { background: var(--btn-secondary); color: var(--btn-secondary-text); }
+    #btn-undo:disabled { opacity: 0.3; cursor: default; transform: none; }
+
+    /* ── Tema seçici ─────────────────────────────────────────────── */
+    #theme-bar {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #theme-bar span { font-size: 0.8rem; color: var(--text-muted); margin-right: 4px; }
+
+    .theme-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer; padding: 0;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .theme-btn:hover { transform: scale(1.2); opacity: 1; }
+    .theme-btn.active { border-color: var(--text) !important; transform: scale(1.15); }
+    .theme-btn[data-t="gece"]     { background: linear-gradient(135deg, #0f172a 50%, #38bdf8 50%); }
+    .theme-btn[data-t="okyanus"]  { background: linear-gradient(135deg, #042f4b 50%, #22d3ee 50%); }
+    .theme-btn[data-t="gunbatimi"]{ background: linear-gradient(135deg, #1a0a1e 50%, #f472b6 50%); }
+
+    /* ── Kurallar ────────────────────────────────────────────────── */
+    #rules {
+      margin-top: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.7;
+      width: 100%;
+    }
+
+    #rules strong { color: var(--text); }
+
+    /* ── Skor modalı ────────────────────────────────────────────── */
+    #scores-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--overlay-bg);
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    #scores-modal.show { display: flex; }
+
+    #scores-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 36px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #scores-box h2 { font-size: 1.4rem; font-weight: 700; color: var(--accent); margin-bottom: 20px; }
+    #scores-list { margin-bottom: 24px; }
+
+    #scores-box .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      gap: 10px;
+    }
+
+    #scores-box .score-row:last-child { border-bottom: none; }
+    #scores-empty { color: var(--text-muted); font-size: 0.9rem; padding: 16px 0; }
+    #btn-scores-close { background: var(--accent-dim); color: #fff; padding: 10px 28px; }
+    #btn-scores-clear { background: none; border: 1px solid var(--border); color: var(--text-muted); font-size: 0.78rem; padding: 6px 14px; margin-right: 8px; }
+    #btn-scores-clear:hover { color: var(--lose-color); border-color: var(--lose-color); opacity: 1; }
+
+    /* ── Global Skor Submit Modal ────────────────────────────────── */
+    #global-submit-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--overlay-bg);
+      z-index: 150;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #global-submit-modal.show { display: flex; }
+    #global-submit-box {
+      background: var(--surface);
+      border: 2px solid var(--accent-dim);
+      border-radius: 20px;
+      padding: 30px 28px;
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+    }
+    #global-submit-box h3 { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+    #global-submit-score { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 18px; }
+    #global-nickname-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    #global-nickname-input:focus { border-color: var(--accent); }
+    #global-submit-msg { font-size: 0.85rem; min-height: 20px; margin-bottom: 10px; }
+    #global-submit-msg.success { color: #4ade80; }
+    #global-submit-msg.error   { color: var(--lose-color); }
+    .global-submit-btns { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+    #btn-global-send { background: var(--accent-dim); color: #fff; padding: 9px 22px; font-weight: 600; }
+    #btn-global-cancel { background: var(--btn-secondary); color: var(--btn-secondary-text); padding: 9px 18px; }
+
+    /* ── Global Skor Tablosu Modal ───────────────────────────────── */
+    #global-scores-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--overlay-bg);
+      z-index: 110;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #global-scores-modal.show { display: flex; }
+    #global-scores-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    #global-scores-box h2 { font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-bottom: 18px; }
+    #global-scores-list { margin-bottom: 20px; }
+    .g-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.86rem;
+    }
+    .g-score-row:last-child { border-bottom: none; }
+    .g-score-row.g-mine { background: var(--cell-filled); border-radius: 8px; color: var(--accent); font-weight: 700; }
+    .g-rank  { width: 28px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .g-name  { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .g-score { font-weight: 700; flex-shrink: 0; }
+    .g-date  { color: var(--text-muted); font-size: 0.75rem; flex-shrink: 0; }
+    #global-scores-status { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px; min-height: 18px; }
+    #btn-global-scores-close { background: var(--accent-dim); color: #fff; padding: 9px 26px; }
+
+    /* ── Başarılar modalı ───────────────────────────────────────── */
+    #ach-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--overlay-bg);
+      z-index: 20;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    #ach-modal.show { display: flex; }
+
+    #ach-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      max-width: 480px;
+      width: 100%;
+      margin: auto;
+    }
+
+    #ach-box h2 { font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-bottom: 16px; text-align: center; }
+
+    .ach-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ach-item:last-child { border-bottom: none; }
+
+    .ach-icon {
+      font-size: 2rem;
+      width: 48px;
+      text-align: center;
+      filter: grayscale(1) opacity(0.35);
+      transition: filter 0.4s;
+    }
+
+    .ach-item.unlocked .ach-icon { filter: none; }
+
+    .ach-info { flex: 1; }
+    .ach-name { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+    .ach-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    .ach-xp {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--surface2);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .ach-category-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      padding: 14px 8px 4px;
+      border-top: 1px solid var(--border);
+    }
+    .ach-category-label:first-child { border-top: none; padding-top: 4px; }
+
+    /* ── Başarı bildirimi (toast) ────────────────────────────────── */
+    #ach-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: 14px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 8px 32px #00000060;
+      transition: transform 0.4s cubic-bezier(.22,1,.36,1);
+      min-width: 260px;
+      max-width: 320px;
+    }
+
+    #ach-toast.show { transform: translateX(-50%) translateY(0); }
+
+    #ach-toast .toast-icon { font-size: 2rem; }
+    #ach-toast .toast-text .toast-title { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    #ach-toast .toast-text .toast-name  { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    #ach-toast .toast-text .toast-xp    { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* XP floating text */
+    .xp-float {
+      position: fixed;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      pointer-events: none;
+      z-index: 200;
+      animation: floatUp 1s ease forwards;
+    }
+
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      80%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
+    }
+
+    /* ── Overlay (kazandı/kaybetti) ─────────────────────────────── */
+    #overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--overlay-bg);
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #overlay.show { display: flex; }
+
+    #overlay-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 48px;
+      text-align: center;
+      max-width: 360px;
+      width: 90%;
+    }
+
+    #overlay-box h2         { font-size: 2.2rem; margin-bottom: 10px; }
+    #overlay-box p          { color: var(--text-muted); margin-bottom: 16px; font-size: 1rem; }
+    #overlay-box.win  h2    { color: var(--win-color); }
+    #overlay-box.lose h2    { color: var(--lose-color); }
+    #overlay-box button     { background: var(--accent-dim); color: #fff; padding: 12px 32px; font-size: 1rem; }
+
+    #overlay-score-highlight { font-size: 0.88rem; margin-bottom: 8px; color: var(--text-muted); }
+    #overlay-score-highlight .new-record { color: var(--win-color); font-weight: 700; font-size: 1rem; }
+
+    #overlay-xp-gain {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    #overlay-scores {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    #overlay-scores h4 { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .score-row:last-child { border-bottom: none; }
+    .score-rank { color: var(--text-muted); width: 20px; }
+    .score-val  { font-weight: 700; color: var(--text); }
+    .score-date { color: var(--text-muted); font-size: 0.75rem; }
+    .score-row.highlight .score-val  { color: var(--accent); }
+    .score-row.highlight .score-rank { color: var(--accent); }
+
+    /* Paylaş butonu */
+    #btn-share {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    /* ── Tutorial overlay ───────────────────────────────────────── */
+    #tutorial {
+      display: flex;
+      position: fixed; inset: 0;
+      background: #000000cc;
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    #tutorial.hidden { display: none; }
+
+    #tut-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+    }
+
+    #tut-step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .tut-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--surface2); transition: background 0.3s, transform 0.3s; }
+    .tut-dot.active { background: var(--accent); transform: scale(1.4); }
+    #tut-icon  { font-size: 3rem; margin-bottom: 12px; display: block; }
+    #tut-title { font-size: 1.4rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+    #tut-desc  { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    #tut-desc strong { color: var(--text); }
+
+    .tut-grid { display: inline-grid; gap: 4px; background: var(--surface2); border-radius: 8px; padding: 8px; margin: 8px auto 20px; }
+
+    .tg { width: 36px; height: 36px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; border: 2px solid transparent; }
+    .tg-empty   { background: var(--cell-empty);   border-color: var(--cell-border); color: transparent; }
+    .tg-filled    { background: var(--cell-filled);  border-color: var(--cell-filled-border); color: var(--cell-filled-text); }
+    .tg-last      { background: var(--cell-last);    border-color: var(--cell-last-border);   color: #fff; box-shadow: 0 0 8px var(--cell-last-glow); }
+    .tg-valid     { background: var(--cell-valid);   border-color: var(--cell-valid-border);  color: var(--cell-valid-border); }
+    .tg-mandatory { background: #78350f; border-color: #f59e0b; color: #fcd34d; font-weight: 700; }
+    .tg-invalid { background: var(--flash-bg);     border-color: var(--flash-border);       color: var(--flash-border); }
+    .tg-skip    { background: var(--surface);      border-color: var(--surface2);           color: var(--text-muted); font-size: 0.65rem; }
+
+    #tut-nav { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    #btn-tut-prev { background: var(--btn-secondary); color: var(--btn-secondary-text); padding: 10px 20px; }
+    #btn-tut-next { background: var(--accent-dim); color: #fff; padding: 10px 28px; font-size: 1rem; }
+    #btn-tut-skip { position: absolute; top: 14px; right: 16px; background: none; color: var(--text-muted); font-size: 0.78rem; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
+    #btn-tut-skip:hover { color: var(--text); opacity: 1; transform: none; }
+
+    /* ── Bulmaca tanıtım modalı ─────────────────────────────────── */
+    #puzzle-intro {
+      display: none;
+      position: fixed; inset: 0;
+      background: #000000cc;
+      z-index: 30;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    #puzzle-intro.show { display: flex; }
+
+    #puzzle-intro-box {
+      background: var(--surface);
+      border: 2px solid #f59e0b;
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #pi-icon { font-size: 2.8rem; margin-bottom: 8px; }
+
+    #puzzle-intro-box h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fcd34d;
+      margin-bottom: 8px;
+    }
+
+    #puzzle-intro-box > p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    #pi-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .pi-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .pi-num {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 800;
+      font-size: 0.78rem;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #pi-demo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .pi-cell {
+      width: 38px; height: 38px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border: 2px solid transparent;
+    }
+
+    .pi-mandatory-next {
+      background: #2d1a00;
+      border-color: #f59e0b;
+      color: #fcd34d;
+      animation: mandatoryPulse 1s ease infinite alternate;
+    }
+
+    .pi-mandatory {
+      background: #2d1a00;
+      border-color: #f59e0b;
+      color: #fcd34d;
+    }
+
+    .pi-empty {
+      background: var(--cell-empty);
+      border-color: var(--cell-border);
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .pi-arrow { color: var(--text-muted); font-size: 1rem; }
+
+    #btn-pi-close {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 700;
+      padding: 12px 32px;
+      font-size: 1rem;
+    }
+
+    #btn-pi-close:hover { opacity: 0.85; }
+
+    #pi-puzzle-info {
+      background: var(--surface2);
+      border: 1px solid #f59e0b55;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 0.83rem;
+      color: var(--text);
+      text-align: left;
+    }
+
+    #pi-puzzle-info .pi-info-name {
+      font-weight: 700;
+      color: #fcd34d;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    #pi-puzzle-info .pi-stops-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pi-stop-chip {
+      background: #2d1a00;
+      border: 1px solid #f59e0b;
+      color: #fcd34d;
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .pi-stop-arrow { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* ── Overlay buton grubu ────────────────────────────────────── */
+    #overlay-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #overlay-btns button { width: 100%; max-width: 240px; }
+
+    #btn-next-puzzle {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    #btn-level-select {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+
+    /* ── Bulmaca seviye seçimi ──────────────────────────────────── */
+    #puzzle-level-select {
+      display: none;
+      position: fixed; inset: 0;
+      background: #000000cc;
+      z-index: 30;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    #puzzle-level-select.show { display: flex; }
+
+    #pls-box {
+      background: var(--surface);
+      border: 2px solid #f59e0b;
+      border-radius: 20px;
+      padding: 24px 20px;
+      max-width: 460px;
+      width: 100%;
+      margin: auto;
+    }
+
+    #pls-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    #pls-header h2 { font-size: 1.3rem; font-weight: 700; color: #fcd34d; }
+
+    #btn-pls-close {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+
+    #pls-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .pls-category {
+      margin-bottom: 16px;
+    }
+
+    .pls-cat-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pls-cat-icon { font-size: 1.2rem; }
+
+    .pls-cat-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .pls-cat-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    #pls-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .pls-cards-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .pls-card {
+      border-radius: 12px;
+      padding: 14px 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+      position: relative;
+    }
+
+    .pls-card:hover:not(.pls-locked) { transform: translateY(-2px); }
+
+    .pls-card.pls-unlocked {
+      background: var(--surface2);
+      border-color: #f59e0b55;
+    }
+
+    .pls-card.pls-unlocked:hover { border-color: #f59e0b; }
+
+    .pls-card.pls-done {
+      background: #0c2a0c;
+      border-color: #22c55e;
+    }
+
+    .pls-card.pls-done:hover { border-color: #4ade80; }
+
+    .pls-card.pls-locked {
+      background: var(--surface);
+      border-color: var(--border);
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .pls-card-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .pls-card.pls-unlocked .pls-card-num { color: #fcd34d; }
+    .pls-card.pls-done     .pls-card-num { color: #4ade80; }
+    .pls-card.pls-locked   .pls-card-num { color: var(--text-muted); }
+
+    .pls-card-name {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .pls-card-diff {
+      font-size: 0.7rem;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .pls-card-stops {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .pls-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: 1rem;
+    }
+
+    /* ── Konfeti canvas ─────────────────────────────────────────── */
+    #confetti-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* ── Zaman seviye seçimi ────────────────────────────────────── */
+    #time-level-select {
+      display: none;
+      position: fixed; inset: 0;
+      background: #000000cc;
+      z-index: 30;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    #time-level-select.show { display: flex; }
+
+    #tls-box {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      padding: 24px 20px;
+      max-width: 460px;
+      width: 100%;
+      margin: auto;
+    }
+
+    #tls-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    #tls-header h2 { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+
+    #btn-tls-close {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+
+    #tls-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
+
+    #tls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .tls-card {
+      border-radius: 12px;
+      padding: 14px 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+      position: relative;
+    }
+
+    .tls-card:hover:not(.pls-locked) { transform: translateY(-2px); }
+
+    .tls-card.pls-unlocked {
+      background: var(--surface2);
+      border-color: var(--accent-dim);
+    }
+
+    .tls-card.pls-unlocked:hover { border-color: var(--accent); }
+
+    .tls-card.pls-done {
+      background: #0c2a0c;
+      border-color: #22c55e;
+    }
+
+    .tls-card.pls-done:hover { border-color: #4ade80; }
+
+    .tls-card.pls-locked {
+      background: var(--surface);
+      border-color: var(--border);
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .tls-card-num { font-size: 1.4rem; font-weight: 800; margin-bottom: 2px; }
+    .tls-card.pls-unlocked .tls-card-num { color: var(--accent); }
+    .tls-card.pls-done     .tls-card-num { color: #4ade80; }
+    .tls-card.pls-locked   .tls-card-num { color: var(--text-muted); }
+
+    .tls-card-size  { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .tls-card-time  { font-size: 0.72rem; color: var(--accent); margin-bottom: 4px; }
+    .tls-card-diff  { font-size: 0.68rem; color: var(--text-muted); }
+
+    #tls-best {
+      margin-top: 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    #tls-best strong { color: var(--accent); }
+
+    /* ── Zaman modu ─────────────────────────────────────────────── */
+    #timer-display {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 64px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+    }
+
+    #timer-display.timer-urgent {
+      color: var(--lose-color);
+      border-color: var(--lose-color);
+      animation: timerPulse 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to   { transform: scale(1.15); }
+    }
+
+    #level-display {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+
+    /* ── Start Screen ──────────────────────────────────────────── */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 40px;
+      overflow-y: auto;
+      animation: ssIn 0.45s cubic-bezier(0.22,1,0.36,1);
+    }
+    #start-screen.hidden { display: none; }
+
+    @keyframes ssIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes ssOut {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(1.04); }
+    }
+
+    .ss-logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .ss-big-num {
+      font-size: 6rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -4px;
+      text-shadow: 0 0 30px var(--accent-dim), 0 0 70px var(--accent-dim);
+      animation: ssNumPulse 3s ease-in-out infinite;
+    }
+    @keyframes ssNumPulse {
+      0%, 100% { text-shadow: 0 0 30px var(--accent-dim), 0 0 70px var(--accent-dim); }
+      50%       { text-shadow: 0 0 50px var(--accent), 0 0 100px var(--accent-dim); }
+    }
+    .ss-subtitle {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 7px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .ss-tagline {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-top: 8px;
+    }
+
+    .ss-modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .ss-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 22px 14px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0;
+      animation: cardIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .ss-card:nth-child(1) { animation-delay: 0.08s; }
+    .ss-card:nth-child(2) { animation-delay: 0.14s; }
+    .ss-card:nth-child(3) { animation-delay: 0.20s; }
+    .ss-card:nth-child(4) { animation-delay: 0.26s; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ss-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+    .ss-card:active { transform: translateY(-1px); }
+
+    .ss-card.ss-card-daily  { border-color: #f59e0b44; }
+    .ss-card.ss-card-daily:hover  { border-color: #f59e0b; box-shadow: 0 10px 28px rgba(245,158,11,0.18); }
+    .ss-card.ss-card-timed  { border-color: #ef444444; }
+    .ss-card.ss-card-timed:hover  { border-color: #ef4444; box-shadow: 0 10px 28px rgba(239,68,68,0.18); }
+    .ss-card.ss-card-puzzle { border-color: #a855f744; }
+    .ss-card.ss-card-puzzle:hover { border-color: #a855f7; box-shadow: 0 10px 28px rgba(168,85,247,0.18); }
+
+    .ss-card-icon  { font-size: 2.2rem; display: block; margin-bottom: 10px; }
+    .ss-card-name  { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 5px; letter-spacing: 0.3px; }
+    .ss-card-desc  { font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; }
+
+    .ss-footer {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: cardIn 0.5s 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .ss-lvl-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+
+    /* Make title clickable for returning to menu */
+    #game-title {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    #game-title:hover { opacity: 0.75; }
+
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- ── Start Screen ──────────────────────────────────────────── -->
+  <div id="start-screen">
+    <div class="ss-logo">
+      <div class="ss-big-num">100</div>
+      <div class="ss-subtitle">O Y U N U</div>
+      <div class="ss-tagline">1'den 100'e — sırayla, kurala göre</div>
+    </div>
+
+    <div class="ss-modes">
+      <div class="ss-card" data-mode="serbest">
+        <span class="ss-card-icon">🎮</span>
+        <div class="ss-card-name">Serbest</div>
+        <div class="ss-card-desc">Sınırsız özgür oyun, baskısız</div>
+      </div>
+      <div class="ss-card ss-card-daily" data-mode="gunluk">
+        <span class="ss-card-icon">📅</span>
+        <div class="ss-card-name">Günlük</div>
+        <div class="ss-card-desc">Bugünün özel bulmacası</div>
+      </div>
+      <div class="ss-card ss-card-puzzle" data-mode="bulmaca">
+        <span class="ss-card-icon">🧩</span>
+        <div class="ss-card-name">Bulmaca</div>
+        <div class="ss-card-desc">Zorunlu durakları tamamla</div>
+      </div>
+      <div class="ss-card ss-card-timed" data-mode="zaman">
+        <span class="ss-card-icon">⏱️</span>
+        <div class="ss-card-name">Zaman</div>
+        <div class="ss-card-desc">Sayaç bitmeden 100'e ulaş</div>
+      </div>
+    </div>
+
+    <div class="ss-footer">
+      <span class="ss-lvl-pill" id="ss-lvl">Sv. 1</span>
+      <span id="ss-xp">0 XP toplam</span>
+    </div>
+  </div>
+
+  <div id="top-bar">
+    <button id="btn-scores">🏆 Skorlar</button>
+    <h1 id="game-title">100 OYUNU</h1>
+    <button id="btn-sound">🔊 Ses</button>
+  </div>
+
+  <!-- XP şeridi -->
+  <div id="xp-bar-wrap">
+    <div id="level-badge">Sv. 1</div>
+    <div id="xp-track"><div id="xp-fill" style="width:0%"></div></div>
+    <div id="xp-label">0 / 100 XP</div>
+  </div>
+
+  <!-- Streak + Mod seçici -->
+  <div id="meta-bar">
+    <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> gün serisi</div>
+    <div id="mode-tabs">
+      <button class="mode-tab active" data-mode="serbest">Serbest</button>
+      <button class="mode-tab"        data-mode="gunluk">📅 Günlük</button>
+      <button class="mode-tab"        data-mode="bulmaca">🧩 Bulmaca</button>
+      <button class="mode-tab"        data-mode="zaman">⏱️ Zaman</button>
+    </div>
+  </div>
+
+  <!-- Günlük meydan okuma başlığı -->
+  <div id="daily-header">
+    📅 <strong>Günün Bulmacası</strong> — <span id="daily-date"></span> &nbsp;|&nbsp; Bu bulmaca bugün herkese aynı!
+  </div>
+
+  <!-- Bulmaca başlığı -->
+  <div id="puzzle-header">
+    🧩 <strong id="puzzle-name"></strong><span id="puzzle-progress"></span>
+  </div>
+
+  <div id="info-bar">
+    <div id="current-num">Yerleştirilecek sayı: <span id="num-display">1</span></div>
+    <div id="combo-display">Combo: ×1</div>
+    <div id="timer-display" style="display:none">⏱ <span id="timer-num">60</span>s</div>
+    <div id="level-display" style="display:none">Bölüm <span id="level-num">1</span>/7</div>
+    <div id="hint">İstediğin hücreye tıkla</div>
+  </div>
+
+  <div id="grid"></div>
+
+  <div id="controls">
+    <button id="btn-restart">Yeniden Başla</button>
+    <button id="btn-tutorial">Nasıl Oynanır?</button>
+    <button id="btn-undo" disabled>↩ Geri Al</button>
+    <button id="btn-hints">Olası Hamleler</button>
+    <button id="btn-hint-best" style="display:none">💡 İpucu Al</button>
+    <button id="btn-achievements">🏅 Başarılar</button>
+  </div>
+
+  <!-- Tema seçici -->
+  <div id="theme-bar">
+    <span>Tema:</span>
+    <button class="theme-btn active" data-t="gece"      title="Gece"></button>
+    <button class="theme-btn"        data-t="okyanus"   title="Okyanus"></button>
+    <button class="theme-btn"        data-t="gunbatimi" title="Günbatımı"></button>
+  </div>
+
+  <div id="rules"></div>
+
+  <!-- ── Skor tablosu modalı ──────────────────────────────────── -->
+  <div id="scores-modal">
+    <div id="scores-box">
+      <h2>🏆 Skorlarım</h2>
+      <div id="scores-list"></div>
+      <div>
+        <button id="btn-scores-clear">Sıfırla</button>
+        <button id="btn-scores-close">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Global Skor Submit Modal ─────────────────────────────── -->
+  <div id="global-submit-modal">
+    <div id="global-submit-box">
+      <h3>🏆 Skoru Gönder</h3>
+      <div id="global-submit-score"></div>
+      <input id="global-nickname-input" type="text" maxlength="20" placeholder="Nicknameni gir..." autocomplete="off" />
+      <div id="global-submit-msg"></div>
+      <div class="global-submit-btns">
+        <button id="btn-global-send">Gönder</button>
+        <button id="btn-global-cancel">İptal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Global Skor Tablosu Modal ─────────────────────────────── -->
+  <div id="global-scores-modal">
+    <div id="global-scores-box">
+      <h2>🏆 Skorlar</h2>
+      <div id="global-scores-status">Yükleniyor...</div>
+      <div id="global-scores-list"></div>
+      <button id="btn-global-scores-close">Kapat</button>
+    </div>
+  </div>
+
+  <!-- ── Başarılar modalı ─────────────────────────────────────── -->
+  <div id="ach-modal">
+    <div id="ach-box">
+      <h2>🏅 Başarılar</h2>
+      <div id="ach-list"></div>
+      <div style="text-align:center;margin-top:16px">
+        <button id="btn-ach-close" style="background:var(--accent-dim);color:#fff;padding:10px 28px">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Başarı bildirimi toast ───────────────────────────────── -->
+  <div id="ach-toast">
+    <div class="toast-icon" id="toast-icon"></div>
+    <div class="toast-text">
+      <div class="toast-title">Başarı Açıldı!</div>
+      <div class="toast-name" id="toast-name"></div>
+      <div class="toast-xp"  id="toast-xp"></div>
+    </div>
+  </div>
+
+  <!-- ── Bulmaca tanıtım modalı ──────────────────────────────── -->
+  <div id="puzzle-intro">
+    <div id="puzzle-intro-box">
+      <div id="pi-icon">🧩</div>
+      <h2 id="pi-title">Bulmaca Modu</h2>
+      <p id="pi-subtitle">Grid üzerinde <strong>altın renkli</strong> zorunlu duraklar belirir.</p>
+
+      <!-- Günün / aktif bulmacasının bilgisi -->
+      <div id="pi-puzzle-info"></div>
+
+      <div id="pi-steps">
+        <div class="pi-step">
+          <span class="pi-num">1</span>
+          <span>Yanıp sönen altın hücreden <strong>başla</strong> — sadece oraya tıklayabilirsin.</span>
+        </div>
+        <div class="pi-step">
+          <span class="pi-num">2</span>
+          <span>Normal hareket kurallarıyla ilerle:<br>yatay/dikey 3 kare · çapraz 2 kare.</span>
+        </div>
+        <div class="pi-step">
+          <span class="pi-num">3</span>
+          <span>Sıradaki <strong>altın hücreye</strong> ulaşmak zorundasın — başka yere gidemezsin.</span>
+        </div>
+        <div class="pi-step">
+          <span class="pi-num">4</span>
+          <span>Tüm duraklara sırayla ulaşırsan <strong>bulmacayı kazanırsın!</strong></span>
+        </div>
+      </div>
+
+      <div id="pi-demo"></div>
+
+      <button id="btn-pi-close">Anladım, Başla!</button>
+    </div>
+  </div>
+
+  <!-- ── Tutorial overlay ─────────────────────────────────────── -->
+  <div id="tutorial">
+    <div id="tut-box">
+      <button id="btn-tut-skip">Atla</button>
+      <div id="tut-step-indicator"></div>
+      <span id="tut-icon"></span>
+      <div id="tut-title"></div>
+      <div id="tut-desc"></div>
+      <div id="tut-visual"></div>
+      <div id="tut-nav">
+        <button id="btn-tut-prev">← Geri</button>
+        <button id="btn-tut-next">İleri →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Win / Lose overlay ───────────────────────────────────── -->
+  <div id="overlay">
+    <div id="overlay-box">
+      <h2 id="overlay-title"></h2>
+      <p  id="overlay-msg"></p>
+      <div id="overlay-score-highlight"></div>
+      <div id="overlay-xp-gain"></div>
+      <div id="overlay-scores"></div>
+      <div id="overlay-btns"></div>
+    </div>
+  </div>
+
+  <!-- ── Zaman seviye seçimi ───────────────────────────────────── -->
+  <div id="time-level-select">
+    <div id="tls-box">
+      <div id="tls-header">
+        <h2>⏱️ Zaman Modu</h2>
+        <button id="btn-tls-close">✕</button>
+      </div>
+      <p id="tls-subtitle">Her bölümde giderek büyüyen gridi süre dolmadan doldur!</p>
+      <div id="tls-grid"></div>
+      <div id="tls-best"></div>
+    </div>
+  </div>
+
+  <!-- ── Bulmaca seviye seçimi ─────────────────────────────────── -->
+  <div id="puzzle-level-select">
+    <div id="pls-box">
+      <div id="pls-header">
+        <h2>🧩 Bulmacalar</h2>
+        <button id="btn-pls-close">✕</button>
+      </div>
+      <p id="pls-subtitle">Çözdüğün bulmacaları tekrar oynayabilir, sıradakine geçebilirsin.</p>
+      <div id="pls-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════════════════════
+    //  SABITLER & DURUM
+    // ════════════════════════════════════════════════════════════
+    const SIZE = 10;
+    let activeSize = SIZE;   // aktif grid boyutu (bulmacaya göre değişir)
+    let activeRows = SIZE;   // zaman modu için ayrı satır/sütun sayısı
+    let activeCols = SIZE;
+    let activePuzzle = null; // o an oynanan bulmaca objesi
+
+    // ── Zaman modu seviyeleri ────────────────────────────────────
+    const TIME_LEVELS = [
+      { rows: 4, cols: 5,  time: 45,  label: '4×5'   },
+      { rows: 5, cols: 5,  time: 60,  label: '5×5'   },
+      { rows: 6, cols: 6,  time: 90,  label: '6×6'   },
+      { rows: 7, cols: 7,  time: 120, label: '7×7'   },
+      { rows: 8, cols: 8,  time: 150, label: '8×8'   },
+      { rows: 9, cols: 9,  time: 180, label: '9×9'   },
+      { rows: 10, cols: 10, time: 240, label: '10×10' },
+    ];
+
+    let timerInterval       = null;
+    let timeLeft            = 0;
+    let currentTimeLevelIdx = 0;
+    let timeModeScore       = 0;
+
+    const TIME_HS_KEY        = 'time_scores_100oyunu';
+    const TIME_COMPLETED_KEY = 'timeCompleted_100oyunu';
+
+    const TIME_LEVEL_DIFFS = ['⭐ Kolay','⭐ Kolay','⭐⭐ Orta','⭐⭐ Orta','⭐⭐⭐ Zor','⭐⭐⭐ Zor','⭐⭐⭐⭐ Uzman'];
+
+    function loadTimeCompleted() {
+      try { return new Set(JSON.parse(localStorage.getItem(TIME_COMPLETED_KEY)) || []); }
+      catch { return new Set(); }
+    }
+
+    function markTimeLevelComplete(idx) {
+      const s = loadTimeCompleted();
+      s.add(idx);
+      localStorage.setItem(TIME_COMPLETED_KEY, JSON.stringify([...s]));
+    }
+
+    function loadTimeScores() {
+      try { return JSON.parse(localStorage.getItem(TIME_HS_KEY)) || []; } catch { return []; }
+    }
+
+    function saveTimeScore(score, level) {
+      const scores = loadTimeScores();
+      const date = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      scores.push({ score, level, date });
+      scores.sort((a, b) => b.score - a.score || b.level - a.level);
+      const trimmed = scores.slice(0, 5);
+      localStorage.setItem(TIME_HS_KEY, JSON.stringify(trimmed));
+      return trimmed;
+    }
+
+    function openTimeLevelSelect() {
+      const completed = loadTimeCompleted();
+      const best      = loadTimeScores()[0];
+
+      // İlk tamamlanmamış bölüm = açık (mevcut)
+      let firstAvail = 0;
+      for (let i = 0; i < TIME_LEVELS.length; i++) {
+        if (!completed.has(i)) { firstAvail = i; break; }
+        if (i === TIME_LEVELS.length - 1) firstAvail = TIME_LEVELS.length; // hepsi bitti
+      }
+
+      const cards = TIME_LEVELS.map((lvl, i) => {
+        const isDone   = completed.has(i);
+        const isAvail  = !isDone && i === firstAvail;
+        const isLocked = !isDone && i !== firstAvail;
+        const cls      = isDone ? 'pls-done' : isAvail ? 'pls-unlocked' : 'pls-locked';
+        const badge    = isDone   ? '<span class="pls-badge">✅</span>'
+                       : isLocked ? '<span class="pls-badge">🔒</span>'
+                       :            '<span class="pls-badge">▶</span>';
+        const onclick  = isLocked ? '' : `onclick="startTimeLevel(${i})"`;
+        return `<div class="tls-card ${cls}" ${onclick}>
+          ${badge}
+          <div class="tls-card-num">Bölüm ${i + 1}</div>
+          <div class="tls-card-size">${lvl.label}</div>
+          <div class="tls-card-time">⏱ ${lvl.time} saniye</div>
+          <div class="tls-card-diff">${TIME_LEVEL_DIFFS[i]}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('tls-grid').innerHTML = cards;
+
+      const doneCount = completed.size;
+      const bestEl    = document.getElementById('tls-best');
+      bestEl.innerHTML = doneCount > 0
+        ? `${doneCount}/${TIME_LEVELS.length} bölüm tamamlandı` +
+          (best ? ` · En iyi: <strong>${best.score} hücre</strong>` : '')
+        : 'Henüz tamamlanan bölüm yok. Hadi başla!';
+
+      document.getElementById('time-level-select').classList.add('show');
+    }
+
+    function startTimeLevel(idx) {
+      gameHasStarted      = true;
+      currentTimeLevelIdx = idx;
+      timeModeScore       = 0;
+      clearInterval(timerInterval);
+      document.getElementById('time-level-select').classList.remove('show');
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'zaman'));
+      initGame();
+    }
+
+    document.getElementById('btn-tls-close').addEventListener('click', () => {
+      document.getElementById('time-level-select').classList.remove('show');
+      currentMode = 'serbest';
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'serbest'));
+      if (!gameHasStarted) {
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
+      }
+    });
+
+    function startTimer(seconds) {
+      clearInterval(timerInterval);
+      timeLeft = seconds;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) { clearInterval(timerInterval); endGame(false); }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const el   = document.getElementById('timer-num');
+      const wrap = document.getElementById('timer-display');
+      if (!el) return;
+      el.textContent = timeLeft;
+      wrap.classList.toggle('timer-urgent', timeLeft <= 10);
+    }
+
+    const GLOBAL_API = 'https://100oyunu-server-production.up.railway.app'; // deploy sonrası Railway URL'siyle değiştir
+
+    let grid = [], currentNumber = 1, lastR = -1, lastC = -1;
+    let gameActive = true, showHints = false, soundEnabled = true;
+    let history = [];
+    let comboCount = 0;          // ardışık hamle sayısı (geri al sıfırlar)
+    let currentMode = 'serbest'; // 'serbest' | 'gunluk' | 'bulmaca'
+    let dailyCompleted = false;
+
+    // ── Bulmaca havuzu ───────────────────────────────────────────
+    // Her bulmaca elle doğrulanmış bir çözüm yoluna sahiptir.
+    const PUZZLES = [
+      // ── Zorunlu Duraklar ─────────────────────────────────────────
+      {
+        name: 'Bulmaca #1', difficulty: '⭐ Giriş',
+        stops: [
+          { n: 1, r: 0, c: 0 },
+          { n: 5, r: 4, c: 0 },
+        ]
+      },
+      {
+        name: 'Bulmaca #2', difficulty: '⭐ Giriş',
+        stops: [
+          { n: 1, r: 2, c: 0 },
+          { n: 4, r: 0, c: 8 },
+          { n: 8, r: 9, c: 5 },
+        ]
+      },
+      {
+        name: 'Bulmaca #3', difficulty: '⭐ Kolay',
+        stops: [
+          { n: 1,  r: 0, c: 0 },
+          { n: 5,  r: 4, c: 4 },
+          { n: 10, r: 7, c: 0 },
+          { n: 15, r: 1, c: 2 },
+          { n: 20, r: 8, c: 8 },
+        ]
+      },
+      {
+        name: 'Bulmaca #4', difficulty: '⭐ Kolay',
+        stops: [
+          { n: 1,  r: 9, c: 9 },
+          { n: 7,  r: 3, c: 3 },
+          { n: 14, r: 7, c: 7 },
+          { n: 20, r: 0, c: 6 },
+        ]
+      },
+      {
+        name: 'Bulmaca #5', difficulty: '⭐⭐ Orta',
+        stops: [
+          { n: 1,  r: 0, c: 4 },
+          { n: 7,  r: 6, c: 6 },
+          { n: 14, r: 2, c: 8 },
+          { n: 20, r: 8, c: 0 },
+          { n: 25, r: 4, c: 4 },
+        ]
+      },
+      {
+        name: 'Bulmaca #6', difficulty: '⭐⭐ Orta',
+        stops: [
+          { n: 1,  r: 3, c: 3 },
+          { n: 7,  r: 0, c: 6 },
+          { n: 13, r: 1, c: 8 },
+          { n: 19, r: 6, c: 0 },
+          { n: 25, r: 8, c: 1 },
+          { n: 30, r: 2, c: 0 },
+        ]
+      },
+      {
+        name: 'Bulmaca #7', difficulty: '⭐⭐⭐ Orta-Zor',
+        stops: [
+          { n: 1,  r: 5, c: 2 },
+          { n: 7,  r: 0, c: 6 },
+          { n: 13, r: 4, c: 1 },
+          { n: 19, r: 0, c: 0 },
+          { n: 25, r: 3, c: 3 },
+          { n: 30, r: 4, c: 2 },
+          { n: 35, r: 0, c: 5 },
+        ]
+      },
+      {
+        name: 'Bulmaca #8', difficulty: '⭐⭐⭐ Orta-Zor',
+        stops: [
+          { n: 1,  r: 9, c: 0 },
+          { n: 7,  r: 2, c: 6 },
+          { n: 14, r: 6, c: 2 },
+          { n: 21, r: 0, c: 8 },
+          { n: 28, r: 8, c: 4 },
+          { n: 35, r: 3, c: 7 },
+          { n: 40, r: 5, c: 1 },
+        ]
+      },
+      {
+        name: 'Bulmaca #9', difficulty: '⭐⭐⭐⭐ Zor',
+        stops: [
+          { n: 1,  r: 0, c: 0 },
+          { n: 8,  r: 4, c: 8 },
+          { n: 15, r: 1, c: 3 },
+          { n: 22, r: 8, c: 1 },
+          { n: 29, r: 3, c: 9 },
+          { n: 36, r: 7, c: 5 },
+          { n: 43, r: 2, c: 0 },
+          { n: 50, r: 9, c: 6 },
+        ]
+      },
+      {
+        name: 'Bulmaca #10', difficulty: '⭐⭐⭐⭐⭐ Uzman',
+        stops: [
+          { n: 1,  r: 4, c: 4 },
+          { n: 8,  r: 0, c: 2 },
+          { n: 15, r: 9, c: 7 },
+          { n: 22, r: 2, c: 9 },
+          { n: 29, r: 7, c: 0 },
+          { n: 36, r: 0, c: 8 },
+          { n: 43, r: 5, c: 3 },
+          { n: 51, r: 8, c: 6 },
+          { n: 60, r: 1, c: 5 },
+        ]
+      },
+      // ── Mini Izgara ──────────────────────────────────────────────
+      {
+        name: 'Mini Grid #1', difficulty: '⭐ Kolay',
+        type: 'full', size: 5,
+        // 5×5 Hamiltonian yol (25 hücre):
+        // (0,0)→(2,2)→(0,4)→(3,4)→(1,2)→(3,0)→(3,3)→(0,3)→(2,1)→(2,4)
+        // →(4,2)→(2,0)→(0,2)→(3,2)→(1,0)→(4,0)→(4,3)→(1,3)→(3,1)→(0,1)
+        // →(2,3)→(4,1)→(4,4)→(1,4)→(1,1)
+        start: { r: 0, c: 0 },
+      },
+      {
+        name: 'Mini Grid #2', difficulty: '⭐⭐ Orta',
+        type: 'full', size: 5,
+        // 5×5 tersine yol — (1,1)'den başlar, tüm hücreleri doldur
+        // (1,1)→(1,4)→(4,4)→(4,1)→(2,3)→(0,1)→(3,1)→(1,3)→(4,3)→(4,0)
+        // →(1,0)→(3,2)→(0,2)→(2,0)→(4,2)→(2,4)→(2,1)→(0,3)→(3,3)→(3,0)
+        // →(1,2)→(3,4)→(0,4)→(2,2)→(0,0)
+        start: { r: 1, c: 1 },
+      },
+      {
+        name: 'Mini Grid #3', difficulty: '⭐⭐⭐ Zor',
+        type: 'full', size: 6,
+        // 6×6 Hamiltonian yol (36 hücre), doğrulandı:
+        // (0,0)→(3,0)→(1,2)→(1,5)→(4,5)→(4,2)→(2,0)→(5,0)→(5,3)→(2,3)
+        // →(0,1)→(0,4)→(3,4)→(3,1)→(1,3)→(1,0)→(4,0)→(4,3)→(2,1)→(2,4)
+        // →(5,4)→(5,1)→(3,3)→(0,3)→(2,5)→(5,5)→(5,2)→(2,2)→(4,4)→(4,1)
+        // →(1,1)→(1,4)→(3,2)→(3,5)→(0,5)→(0,2)
+        start: { r: 0, c: 0 },
+      },
+      {
+        name: 'Mini Grid #4', difficulty: '⭐⭐⭐⭐ Uzman',
+        type: 'full', size: 6,
+        // Yukarıdaki 6×6 yolunun tersi — (0,2)'den başlar
+        // (0,2)→(0,5)→(3,5)→(3,2)→(1,4)→(1,1)→(4,1)→(4,4)→(2,2)→(5,2)
+        // →(5,5)→(2,5)→(0,3)→(3,3)→(5,1)→(5,4)→(2,4)→(2,1)→(4,3)→(4,0)
+        // →(1,0)→(1,3)→(3,1)→(3,4)→(0,4)→(0,1)→(2,3)→(5,3)→(5,0)→(2,0)
+        // →(4,2)→(4,5)→(1,5)→(1,2)→(3,0)→(0,0)
+        start: { r: 0, c: 2 },
+      },
+    ];
+
+    let puzzleStops      = [];
+    let currentPuzzleIdx = parseInt(localStorage.getItem('puzzleIdx_100oyunu') || '0');
+
+    // Tamamlanan bulmacaların indexleri
+    function loadCompleted() {
+      try { return new Set(JSON.parse(localStorage.getItem('completedPuzzles_100oyunu')) || []); }
+      catch { return new Set(); }
+    }
+    function saveCompleted(set) {
+      localStorage.setItem('completedPuzzles_100oyunu', JSON.stringify([...set]));
+    }
+    function markPuzzleComplete(idx) {
+      const s = loadCompleted();
+      s.add(idx % PUZZLES.length);
+      saveCompleted(s);
+    }
+
+    // ── Tema ─────────────────────────────────────────────────────
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('theme', t);
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+    }
+    document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.t)));
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) setTheme(savedTheme);
+
+    // ════════════════════════════════════════════════════════════
+    //  XP & SEVİYE
+    // ════════════════════════════════════════════════════════════
+    const XP_KEY = 'xp_100oyunu';
+
+    function xpForLevel(lvl) { return lvl * 100; }  // her seviye 100 XP
+
+    function loadXP() {
+      try { return JSON.parse(localStorage.getItem(XP_KEY)) || { total: 0 }; }
+      catch { return { total: 0 }; }
+    }
+
+    function saveXP(data) { localStorage.setItem(XP_KEY, JSON.stringify(data)); }
+
+    function currentLevel(total) {
+      let lvl = 1, acc = 0;
+      while (true) { acc += xpForLevel(lvl); if (total < acc) return { lvl, prev: acc - xpForLevel(lvl), next: acc }; lvl++; }
+    }
+
+    function addXP(amount) {
+      const data   = loadXP();
+      const before = currentLevel(data.total);
+      data.total  += amount;
+      const after  = currentLevel(data.total);
+      saveXP(data);
+      updateXPBar(data.total, before.lvl !== after.lvl);
+      return { leveled: before.lvl !== after.lvl, newLevel: after.lvl };
+    }
+
+    function updateXPBar(total, flash) {
+      const { lvl, prev, next } = currentLevel(total);
+      const pct = Math.min(100, ((total - prev) / (next - prev)) * 100);
+      document.getElementById('level-badge').textContent = `Sv. ${lvl}`;
+      document.getElementById('xp-fill').style.width     = pct + '%';
+      document.getElementById('xp-label').textContent    = `${total - prev} / ${next - prev} XP`;
+      if (flash) {
+        document.getElementById('xp-fill').style.background = '#fbbf24';
+        setTimeout(() => { document.getElementById('xp-fill').style.background = ''; }, 800);
+      }
+    }
+
+    // Floating XP text
+    function showXPFloat(amount, x, y) {
+      const el = document.createElement('div');
+      el.className = 'xp-float';
+      el.textContent = `+${amount} XP`;
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  STREAK (günlük seri)
+    // ════════════════════════════════════════════════════════════
+    const STREAK_KEY = 'streak_100oyunu';
+
+    function loadStreak() {
+      try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { count: 0, lastDate: null }; }
+      catch { return { count: 0, lastDate: null }; }
+    }
+
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+    function markPlayedToday() {
+      const s    = loadStreak();
+      const today = todayStr();
+      if (s.lastDate === today) return s.count; // zaten sayıldı
+
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      s.count    = (s.lastDate === yesterday) ? s.count + 1 : 1;
+      s.lastDate = today;
+      localStorage.setItem(STREAK_KEY, JSON.stringify(s));
+      updateStreakBadge(s.count);
+      return s.count;
+    }
+
+    function updateStreakBadge(count) {
+      document.getElementById('streak-num').textContent = count;
+      document.getElementById('streak-badge').classList.toggle('active-streak', count >= 2);
+    }
+
+    // İlk yükleme
+    updateStreakBadge(loadStreak().count);
+
+    // ════════════════════════════════════════════════════════════
+    //  BAŞARIMLAR
+    // ════════════════════════════════════════════════════════════
+    const ACH_KEY = 'achievements_100oyunu';
+
+    const ACHIEVEMENTS = [
+      // ── Genel ────────────────────────────────────────────────────
+      { id: 'first_move',      icon: '👶', name: 'İlk Adım',            desc: 'İlk hamleyi yaptın.',                              xp: 10,  check: (s) => s.placed >= 1 },
+      { id: 'half_way',        icon: '🌗', name: 'Yarı Yol',             desc: 'Serbest modda 50 sayıya ulaştın.',                 xp: 30,  check: (s) => s.placed >= 50 && s.mode === 'serbest' },
+      { id: 'winner',          icon: '🏆', name: 'Efsane',               desc: 'Serbest modda 100 sayıyı tamamladın!',             xp: 150, check: (s) => s.won && s.mode === 'serbest' },
+      { id: 'combo5',          icon: '🔥', name: 'Ateşli Başlangıç',     desc: '5 ardışık hamle yaptın.',                          xp: 20,  check: (s) => s.maxCombo >= 5 },
+      { id: 'combo20',         icon: '💥', name: 'Dur Durma',            desc: '20 ardışık hamle yaptın.',                         xp: 50,  check: (s) => s.maxCombo >= 20 },
+      { id: 'no_undo',         icon: '🎯', name: 'Kararlı',              desc: 'Hiç geri almadan 30+ sayıya ulaştın.',             xp: 40,  check: (s) => s.noUndoPlaced >= 30 },
+      { id: 'speed_10',        icon: '⚡', name: 'Hızlı Parmaklar',      desc: '10 sayıyı 15 saniyede yerleştirdin.',              xp: 35,  check: (s) => s.speed10 },
+      // ── Günlük ───────────────────────────────────────────────────
+      { id: 'daily_done',      icon: '📅', name: 'Günlük Şampiyon',      desc: 'Günlük meydan okumayı tamamladın.',                xp: 60,  check: (s) => s.dailyWon },
+      { id: 'streak3',         icon: '📆', name: '3 Günlük Seri',        desc: '3 gün üst üste oynadın.',                          xp: 40,  check: (s) => s.streak >= 3 },
+      { id: 'streak7',         icon: '🗓️', name: 'Haftalık Alışkanlık',  desc: '7 gün üst üste oynadın.',                          xp: 100, check: (s) => s.streak >= 7 },
+      // ── Zorunlu Duraklar ─────────────────────────────────────────
+      { id: 'puzzle_first',    icon: '🧩', name: 'Bulmaca Kırıcı',       desc: 'İlk Zorunlu Duraklar bulmacasını tamamladın.',     xp: 40,  check: (s) => s.stopSolved >= 1 },
+      { id: 'puzzle_half',     icon: '🔓', name: 'Yarı Durak',           desc: '5 Zorunlu Duraklar bulmacasını tamamladın.',       xp: 80,  check: (s) => s.stopSolved >= 5 },
+      { id: 'puzzle_all',      icon: '🎖️', name: 'Durak Ustası',         desc: 'Tüm Zorunlu Duraklar bulmacalarını tamamladın.',   xp: 200, check: (s) => s.stopSolved >= 10 },
+      { id: 'puzzle_no_hint',  icon: '🧠', name: 'Kendi Aklım',          desc: 'Bir bulmacayı ipucu almadan tamamladın.',          xp: 60,  check: (s) => s.puzzleWonNoHint },
+      // ── Mini Grid ────────────────────────────────────────────────
+      { id: 'mini_first',      icon: '🔲', name: 'Mini Uzman',           desc: 'İlk Mini Grid bulmacasını tamamladın.',            xp: 40,  check: (s) => s.miniSolved >= 1 },
+      { id: 'mini_all',        icon: '✨', name: 'Grid Hakimi',           desc: 'Tüm Mini Grid bulmacalarını tamamladın.',          xp: 150, check: (s) => s.miniSolved >= 4 },
+    ];
+
+    function loadAch()       { try { return JSON.parse(localStorage.getItem(ACH_KEY)) || {}; } catch { return {}; } }
+    function saveAch(data)   { localStorage.setItem(ACH_KEY, JSON.stringify(data)); }
+
+    let toastQueue = [];
+    let toastBusy  = false;
+
+    function showToast(ach) {
+      toastQueue.push(ach);
+      if (!toastBusy) drainToast();
+    }
+
+    function drainToast() {
+      if (!toastQueue.length) { toastBusy = false; return; }
+      toastBusy = true;
+      const ach = toastQueue.shift();
+      document.getElementById('toast-icon').textContent = ach.icon;
+      document.getElementById('toast-name').textContent = ach.name;
+      document.getElementById('toast-xp').textContent   = `+${ach.xp} XP`;
+      const t = document.getElementById('ach-toast');
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(drainToast, 400);
+      }, 2800);
+    }
+
+    function checkAchievements(state) {
+      const data = loadAch();
+      ACHIEVEMENTS.forEach(a => {
+        if (!data[a.id] && a.check(state)) {
+          data[a.id] = true;
+          saveAch(data);
+          addXP(a.xp);
+          showToast(a);
+        }
+      });
+    }
+
+    const ACH_CATEGORIES = [
+      { label: '🎮 Genel',             ids: ['first_move','half_way','winner','combo5','combo20','no_undo','speed_10'] },
+      { label: '📅 Günlük',            ids: ['daily_done','streak3','streak7'] },
+      { label: '🧩 Zorunlu Duraklar',  ids: ['puzzle_first','puzzle_half','puzzle_all','puzzle_no_hint'] },
+      { label: '🔲 Mini Grid',         ids: ['mini_first','mini_all'] },
+    ];
+
+    function renderAchModal() {
+      const data = loadAch();
+      const totalUnlocked = ACHIEVEMENTS.filter(a => data[a.id]).length;
+      let html = `<div style="text-align:center;margin-bottom:12px;opacity:.7;font-size:.85rem">${totalUnlocked} / ${ACHIEVEMENTS.length} başarı açıldı</div>`;
+
+      for (const cat of ACH_CATEGORIES) {
+        const catAchs = cat.ids.map(id => ACHIEVEMENTS.find(a => a.id === id)).filter(Boolean);
+        html += `<div class="ach-category-label">${cat.label}</div>`;
+        html += catAchs.map(a => {
+          const unlocked = !!data[a.id];
+          return `<div class="ach-item ${unlocked ? 'unlocked' : ''}">
+            <div class="ach-icon">${a.icon}</div>
+            <div class="ach-info">
+              <div class="ach-name">${a.name}</div>
+              <div class="ach-desc">${a.desc}</div>
+            </div>
+            <div class="ach-xp">${unlocked ? '✓' : `+${a.xp} XP`}</div>
+          </div>`;
+        }).join('');
+      }
+      document.getElementById('ach-list').innerHTML = html;
+    }
+
+    document.getElementById('btn-achievements').addEventListener('click', () => {
+      renderAchModal();
+      document.getElementById('ach-modal').classList.add('show');
+    });
+
+    document.getElementById('btn-ach-close').addEventListener('click', () => {
+      document.getElementById('ach-modal').classList.remove('show');
+    });
+
+    // ════════════════════════════════════════════════════════════
+    //  GÜNLÜK MEYDAN OKUMA
+    // ════════════════════════════════════════════════════════════
+    const DAILY_KEY = 'daily_100oyunu';
+
+    // Tarih tabanlı deterministik PRNG (seedli rastgele)
+    function seededRand(seed) {
+      let s = seed;
+      return function() {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        return (s >>> 0) / 0xffffffff;
+      };
+    }
+
+    function getDailySeed() {
+      const d = new Date();
+      return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
+
+    // Günlük bulmaca için sadece durak tabanlı bulmacalar kullan
+    const STOP_PUZZLES = PUZZLES.filter(p => p.type !== 'full');
+
+    function getDailyStartCell() {
+      const rand = seededRand(getDailySeed());
+      return { r: Math.floor(rand() * SIZE), c: Math.floor(rand() * SIZE) };
+    }
+
+    function loadDailyState() {
+      try { return JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; } catch { return {}; }
+    }
+
+    function saveDailyState(state) { localStorage.setItem(DAILY_KEY, JSON.stringify(state)); }
+
+    function isDailyDoneToday() {
+      const s = loadDailyState();
+      return s.date === todayStr() && s.completed;
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  COMBO
+    // ════════════════════════════════════════════════════════════
+    let maxComboThisGame = 0;
+    let noUndoPlaced = 0;      // geri almadan yapılan hamle sayısı
+    let hintUsedThisGame = false; // bu oyunda ipucu kullanıldı mı?
+
+    function updateComboDisplay() {
+      const el = document.getElementById('combo-display');
+      el.textContent = `Combo: ×${comboCount}`;
+      el.classList.remove('hot', 'fire');
+      if (comboCount >= 20) el.classList.add('fire');
+      else if (comboCount >= 8) el.classList.add('hot');
+    }
+
+    function comboXP() {
+      if (comboCount < 5)  return 1;
+      if (comboCount < 10) return 2;
+      if (comboCount < 20) return 3;
+      return 5;
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  AUDIO
+    // ════════════════════════════════════════════════════════════
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playTone({ type='sine', freq=440, freq2=null, duration=0.12, gainPeak=0.35, fadeIn=0.01, fadeOut=0.08 } = {}) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        if (freq2) osc.frequency.linearRampToValueAtTime(freq2, ctx.currentTime + duration);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(gainPeak, ctx.currentTime + fadeIn);
+        gain.gain.setValueAtTime(gainPeak, ctx.currentTime + duration - fadeOut);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function soundPlace(n) {
+      const base = 300 + (n / 100) * 500;
+      playTone({ type: 'triangle', freq: base, freq2: base * 1.08, duration: 0.13, gainPeak: 0.3 });
+    }
+
+    function soundInvalid() {
+      playTone({ type: 'sawtooth', freq: 160, freq2: 120, duration: 0.18, gainPeak: 0.25, fadeOut: 0.12 });
+    }
+
+    function soundWin() {
+      const notes = [523, 659, 784, 1047];
+      const ctx = getAudioCtx();
+      notes.forEach((freq, i) => {
+        if (!soundEnabled) return;
+        try {
+          const osc = ctx.createOscillator(), gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'triangle'; osc.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.13;
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.35, t + 0.02);
+          gain.gain.linearRampToValueAtTime(0, t + 0.22);
+          osc.start(t); osc.stop(t + 0.25);
+        } catch(e) {}
+      });
+    }
+
+    function soundLose() {
+      const notes = [400, 320, 240, 180];
+      const ctx = getAudioCtx();
+      notes.forEach((freq, i) => {
+        if (!soundEnabled) return;
+        try {
+          const osc = ctx.createOscillator(), gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sawtooth'; osc.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.15;
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+          gain.gain.linearRampToValueAtTime(0, t + 0.22);
+          osc.start(t); osc.stop(t + 0.25);
+        } catch(e) {}
+      });
+    }
+
+    function soundCombo() {
+      const freq = 440 + comboCount * 12;
+      playTone({ type: 'sine', freq, freq2: freq * 1.15, duration: 0.09, gainPeak: 0.2 });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  KONFETİ
+    // ════════════════════════════════════════════════════════════
+    const canvas   = document.getElementById('confetti-canvas');
+    const ctx2d    = canvas.getContext('2d');
+    let particles  = [];
+    let animFrame  = null;
+
+    function launchConfetti() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = Array.from({ length: 160 }, () => ({
+        x: Math.random() * canvas.width,
+        y: -20,
+        r: 5 + Math.random() * 7,
+        d: 2 + Math.random() * 4,
+        color: `hsl(${Math.random()*360},90%,60%)`,
+        tilt: Math.random() * 10 - 5,
+        tiltSpeed: Math.random() * 0.2 - 0.1,
+      }));
+      if (animFrame) cancelAnimationFrame(animFrame);
+      drawConfetti();
+    }
+
+    function drawConfetti() {
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx2d.beginPath();
+        ctx2d.fillStyle = p.color;
+        ctx2d.ellipse(p.x, p.y, p.r, p.r * 0.5, p.tilt, 0, Math.PI * 2);
+        ctx2d.fill();
+        p.y += p.d;
+        p.x += Math.sin(p.tilt) * 1.2;
+        p.tilt += p.tiltSpeed;
+      });
+      particles = particles.filter(p => p.y < canvas.height + 20);
+      if (particles.length) animFrame = requestAnimationFrame(drawConfetti);
+      else ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  OYUN BAŞLATMA
+    // ════════════════════════════════════════════════════════════
+    let gameStartTime = 0;
+    let speed10Done   = false;
+    let speed10Start  = 0;
+
+    function updateRulesText() {
+      const isMini = activePuzzle?.type === 'full';
+      const isPuzzle = currentMode === 'bulmaca' || currentMode === 'gunluk';
+      let winLine = '';
+      if (currentMode === 'zaman') {
+        const lvl = TIME_LEVELS[currentTimeLevelIdx];
+        winLine = ` ${lvl.label} gridi doldurursan sonraki bölüme geçersin! Süre: ${lvl.time}s`;
+      } else if (!isPuzzle) {
+        winLine = ' 1\'den 100\'e kadar tüm kareleri doldurursan kazanırsın!';
+      } else if (isMini) {
+        winLine = ` Tüm ${activePuzzle.size * activePuzzle.size} hücreyi doldurursan kazanırsın!`;
+      } else {
+        winLine = ' Tüm zorunlu duraklara sırayla ulaşırsan kazanırsın!';
+      }
+      document.getElementById('rules').innerHTML =
+        `<strong>Kurallar:</strong> Yatay / Dikey: tam 3 kare uzağa (arada tam 2 boş kare). Çapraz: tam 2 kare uzağa (arada tam 1 boş kare).${winLine}`;
+    }
+
+    function initGame() {
+      activePuzzle = (currentMode === 'bulmaca') ? PUZZLES[currentPuzzleIdx % PUZZLES.length] : null;
+      activeSize   = activePuzzle?.size || SIZE;
+      activeRows   = activeSize;
+      activeCols   = activeSize;
+      grid = Array.from({ length: activeRows }, () => Array(activeCols).fill(0));
+      currentNumber = 1;
+      lastR = -1; lastC = -1;
+      gameActive = true;
+      history = [];
+      comboCount = 0;
+      hintCell = null;
+      maxComboThisGame = 0;
+      noUndoPlaced     = 0;
+      hintUsedThisGame = false;
+      speed10Done      = false;
+      speed10Start = Date.now();
+      gameStartTime = Date.now();
+
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('num-display').textContent = '1';
+      document.getElementById('hint').textContent = 'İstediğin hücreye tıkla';
+      updateUndoBtn();
+      updateComboDisplay();
+
+      // Mod başlıklarını sıfırla
+      document.getElementById('daily-header').classList.remove('show');
+      document.getElementById('puzzle-header').classList.remove('show');
+      document.getElementById('timer-display').style.display = 'none';
+      document.getElementById('level-display').style.display  = 'none';
+
+      if (currentMode === 'gunluk') {
+        // Günlük mod: bugünün tarihine göre havuzdan bulmaca seç
+        const dailyPuzzle = STOP_PUZZLES[getDailySeed() % STOP_PUZZLES.length];
+        puzzleStops = dailyPuzzle.stops.map(s => ({ ...s }));
+        const firstStop = puzzleStops[0];
+        grid[firstStop.r][firstStop.c] = 1;
+        lastR = firstStop.r; lastC = firstStop.c;
+        currentNumber = 2;
+        document.getElementById('num-display').textContent = '2';
+        const d = new Date();
+        document.getElementById('daily-date').textContent =
+          d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+        document.getElementById('daily-header').classList.add('show');
+        document.getElementById('hint').textContent = `${puzzleStops[1].n}. sayıyı altın hücreye götür`;
+      } else if (currentMode === 'bulmaca') {
+        const puzzle    = activePuzzle;
+        const idx       = currentPuzzleIdx % PUZZLES.length;
+        const completed  = loadCompleted();
+        const isFull     = puzzle.type === 'full';
+        const catPuzzles = PUZZLES.map((p, i) => ({ p, i }))
+          .filter(({ p }) => isFull ? p.type === 'full' : p.type !== 'full');
+        const catTotal  = catPuzzles.length;
+        const catSolved = catPuzzles.filter(({ i }) => completed.has(i)).length;
+
+        if (isFull) {
+          puzzleStops = [{ n: 1, r: puzzle.start.r, c: puzzle.start.c }];
+          document.getElementById('puzzle-name').textContent = puzzle.name;
+          document.getElementById('puzzle-progress').textContent =
+            ` — ${puzzle.size}×${puzzle.size} · ${catSolved} / ${catTotal} tamamlandı`;
+          document.getElementById('hint').textContent = 'Altın hücreden başla — tüm ızgarayı doldur!';
+        } else {
+          puzzleStops = puzzle.stops.map(s => ({ ...s }));
+          document.getElementById('puzzle-name').textContent = puzzle.name;
+          document.getElementById('puzzle-progress').textContent =
+            ` — ${catSolved} / ${catTotal} tamamlandı`;
+          document.getElementById('hint').textContent = '1 numaralı altın hücreye tıkla';
+        }
+        document.getElementById('puzzle-header').classList.add('show');
+      } else if (currentMode === 'zaman') {
+        const lvl  = TIME_LEVELS[currentTimeLevelIdx];
+        activeRows = lvl.rows;
+        activeCols = lvl.cols;
+        grid       = Array.from({ length: activeRows }, () => Array(activeCols).fill(0));
+        puzzleStops = [];
+        document.getElementById('timer-display').style.display = '';
+        document.getElementById('level-display').style.display = '';
+        document.getElementById('level-num').textContent = `${currentTimeLevelIdx + 1}`;
+        startTimer(lvl.time);
+      } else {
+        puzzleStops = [];
+        document.getElementById('timer-display').style.display = 'none';
+        document.getElementById('level-display').style.display = 'none';
+        clearInterval(timerInterval);
+      }
+
+      updateXPBar(loadXP().total, false);
+      updateRulesText();
+      updateHintBtnVisibility();
+      renderGrid();
+    }
+
+    function updateUndoBtn() {
+      document.getElementById('btn-undo').disabled = history.length === 0;
+    }
+
+    function updateHintBtnVisibility() {
+      document.getElementById('btn-hint-best').style.display    = currentMode === 'zaman' ? 'none' : '';
+      document.getElementById('btn-hint-best').textContent      = currentMode === 'serbest' ? '💡 En İyi Hamle' : '💡 İpucu Al';
+      document.getElementById('btn-scores').style.display = currentMode === 'serbest' ? '' : 'none';
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  HAMLE KURALLARI
+    // ════════════════════════════════════════════════════════════
+    function isValidMove(r, c) {
+      if (!gameActive) return false;
+      if (grid[r][c] !== 0) return false;
+
+      // Bulmaca / Günlük: zorunlu durak hücresine yanlış sayı konulamaz
+      if ((currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
+        const stopHere = puzzleStops.find(s => s.r === r && s.c === c);
+        if (stopHere && stopHere.n !== currentNumber) return false;
+
+        // Eğer şu an yerleştirilecek sayı bir zorunlu duraksa, sadece o hücreye gidilebilir
+        const stopForCurrent = puzzleStops.find(s => s.n === currentNumber);
+        if (stopForCurrent && !(stopForCurrent.r === r && stopForCurrent.c === c)) return false;
+      }
+
+      if (currentNumber === 1) return true;
+      const dr = Math.abs(r - lastR), dc = Math.abs(c - lastC);
+      return (dr === 0 && dc === 3) || (dc === 0 && dr === 3) || (dr === dc && dr === 2);
+    }
+
+    function hasAnyValidMove() {
+      for (let r = 0; r < activeRows; r++)
+        for (let c = 0; c < activeCols; c++)
+          if (isValidMove(r, c)) return true;
+      return false;
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  SAYI YERLEŞTIRME
+    // ════════════════════════════════════════════════════════════
+    function placeNumber(r, c) {
+      if (!isValidMove(r, c)) {
+        flashCell(r, c);
+        soundInvalid();
+        comboCount = 0;
+        updateComboDisplay();
+        return;
+      }
+
+      hintCell = null; // hamle yapıldı, ipucunu temizle
+      history.push({ grid: grid.map(row => [...row]), currentNumber, lastR, lastC, comboCount, noUndoPlaced });
+
+      // Hız başarısı takibi
+      if (currentNumber === 1) speed10Start = Date.now();
+      if (currentNumber === 10 && !speed10Done) {
+        if ((Date.now() - speed10Start) < 15000) speed10Done = true;
+      }
+
+      soundPlace(currentNumber);
+      grid[r][c] = currentNumber;
+      lastR = r; lastC = c;
+      currentNumber++;
+      comboCount++;
+      noUndoPlaced++;
+      if (comboCount > maxComboThisGame) maxComboThisGame = comboCount;
+      if (comboCount >= 5) soundCombo();
+      updateComboDisplay();
+      updateUndoBtn();
+
+      // XP hesapla
+      const xpGain = comboXP();
+      const { leveled, newLevel } = addXP(xpGain);
+      // Floating XP
+      const cells = document.querySelectorAll('.cell');
+      const cellEl = cells[r * activeCols + c];
+      if (cellEl) {
+        const rect = cellEl.getBoundingClientRect();
+        showXPFloat(xpGain, rect.left + rect.width / 2, rect.top);
+      }
+      if (leveled) showToast({ icon: '⬆️', name: `Seviye ${newLevel}!`, xp: 0 });
+
+      renderGrid();
+      // Pop animasyonu son hücreye
+      const fresh = document.querySelectorAll('.cell');
+      const freshCell = fresh[r * activeCols + c];
+      if (freshCell) { freshCell.classList.add('pop-anim'); freshCell.addEventListener('animationend', () => freshCell.classList.remove('pop-anim'), { once: true }); }
+
+      if (currentNumber > activeRows * activeCols) { endGame(true); return; }
+
+      // Bulmaca / Günlük: son zorunlu durak geçildiyse kazandın (full tip hariç)
+      if (activePuzzle?.type !== 'full' && (currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
+        const lastStop = puzzleStops[puzzleStops.length - 1];
+        if (currentNumber > lastStop.n) { endGame(true); return; }
+        const nextStop = puzzleStops.find(s => s.n === currentNumber);
+        document.getElementById('hint').textContent = nextStop
+          ? `${nextStop.n} numaralı altın hücreye ulaş!`
+          : 'Sonraki sayıyı yerleştir';
+      }
+
+      document.getElementById('num-display').textContent = currentNumber;
+      if (!hasAnyValidMove()) endGame(false);
+      else if (currentMode === 'serbest' || currentMode === 'zaman') document.getElementById('hint').textContent = showHints ? 'Yeşil hücrelerden birine tıkla' : 'Sonraki sayıyı yerleştir';
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  GRID RENDER
+    // ════════════════════════════════════════════════════════════
+    function renderGrid() {
+      const gridEl = document.getElementById('grid');
+      gridEl.style.gridTemplateColumns = `repeat(${activeCols}, 1fr)`;
+      // Küçük grid için hücre boyutunu büyüt
+      const maxDim = Math.max(activeRows, activeCols);
+      const cellPx = maxDim <= 5
+        ? `clamp(44px, ${Math.floor(90 / maxDim)}vw, 80px)`
+        : maxDim === 6
+          ? `clamp(36px, 13vw, 62px)`
+          : maxDim <= 8
+            ? `clamp(32px, 9vw, 58px)`
+            : `clamp(30px, 7.5vw, 54px)`;
+      const fontPx = maxDim <= 5
+        ? 'clamp(13px, 3vw, 20px)'
+        : maxDim === 6
+          ? 'clamp(11px, 2.2vw, 16px)'
+          : 'clamp(9px, 1.8vw, 14px)';
+      gridEl.innerHTML = '';
+      for (let r = 0; r < activeRows; r++) {
+        for (let c = 0; c < activeCols; c++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.style.width    = cellPx;
+          cell.style.height   = cellPx;
+          cell.style.fontSize = fontPx;
+          const val = grid[r][c];
+
+          if (val !== 0) {
+            cell.textContent = val;
+            cell.classList.add('filled');
+            if (r === lastR && c === lastC) cell.classList.add('last');
+          } else if ((currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
+            const stop = puzzleStops.find(s => s.r === r && s.c === c);
+            if (stop) {
+              cell.textContent = stop.n;
+              if (stop.n === currentNumber) {
+                cell.classList.add('mandatory-next'); // sıradaki durak → yanıp söner
+              } else {
+                cell.classList.add('mandatory');       // ilerideki duraklar
+              }
+            } else if (showHints && isValidMove(r, c)) {
+              cell.classList.add('valid');
+            }
+          } else if (showHints && isValidMove(r, c)) {
+            cell.classList.add('valid');
+          }
+
+          // İpucu hücresi — olası hamleler gösteriminin üstüne yaz
+          if (hintCell && r === hintCell.r && c === hintCell.c) {
+            cell.classList.remove('valid');
+            cell.classList.add('hint-best');
+          }
+
+          cell.addEventListener('click', () => placeNumber(r, c));
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function flashCell(r, c) {
+      const cells = document.querySelectorAll('.cell');
+      const cell  = cells[r * activeCols + c];
+      if (!cell) return;
+      cell.classList.add('flash-invalid');
+      cell.addEventListener('animationend', () => cell.classList.remove('flash-invalid'), { once: true });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  SKOR TABLOSU
+    // ════════════════════════════════════════════════════════════
+    const HS_KEY = 'highscores_100oyunu';
+    const HS_MAX = 5;
+
+    function loadScores() { try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch { return []; } }
+
+    function saveScore(score) {
+      const scores = loadScores();
+      const date = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      scores.push({ score, date });
+      scores.sort((a, b) => b.score - a.score);
+      const trimmed = scores.slice(0, HS_MAX);
+      localStorage.setItem(HS_KEY, JSON.stringify(trimmed));
+      return trimmed;
+    }
+
+    function renderScores(scores, currentScore) {
+      const highlight = document.getElementById('overlay-score-highlight');
+      const board     = document.getElementById('overlay-scores');
+      if (!scores.length) { highlight.innerHTML = ''; board.innerHTML = ''; return; }
+
+      const rank = scores.findIndex(s => s.score === currentScore) + 1;
+      const isRecord = rank === 1 && scores.filter(s => s.score === currentScore).length === 1;
+
+      if (isRecord && currentScore > 1) highlight.innerHTML = `<span class="new-record">🏅 Yeni Rekor!</span>`;
+      else if (rank > 0) highlight.innerHTML = `Bu oyun: <strong>#${rank}. sıra</strong>`;
+      else highlight.innerHTML = '';
+
+      let html = '<h4>En İyi 5</h4>';
+      scores.forEach((s, i) => {
+        const isCur   = i === rank - 1 && s.score === currentScore;
+        const medal   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+        html += `<div class="score-row ${isCur ? 'highlight' : ''}">
+          <span class="score-rank">${medal}</span>
+          <span class="score-val">${s.score} / 100</span>
+          <span class="score-date">${s.date}</span>
+        </div>`;
+      });
+      board.innerHTML = html;
+    }
+
+    // ── Zaman modu yardımcı fonksiyonlar ────────────────────────
+    function _renderTimeScores(savedScores, finalScore) {
+      const highlight = document.getElementById('overlay-score-highlight');
+      const board     = document.getElementById('overlay-scores');
+      const rank      = savedScores.findIndex(s => s.score === finalScore) + 1;
+      const isRecord  = rank === 1 && savedScores.filter(s => s.score === finalScore).length === 1;
+      highlight.innerHTML = isRecord && finalScore > 0
+        ? `<span class="new-record">🏅 Yeni Rekor! ${finalScore} hücre</span>`
+        : `Toplam: <strong>${finalScore} hücre</strong>`;
+      let html = '<h4>En İyi 5</h4>';
+      savedScores.forEach((s, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+        const isCur = s.score === finalScore && i === rank - 1;
+        html += `<div class="score-row ${isCur ? 'highlight' : ''}">
+          <span class="score-rank">${medal}</span>
+          <span class="score-val">${s.score} hücre (Bölüm ${s.level})</span>
+          <span class="score-date">${s.date}</span>
+        </div>`;
+      });
+      board.innerHTML = html;
+    }
+
+    function _buildTimeModeOverlayBtns() {
+      const btns = document.getElementById('overlay-btns');
+      btns.innerHTML = '';
+      const makeBtn = (id, label, style, onClick) => {
+        const b = document.createElement('button');
+        b.id = id; b.innerHTML = label;
+        if (style) b.style.cssText = style;
+        b.addEventListener('click', onClick);
+        btns.appendChild(b);
+      };
+      makeBtn('btn-time-select', '📋 Bölüm Seç',
+        'background:var(--accent-dim);color:#fff',
+        () => {
+          document.getElementById('overlay').classList.remove('show');
+          openTimeLevelSelect();
+        });
+      makeBtn('btn-time-restart', '🔄 Baştan Oyna',
+        'background:var(--surface2);color:var(--text);border:1px solid var(--border)',
+        () => {
+          currentTimeLevelIdx = 0;
+          timeModeScore       = 0;
+          clearInterval(timerInterval);
+          document.getElementById('overlay').classList.remove('show');
+          initGame();
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  OYUN SONU
+    // ════════════════════════════════════════════════════════════
+    function endGame(won) {
+      // ── Zaman modu özel akış ─────────────────────────────────────
+      if (currentMode === 'zaman') {
+        clearInterval(timerInterval);
+        gameActive = false;
+
+        if (won) {
+          // Bölüm tamamlandı
+          soundWin(); launchConfetti();
+          markTimeLevelComplete(currentTimeLevelIdx);
+          timeModeScore += activeRows * activeCols;
+          currentTimeLevelIdx++;
+
+          if (currentTimeLevelIdx >= TIME_LEVELS.length) {
+            // Tüm bölümler bitti!
+            const finalScore   = timeModeScore;
+            const savedScores  = saveTimeScore(finalScore, TIME_LEVELS.length);
+            const box = document.getElementById('overlay-box');
+            box.className = 'win';
+            document.getElementById('overlay-title').textContent   = '🏆 Tüm Bölümler Tamam!';
+            document.getElementById('overlay-msg').textContent     = 'Zaman modunu baştan sona tamamladın!';
+            document.getElementById('overlay-xp-gain').textContent = '';
+            _renderTimeScores(savedScores, finalScore);
+            _buildTimeModeOverlayBtns();
+            document.getElementById('overlay').classList.add('show');
+          } else {
+            showToast({ icon: '⏭️', name: `Bölüm ${currentTimeLevelIdx}/${TIME_LEVELS.length} Tamam!`, xp: 0 });
+            setTimeout(() => initGame(), 1200);
+          }
+          return;
+        }
+
+        // Süre bitti veya hamle kalmadı
+        soundLose();
+        const finalScore   = timeModeScore + (currentNumber - 1);
+        const savedScores  = saveTimeScore(finalScore, currentTimeLevelIdx + 1);
+        const box = document.getElementById('overlay-box');
+        box.className = 'lose';
+        document.getElementById('overlay-title').textContent   = timeLeft <= 0 ? '⏱️ Süre Doldu!' : '💀 Hamle Kalmadı!';
+        document.getElementById('overlay-msg').textContent     =
+          `Bölüm ${currentTimeLevelIdx + 1}'de kaldın — toplam ${finalScore} hücre doldurdun.`;
+        document.getElementById('overlay-xp-gain').textContent = '';
+        _renderTimeScores(savedScores, finalScore);
+        _buildTimeModeOverlayBtns();
+        document.getElementById('overlay').classList.add('show');
+        return;
+      }
+
+      gameActive = false;
+      if (won) { soundWin(); launchConfetti(); } else soundLose();
+
+      const score     = currentNumber - 1;
+      const isMiniGrid = activePuzzle?.type === 'full';
+      const scores    = isMiniGrid ? loadScores() : saveScore(score);
+
+      // Streak güncelle
+      const streakCount = markPlayedToday();
+
+      // Günlük mod tamamlandıysa kaydet
+      if (currentMode === 'gunluk' && won) {
+        const ds = loadDailyState();
+        ds.date = todayStr(); ds.completed = true; ds.score = score;
+        saveDailyState(ds);
+        dailyCompleted = true;
+      }
+
+      // XP hesapla
+      let totalXP = score;
+      if (won) totalXP += 50;
+      if (currentMode === 'gunluk') totalXP = Math.floor(totalXP * 1.5);
+      addXP(0); // sadece barı yenilemek için (oyun boyunca zaten eklendi)
+
+      document.getElementById('overlay-xp-gain').textContent =
+        `+${totalXP} XP kazanıldı${currentMode === 'gunluk' ? ' (Günlük ×1.5!)' : ''}`;
+
+      // Başarı kontrolü
+      const completedSet   = loadCompleted();
+      const stopIdxList    = PUZZLES.map((p, i) => ({p, i})).filter(({p}) => p.type !== 'full').map(({i}) => i);
+      const miniIdxList    = PUZZLES.map((p, i) => ({p, i})).filter(({p}) => p.type === 'full').map(({i}) => i);
+      const stopSolved     = stopIdxList.filter(i => completedSet.has(i)).length;
+      const miniSolved     = miniIdxList.filter(i => completedSet.has(i)).length;
+      const isPuzzleWon    = (currentMode === 'bulmaca') && won;
+      checkAchievements({
+        placed:          score,
+        mode:            currentMode,
+        won,
+        maxCombo:        maxComboThisGame,
+        streak:          streakCount,
+        dailyWon:        currentMode === 'gunluk' && won,
+        noUndoPlaced,
+        speed10:         speed10Done,
+        stopSolved,
+        miniSolved,
+        puzzleWonNoHint: isPuzzleWon && !hintUsedThisGame,
+      });
+
+      const box = document.getElementById('overlay-box');
+      box.className = won ? 'win' : 'lose';
+
+      // Bulmaca ve günlük modda mesajı özelleştir
+      const isPuzzleMode = currentMode === 'bulmaca' || currentMode === 'gunluk';
+      if (isPuzzleMode) {
+        document.getElementById('overlay-title').textContent = won ? '🎉 Bulmaca Tamam!' : '💀 Takıldın!';
+        if (won) {
+          document.getElementById('overlay-msg').textContent = isMiniGrid
+            ? `Tüm ${activePuzzle.size * activePuzzle.size} hücreyi doldurdun!`
+            : `Tüm zorunlu duraklara ulaştın!`;
+        } else {
+          document.getElementById('overlay-msg').textContent = isMiniGrid
+            ? `${currentNumber - 1}. sayıda sıkıştın. Son hamleyi geri alarak devam edebilirsin!`
+            : `${currentNumber - 1}. sayıda takıldın. Geri al ile devam edebilirsin.`;
+        }
+      } else {
+        document.getElementById('overlay-title').textContent = won ? '🎉 Kazandın!' : '💀 Oyun Bitti';
+        document.getElementById('overlay-msg').textContent = won
+          ? 'Tüm 100 kareyi başarıyla doldurdun!'
+          : `${score} sayısına kadar geldin. Geçerli hamle kalmadı.`;
+      }
+
+      if (isMiniGrid || currentMode === 'serbest') {
+        document.getElementById('overlay-score-highlight').innerHTML = '';
+        document.getElementById('overlay-scores').innerHTML = '';
+      } else {
+        renderScores(scores, score);
+      }
+
+      // Tamamlanan bulmacayı kaydet
+      if (currentMode === 'bulmaca' && won) {
+        markPuzzleComplete(currentPuzzleIdx % PUZZLES.length);
+      }
+
+      // Overlay butonları moda göre oluştur
+      const btns = document.getElementById('overlay-btns');
+      btns.innerHTML = '';
+
+      const makeBtn = (id, label, style, onClick) => {
+        const b = document.createElement('button');
+        b.id = id; b.innerHTML = label;
+        if (style) b.style.cssText = style;
+        b.addEventListener('click', onClick);
+        btns.appendChild(b);
+      };
+
+      if (currentMode === 'bulmaca') {
+        if (won) {
+          const nextIdx = (currentPuzzleIdx % PUZZLES.length) + 1;
+          const hasNext = nextIdx < PUZZLES.length;
+          if (hasNext) {
+            makeBtn('btn-next-puzzle', 'Sonraki Bulmaca →',
+              'background:#f59e0b;color:#000;font-weight:700',
+              () => { startPuzzle(currentPuzzleIdx + 1); });
+          }
+          makeBtn('btn-level-select', '📋 Seviye Seç',
+            'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
+            () => { document.getElementById('overlay').classList.remove('show'); openPuzzleLevelSelect(); });
+        }
+        makeBtn('btn-restart-puzzle', 'Tekrar Oyna', null, restartGame);
+        if (!won && history.length > 0) {
+          makeBtn('btn-undo-overlay', '↩ Son Hamleyi Geri Al',
+            'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
+            undoMove);
+        }
+      } else if (currentMode === 'gunluk') {
+        makeBtn('btn-share-overlay', '📋 Sonucu Paylaş',
+          'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
+          () => shareResult(score, won));
+        makeBtn('btn-restart-overlay', 'Tekrar Oyna', null, restartGame);
+        if (!won && history.length > 0) {
+          makeBtn('btn-undo-overlay', '↩ Son Hamleyi Geri Al',
+            'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
+            undoMove);
+        }
+      } else {
+        makeBtn('btn-share-overlay', '📋 Sonucu Paylaş',
+          'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
+          () => shareResult(score, won));
+        makeBtn('btn-global-submit-open', '🏆 Skoru Gönder',
+          'background:#0c2a1a;color:#4ade80;border:1px solid #22c55e;font-weight:600',
+          () => openGlobalSubmit(score));
+        makeBtn('btn-restart-overlay', 'Tekrar Oyna', null, restartGame);
+      }
+
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  SONUÇ PAYLAŞMA (Wordle tarzı)
+    // ════════════════════════════════════════════════════════════
+    function shareResult(score, won) {
+      const pct    = Math.floor(score);
+      const blocks = Math.floor(score / 10);
+      const bar    = '🟩'.repeat(blocks) + '⬜'.repeat(10 - blocks);
+      const mode   = currentMode === 'gunluk' ? '📅 Günlük' : '🎮 Serbest';
+      const text   = `100 Oyunu ${mode}\n${won ? '🏆' : '💀'} ${score}/100\n${bar}\n#100Oyunu`;
+      if (navigator.share) {
+        navigator.share({ title: '100 Oyunu', text }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text).then(() => alert('Sonuç panoya kopyalandı!')).catch(() => alert(text));
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  GERİ AL
+    // ════════════════════════════════════════════════════════════
+    function undoMove() {
+      if (!history.length) return;
+      hintCell = null;
+      const snap    = history.pop();
+      grid          = snap.grid;
+      currentNumber = snap.currentNumber;
+      lastR         = snap.lastR;
+      lastC         = snap.lastC;
+      comboCount    = snap.comboCount;
+      noUndoPlaced  = snap.noUndoPlaced;
+      gameActive    = true;
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('num-display').textContent = currentNumber;
+      document.getElementById('hint').textContent =
+        showHints ? 'Yeşil hücrelerden birine tıkla' : 'Sonraki sayıyı yerleştir';
+      if (currentNumber === 1) document.getElementById('hint').textContent = 'İstediğin hücreye tıkla';
+      updateUndoBtn();
+      updateComboDisplay();
+      renderGrid();
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  MOD SEÇİCİ
+    // ════════════════════════════════════════════════════════════
+    // ── Günlük için küçük intro ──────────────────────────────────
+    function openPuzzleIntro() {
+      const puzzle = STOP_PUZZLES[getDailySeed() % STOP_PUZZLES.length];
+      document.getElementById('pi-icon').textContent   = '📅';
+      document.getElementById('pi-title').textContent  = 'Günlük Bulmaca';
+      document.getElementById('pi-subtitle').innerHTML = `Bugün herkes aynı bulmacayı çözüyor — <strong>altın duraklara sırayla ulaş!</strong>`;
+      const d = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' });
+      const stopsHtml = puzzle.stops.map((s, i) =>
+        (i > 0 ? '<span class="pi-stop-arrow">→</span>' : '') +
+        `<span class="pi-stop-chip">${s.n}. sayı</span>`
+      ).join('');
+      document.getElementById('pi-puzzle-info').innerHTML =
+        `<div class="pi-info-name">📅 ${d} — ${puzzle.name}</div>
+         <div class="pi-stops-row">${stopsHtml}</div>`;
+      const demoStops = puzzle.stops.slice(0, 3);
+      document.getElementById('pi-demo').innerHTML = demoStops.map((s, i) =>
+        (i > 0 ? '<div class="pi-arrow">→</div><div class="pi-cell pi-empty">·</div><div class="pi-arrow">→</div>' : '') +
+        `<div class="pi-cell ${i === 0 ? 'pi-mandatory-next' : 'pi-mandatory'}">${s.n}</div>`
+      ).join('') + '<div class="pi-arrow">→ …</div>';
+      document.getElementById('puzzle-intro').classList.add('show');
+    }
+
+    // ── Bulmaca seviye seçim ekranı ──────────────────────────────
+    const CATEGORIES = [
+      {
+        key:   'stop',
+        icon:  '🚩',
+        title: 'Zorunlu Duraklar',
+        desc:  '10×10 grid · Belirli hücrelere sırayla ulaş',
+        filter: p => p.type !== 'full',
+      },
+      {
+        key:   'full',
+        icon:  '🔲',
+        title: 'Mini Izgara',
+        desc:  '5×5 veya 6×6 grid · Tüm hücreleri doldur',
+        filter: p => p.type === 'full',
+      },
+    ];
+
+    function openPuzzleLevelSelect() {
+      const completed = loadCompleted();
+
+      function buildCategory(cat) {
+        const puzzlesInCat = PUZZLES.map((p, i) => ({ p, i })).filter(({ p }) => cat.filter(p));
+
+        // Kategoride ilk açık bulmaca
+        let firstAvail = -1;
+        for (const { p, i } of puzzlesInCat) {
+          if (!completed.has(i)) { firstAvail = i; break; }
+        }
+
+        const cards = puzzlesInCat.map(({ p, i }) => {
+          const isDone     = completed.has(i);
+          const isAvail    = !isDone && i === firstAvail;
+          const isLocked   = !isDone && i !== firstAvail;
+          const stateClass = isDone ? 'pls-done' : isAvail ? 'pls-unlocked' : 'pls-locked';
+          const badge      = isDone ? '<span class="pls-badge">✅</span>'
+                           : isLocked ? '<span class="pls-badge">🔒</span>'
+                           : '<span class="pls-badge">▶</span>';
+          const infoText   = p.type === 'full'
+            ? `${p.size}×${p.size} · Tüm ${p.size * p.size} hücreyi doldur`
+            : `Son durak: ${p.stops[p.stops.length - 1].n} · ${p.stops.map(s => s.n).join('→')}`;
+          const diffLabel  = p.difficulty ? `<div class="pls-card-diff">${p.difficulty}</div>` : '';
+          const numLabel   = `#${puzzlesInCat.findIndex(x => x.i === i) + 1}`;
+          return `<div class="pls-card ${stateClass}" data-idx="${i}" ${isLocked ? '' : `onclick="startPuzzle(${i})"`}>
+            ${badge}
+            <div class="pls-card-num">${numLabel}</div>
+            <div class="pls-card-name">${p.name}</div>
+            ${diffLabel}
+            <div class="pls-card-stops">${infoText}</div>
+          </div>`;
+        }).join('');
+
+        const doneCount = puzzlesInCat.filter(({ i }) => completed.has(i)).length;
+        return `<div class="pls-category">
+          <div class="pls-cat-header">
+            <span class="pls-cat-icon">${cat.icon}</span>
+            <span class="pls-cat-title">${cat.title}</span>
+            <span class="pls-cat-desc">${doneCount}/${puzzlesInCat.length} tamamlandı · ${cat.desc}</span>
+          </div>
+          <div class="pls-cards-row">${cards}</div>
+        </div>`;
+      }
+
+      document.getElementById('pls-grid').innerHTML = CATEGORIES.map(buildCategory).join('');
+      document.getElementById('puzzle-level-select').classList.add('show');
+    }
+
+    function startPuzzle(idx) {
+      gameHasStarted   = true;
+      currentPuzzleIdx = idx;
+      localStorage.setItem('puzzleIdx_100oyunu', idx);
+      document.getElementById('puzzle-level-select').classList.remove('show');
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'bulmaca'));
+      initGame();
+    }
+
+    document.getElementById('btn-pls-close').addEventListener('click', () => {
+      document.getElementById('puzzle-level-select').classList.remove('show');
+      currentMode = 'serbest';
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'serbest'));
+      if (!gameHasStarted) {
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
+      }
+    });
+
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Bulmaca sekmesine zaten bulmacadayken basılırsa seviye ekranını aç
+        if (tab.dataset.mode === 'bulmaca' && currentMode === 'bulmaca') {
+          openPuzzleLevelSelect();
+          return;
+        }
+        // Zaman sekmesine zaten zamandayken basılırsa seviye ekranını aç
+        if (tab.dataset.mode === 'zaman' && currentMode === 'zaman') {
+          openTimeLevelSelect();
+          return;
+        }
+        if (tab.dataset.mode === currentMode) return;
+        // Zaman modundan çıkılıyorsa sayacı durdur
+        if (currentMode === 'zaman') {
+          clearInterval(timerInterval);
+        }
+        currentMode = tab.dataset.mode;
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === currentMode));
+        if (currentMode === 'bulmaca') {
+          openPuzzleLevelSelect();
+        } else if (currentMode === 'gunluk') {
+          openPuzzleIntro();
+        } else if (currentMode === 'zaman') {
+          openTimeLevelSelect();
+        } else {
+          initGame();
+        }
+      });
+    });
+
+    document.getElementById('btn-pi-close').addEventListener('click', () => {
+      gameHasStarted = true;
+      document.getElementById('puzzle-intro').classList.remove('show');
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'gunluk'));
+      initGame();
+    });
+
+    // ════════════════════════════════════════════════════════════
+    //  KONTROLLER
+    // ════════════════════════════════════════════════════════════
+    function restartGame() {
+      if (currentMode === 'zaman') {
+        clearInterval(timerInterval);
+        openTimeLevelSelect();
+        return;
+      }
+      initGame();
+    }
+
+    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById('btn-undo').addEventListener('click', undoMove);
+
+    document.getElementById('btn-hints').addEventListener('click', () => {
+      showHints = !showHints;
+      const btn = document.getElementById('btn-hints');
+      btn.textContent = showHints ? 'Gizle' : 'Olası Hamleler';
+      btn.classList.toggle('active', showHints);
+      renderGrid();
+    });
+
+    // ── İpucu Al (Warnsdorff sezgisi) ───────────────────────────
+    let hintCell = null; // {r,c} - şu an vurgulanan ipucu hücresi
+
+    function warnsdorffScore(r, c) {
+      // (r,c) zaten işaretli olarak sayar; o noktadan kaç boş hücreye gidilebilir?
+      const deltas = [[0,3],[0,-3],[3,0],[-3,0],[2,2],[2,-2],[-2,2],[-2,-2]];
+      let count = 0;
+      for (const [dr, dc] of deltas) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < activeRows && nc >= 0 && nc < activeCols && grid[nr][nc] === 0)
+          count++;
+      }
+      return count;
+    }
+
+    function getBestMove() {
+      // Mini Grid için saf Warnsdorff — en az çıkış yolu olan hücreyi seç
+      const valid = [];
+      for (let r = 0; r < activeRows; r++)
+        for (let c = 0; c < activeCols; c++)
+          if (isValidMove(r, c)) valid.push({r, c});
+      if (!valid.length) return null;
+      let best = null, bestScore = Infinity;
+      for (const mv of valid) {
+        grid[mv.r][mv.c] = -1;
+        const score = warnsdorffScore(mv.r, mv.c);
+        grid[mv.r][mv.c] = 0;
+        if (score < bestScore) { bestScore = score; best = mv; }
+      }
+      return best;
+    }
+
+    // ── Zorunlu Duraklar için gerçek çözüm bulucu ────────────────
+    function solveZorunluDuraklar() {
+      // n=1 ilk hamle: doğrudan başlangıç durağına yönlendir
+      if (currentNumber === 1) {
+        const startStop = puzzleStops.find(s => s.n === 1);
+        return startStop ? { r: startStop.r, c: startStop.c } : null;
+      }
+
+      // Henüz ziyaret edilmemiş zorunlu duraklar (sıralı)
+      const targets = puzzleStops
+        .filter(s => s.n >= currentNumber)
+        .sort((a, b) => a.n - b.n);
+      if (!targets.length) return null;
+
+      const g = grid.map(row => [...row]);
+      const DELTAS = [[0,3],[0,-3],[3,0],[-3,0],[2,2],[2,-2],[-2,2],[-2,-2]];
+      const deadline = Date.now() + 500;
+
+      // (r,c)'den num numarasını yerleştirerek tüm targets[tidx..] duraklarını
+      // geçebilecek bir yol var mı? Varsa true döner.
+      function dfs(r, c, num, tidx) {
+        if (Date.now() > deadline) return false;
+        if (tidx >= targets.length) return true; // tüm duraklar tamamlandı
+
+        const tgt = targets[tidx];
+        if (num > tgt.n) return false; // bu durağı atlattık
+
+        // Budama: (r,c) konumundan (tgt.r,tgt.c) hedefine (tgt.n - num + 1) adımda
+        // ulaşılabilmeli. Her hamle bir eksende en fazla 3 birim gider.
+        const avail = tgt.n - num + 1;
+        const dr = Math.abs(r - tgt.r), dc = Math.abs(c - tgt.c);
+        if (Math.ceil(dr / 3) > avail || Math.ceil(dc / 3) > avail) return false;
+
+        const mustGoToStop = (tgt.n === num);
+        const nextTidx    = mustGoToStop ? tidx + 1 : tidx;
+        const sortTgt     = mustGoToStop ? (targets[tidx + 1] || tgt) : tgt;
+
+        const candidates = [];
+        for (const [ddr, ddc] of DELTAS) {
+          const nr = r + ddr, nc = c + ddc;
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || g[nr][nc] !== 0) continue;
+          if (mustGoToStop && !(nr === tgt.r && nc === tgt.c)) continue;
+          if (puzzleStops.some(s => s.r === nr && s.c === nc && s.n !== num)) continue;
+          candidates.push({ r: nr, c: nc });
+        }
+
+        candidates.sort((a, b) => {
+          const da = Math.abs(a.r - sortTgt.r) + Math.abs(a.c - sortTgt.c);
+          const db = Math.abs(b.r - sortTgt.r) + Math.abs(b.c - sortTgt.c);
+          return da - db;
+        });
+
+        for (const mv of candidates) {
+          g[mv.r][mv.c] = num;
+          if (dfs(mv.r, mv.c, num + 1, nextTidx)) {
+            g[mv.r][mv.c] = 0;
+            return true;
+          }
+          g[mv.r][mv.c] = 0;
+        }
+        return false;
+      }
+
+      // İlk adım adaylarını dene; çözüme götüren ilkini döndür.
+      const firstTgt   = targets[0];
+      const mustGoNow  = (firstTgt.n === currentNumber);
+      const nextTidx0  = mustGoNow ? 1 : 0;
+      const avail0     = firstTgt.n - currentNumber + 1;
+      const dr0 = Math.abs(lastR - firstTgt.r), dc0 = Math.abs(lastC - firstTgt.c);
+      if (Math.ceil(dr0 / 3) > avail0 || Math.ceil(dc0 / 3) > avail0) return null;
+
+      const sortTgt0 = mustGoNow ? (targets[1] || firstTgt) : firstTgt;
+      const firstCandidates = [];
+      for (const [ddr, ddc] of DELTAS) {
+        const nr = lastR + ddr, nc = lastC + ddc;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || g[nr][nc] !== 0) continue;
+        if (mustGoNow && !(nr === firstTgt.r && nc === firstTgt.c)) continue;
+        if (puzzleStops.some(s => s.r === nr && s.c === nc && s.n !== currentNumber)) continue;
+        firstCandidates.push({ r: nr, c: nc });
+      }
+
+      firstCandidates.sort((a, b) => {
+        const da = Math.abs(a.r - sortTgt0.r) + Math.abs(a.c - sortTgt0.c);
+        const db = Math.abs(b.r - sortTgt0.r) + Math.abs(b.c - sortTgt0.c);
+        return da - db;
+      });
+
+      for (const mv of firstCandidates) {
+        g[mv.r][mv.c] = currentNumber;
+        if (dfs(mv.r, mv.c, currentNumber + 1, nextTidx0)) {
+          g[mv.r][mv.c] = 0;
+          return mv; // gerçek ilk adım
+        }
+        g[mv.r][mv.c] = 0;
+      }
+      return null;
+    }
+
+    // ── Mini Grid için tam Hamiltonian-yol çözücü ────────────────
+    function solveMiniGrid() {
+      // Mevcut durumdan tüm hücreleri dolduran bir yol var mı?
+      // Varsa ilk adımı {r,c} olarak döndür; yoksa null.
+      const total    = activeRows * activeCols;
+      const g        = grid.map(row => [...row]);
+      const MDEL     = [[0,3],[0,-3],[3,0],[-3,0],[2,2],[2,-2],[-2,2],[-2,-2]];
+      const deadline = Date.now() + 1500;
+
+      function wScore(r, c) {
+        let s = 0;
+        for (const [dr, dc] of MDEL) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < activeRows && nc >= 0 && nc < activeCols && g[nr][nc] === 0) s++;
+        }
+        return s;
+      }
+
+      // Tam iç DFS — true/false döndürür, firstStep takip etmez
+      function dfs(r, c, num) {
+        if (num > total) return true;
+        if (Date.now() > deadline) return false;
+        const cands = [];
+        for (const [dr, dc] of MDEL) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < activeRows && nc >= 0 && nc < activeCols && g[nr][nc] === 0)
+            cands.push({ r: nr, c: nc, s: wScore(nr, nc) });
+        }
+        cands.sort((a, b) => a.s - b.s);
+        for (const mv of cands) {
+          g[mv.r][mv.c] = num;
+          if (dfs(mv.r, mv.c, num + 1)) { g[mv.r][mv.c] = 0; return true; }
+          g[mv.r][mv.c] = 0;
+        }
+        return false;
+      }
+
+      // İlk seviye adayları dene — çözüme götüren ilkini döndür
+      const first = [];
+      for (const [dr, dc] of MDEL) {
+        const nr = lastR + dr, nc = lastC + dc;
+        if (nr >= 0 && nr < activeRows && nc >= 0 && nc < activeCols && g[nr][nc] === 0)
+          first.push({ r: nr, c: nc, s: wScore(nr, nc) });
+      }
+      first.sort((a, b) => a.s - b.s);
+      for (const mv of first) {
+        g[mv.r][mv.c] = currentNumber;
+        if (dfs(mv.r, mv.c, currentNumber + 1)) { g[mv.r][mv.c] = 0; return mv; }
+        g[mv.r][mv.c] = 0;
+      }
+      return null;
+    }
+
+    function getHint() {
+      if (!gameActive) return;
+      const isFull = activePuzzle?.type === 'full';
+
+      // ── Serbest / Zaman mod: sadece Warnsdorff ──────────────────
+      if (currentMode === 'serbest' || currentMode === 'zaman') {
+        const best = getBestMove();
+        if (!best) return;
+        hintCell = best;
+        document.getElementById('hint').textContent = 'En iyi hamle (lokal tahmin) 💡';
+        renderGrid();
+        return;
+      }
+
+      if (isFull) {
+        // Mevcut konumdan çözüm ara
+        let best = solveMiniGrid();
+        let undoneCount = 0;
+
+        // Çözüm yoksa — önceki hataya kadar otomatik geri al
+        while (!best && history.length > 0) {
+          const snap = history.pop();
+          grid          = snap.grid;
+          currentNumber = snap.currentNumber;
+          lastR         = snap.lastR;
+          lastC         = snap.lastC;
+          comboCount    = snap.comboCount;
+          noUndoPlaced  = snap.noUndoPlaced;
+          gameActive    = true;
+          undoneCount++;
+          best = solveMiniGrid();
+        }
+
+        if (!best) return; // çözülemeyen bulmaca (olmamalı)
+
+        hintUsedThisGame = true;
+        hintCell = best;
+        if (undoneCount > 0) {
+          document.getElementById('hint').textContent =
+            `${undoneCount} hamle geri alındı — bu hücreye git!`;
+          document.getElementById('num-display').textContent = currentNumber;
+          updateUndoBtn();
+          updateComboDisplay();
+        } else {
+          document.getElementById('hint').textContent = 'Bu hücreye git! 💡';
+        }
+        renderGrid();
+        return;
+      }
+
+      // ── Zorunlu Duraklar ────────────────────────────────────────
+      // Geçerli hamle yoksa geçmişten geri al
+      let undoneCount = 0;
+      while (!hasAnyValidMove() && history.length > 0) {
+        const snap = history.pop();
+        grid          = snap.grid;
+        currentNumber = snap.currentNumber;
+        lastR         = snap.lastR;
+        lastC         = snap.lastC;
+        comboCount    = snap.comboCount;
+        noUndoPlaced  = snap.noUndoPlaced;
+        gameActive    = true;
+        undoneCount++;
+      }
+
+      // Gerçek çözücüyü çalıştır
+      const best = solveZorunluDuraklar();
+      if (!best) {
+        document.getElementById('hint').textContent = 'İpucu bulunamadı.';
+        return;
+      }
+
+      hintUsedThisGame = true;
+      hintCell = best;
+      if (undoneCount > 0) {
+        document.getElementById('hint').textContent =
+          `${undoneCount} hamle geri alındı — bu hücreye git!`;
+        document.getElementById('num-display').textContent = currentNumber;
+        updateUndoBtn();
+        updateComboDisplay();
+      } else {
+        document.getElementById('hint').textContent = 'Bu hücreye git! 💡';
+      }
+      renderGrid();
+    }
+
+    document.getElementById('btn-hint-best').addEventListener('click', getHint);
+
+    document.getElementById('btn-sound').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      document.getElementById('btn-sound').textContent  = soundEnabled ? '🔊 Ses' : '🔇 Ses';
+      document.getElementById('btn-sound').classList.toggle('muted', !soundEnabled);
+    });
+
+    document.getElementById('btn-tutorial').addEventListener('click', () => {
+      tutStep = 0; renderTutStep();
+      document.getElementById('tutorial').classList.remove('hidden');
+    });
+
+    // ── Skor tablosu ─────────────────────────────────────────────
+    function openScoresModal() {
+      const scores = loadScores();
+      const list   = document.getElementById('scores-list');
+      if (!scores.length) {
+        list.innerHTML = '<div id="scores-empty">Henüz kayıtlı skor yok.<br>Oyna ve ilk skorunu kaydet!</div>';
+      } else {
+        const medals = ['🥇','🥈','🥉'];
+        list.innerHTML = scores.map((s, i) => `
+          <div class="score-row">
+            <span class="score-rank">${medals[i] || `${i+1}.`}</span>
+            <span class="score-val">${s.score} / 100</span>
+            <span class="score-date">${s.date}</span>
+          </div>`).join('');
+      }
+      document.getElementById('scores-modal').classList.add('show');
+    }
+
+    document.getElementById('btn-scores').addEventListener('click', openGlobalScoresModal);
+    document.getElementById('btn-scores-close').addEventListener('click', () => document.getElementById('scores-modal').classList.remove('show'));
+    document.getElementById('btn-scores-clear').addEventListener('click', () => {
+      if (confirm('Tüm skorlar silinsin mi?')) { localStorage.removeItem(HS_KEY); openScoresModal(); }
+    });
+    document.getElementById('scores-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('scores-modal')) document.getElementById('scores-modal').classList.remove('show');
+    });
+
+    // ════════════════════════════════════════════════════════════
+    //  GLOBAL SKOR
+    // ════════════════════════════════════════════════════════════
+
+    const NICK_KEY = 'nickname_100oyunu';
+
+    function openGlobalSubmit(score) {
+      document.getElementById('global-submit-score').textContent = `Skorun: ${score} / 100`;
+      document.getElementById('global-nickname-input').value = localStorage.getItem(NICK_KEY) || '';
+      document.getElementById('global-submit-msg').textContent = '';
+      document.getElementById('global-submit-msg').className = 'global-submit-msg';
+      document.getElementById('btn-global-send').disabled = false;
+      document.getElementById('global-submit-modal').classList.add('show');
+      document.getElementById('global-nickname-input').focus();
+    }
+
+    async function submitGlobalScore() {
+      const nickname = document.getElementById('global-nickname-input').value.trim();
+      const scoreText = document.getElementById('global-submit-score').textContent;
+      const score = parseInt(scoreText.match(/\d+/)[0]);
+      const msgEl = document.getElementById('global-submit-msg');
+
+      if (!nickname) {
+        msgEl.textContent = 'Lütfen bir nickname gir.';
+        msgEl.className = 'global-submit-msg error';
+        return;
+      }
+
+      document.getElementById('btn-global-send').disabled = true;
+      msgEl.textContent = 'Gönderiliyor...';
+      msgEl.className = 'global-submit-msg';
+
+      try {
+        const res  = await fetch(`${GLOBAL_API}/api/scores`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname, score })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Hata');
+
+        localStorage.setItem(NICK_KEY, nickname);
+        msgEl.textContent = `🎉 #${data.rank}. sıradasın! (${data.total} oyuncu arasında)`;
+        msgEl.className = 'global-submit-msg success';
+        document.getElementById('btn-global-send').textContent = '✓ Gönderildi';
+        setTimeout(() => {
+          document.getElementById('global-submit-modal').classList.remove('show');
+          openGlobalScoresModal();
+        }, 1500);
+      } catch (err) {
+        msgEl.textContent = err.message === 'Failed to fetch'
+          ? 'Sunucuya bağlanılamadı.' : err.message;
+        msgEl.className = 'global-submit-msg error';
+        document.getElementById('btn-global-send').disabled = false;
+      }
+    }
+
+    async function openGlobalScoresModal() {
+      const modal  = document.getElementById('global-scores-modal');
+      const list   = document.getElementById('global-scores-list');
+      const status = document.getElementById('global-scores-status');
+      list.innerHTML = '';
+      status.textContent = 'Yükleniyor...';
+      modal.classList.add('show');
+
+      const myNick = localStorage.getItem(NICK_KEY) || '';
+
+      try {
+        const res  = await fetch(`${GLOBAL_API}/api/scores?limit=20`);
+        const rows = await res.json();
+
+        if (!rows.length) { status.textContent = 'Henüz hiç skor yok.'; return; }
+        status.textContent = `${rows.length} en iyi skor`;
+
+        const medals = ['🥇', '🥈', '🥉'];
+        list.innerHTML = rows.map(r => {
+          const isMine = myNick && r.nickname === myNick;
+          return `<div class="g-score-row${isMine ? ' g-mine' : ''}">
+            <span class="g-rank">${medals[r.rank - 1] || r.rank + '.'}</span>
+            <span class="g-name">${r.nickname}</span>
+            <span class="g-score">${r.score}/100</span>
+            <span class="g-date">${r.date}</span>
+          </div>`;
+        }).join('');
+      } catch {
+        status.textContent = 'Sunucuya bağlanılamadı.';
+      }
+    }
+
+    document.getElementById('btn-global-scores-close').addEventListener('click', () =>
+      document.getElementById('global-scores-modal').classList.remove('show'));
+    document.getElementById('global-scores-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('global-scores-modal'))
+        document.getElementById('global-scores-modal').classList.remove('show');
+    });
+
+    document.getElementById('btn-global-send').addEventListener('click', submitGlobalScore);
+    document.getElementById('global-nickname-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitGlobalScore();
+    });
+    document.getElementById('btn-global-cancel').addEventListener('click', () =>
+      document.getElementById('global-submit-modal').classList.remove('show'));
+
+    // ════════════════════════════════════════════════════════════
+    //  TUTORIAL
+    // ════════════════════════════════════════════════════════════
+    // ── Serbest mod tutorial ─────────────────────────────────────
+    const TUTORIAL_STEPS_SERBEST = [
+      {
+        icon: '🎯', title: '100 Oyununa Hoş Geldin!',
+        desc: `Amaç basit: <strong>10×10 grid</strong>i <strong>1'den 100'e</strong> kadar sayılarla doldurmak.<br><br>
+               Her tıklamada sıradaki sayı seçtiğin hücreye yerleşir. Ama her hücreye gidemezsin — <strong>hareket kuralları</strong> var!`,
+        visual: buildGridPreview([
+          { r:0,c:0,type:'tg-filled',label:'1' }, { r:0,c:3,type:'tg-filled',label:'2' },
+          { r:2,c:5,type:'tg-filled',label:'3' }, { r:4,c:3,type:'tg-filled',label:'4' },
+          { r:2,c:1,type:'tg-valid', label:'5?' },
+        ], 6, 6)
+      },
+      {
+        icon: '➡️', title: 'Yatay & Dikey Hareket',
+        desc: `Yatay veya dikey giderken, iki sayı arasında <strong>tam 2 boş kare</strong> olmalı.<br><br>
+               Yani bir sonraki sayıyı <strong>tam 3 kare</strong> uzağa koymalısın.`,
+        visual: buildHVDemo()
+      },
+      {
+        icon: '↗️', title: 'Çapraz Hareket',
+        desc: `Çapraz giderken, iki sayı arasında <strong>tam 1 boş kare</strong> olmalı.<br><br>
+               Yani çaprazda <strong>tam 2 kare</strong> uzağa gitmelisin (45° açıyla).`,
+        visual: buildDiagDemo()
+      },
+      {
+        icon: '🔥', title: 'Combo & XP',
+        desc: `Geri almadan art arda hamle yaptıkça <strong>Combo</strong> artar!<br><br>
+               Yüksek combo → <strong>daha fazla XP</strong>. XP biriktirerek <strong>seviye atla!</strong>`,
+        visual: ''
+      },
+      {
+        icon: '🏆', title: 'Kazanma & Kaybetme',
+        desc: `<strong>100'e ulaşırsan</strong> — kazandın! 🎉<br><br>
+               Geçerli hamle <strong>kalmadıysa</strong> oyun biter. <em>"İpuçlarını Göster"</em> butonu yeşil hücreleri işaretler. Geri al her zaman yanında!`,
+        visual: ''
+      },
+    ];
+
+    // ── Zorunlu Duraklar tutorial ────────────────────────────────
+    const TUTORIAL_STEPS_BULMACA = [
+      {
+        icon: '🚩', title: 'Zorunlu Duraklar',
+        desc: `Bu modda <strong>altın renkli durak hücreleri</strong> var.<br><br>
+               O sayıya geldiğinde <strong>yalnızca o hücreye</strong> gidebilirsin — başka yere gidemezsin!`,
+        visual: buildGridPreview([
+          { r:0,c:0,type:'tg-filled',   label:'1'  },
+          { r:2,c:2,type:'tg-mandatory',label:'5'  },
+          { r:0,c:4,type:'tg-empty',    label:''   },
+        ], 3, 5)
+      },
+      {
+        icon: '➡️', title: 'Hareket Kuralları',
+        desc: `Kurallar aynı:<br>
+               • Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>
+               • Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>
+               Duraklar arasında istediğin geçerli hücreye gidebilirsin.`,
+        visual: buildHVDemo()
+      },
+      {
+        icon: '🎯', title: 'Sırayla Ulaş',
+        desc: `Duraklar <strong>sırayla</strong> gelir — 5. durağa 5. sayıda, 10. durağa 10. sayıda ulaşman gerekir.<br><br>
+               Aralarındaki sayıları <strong>özgürce</strong> yerleştirebilirsin.`,
+        visual: ''
+      },
+      {
+        icon: '🏆', title: 'Kazanma',
+        desc: `<strong>Son durağa</strong> ulaştığında bulmaca tamamdır! 🎉<br><br>
+               Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> butonunu kullanabilirsin.`,
+        visual: ''
+      },
+    ];
+
+    // ── Mini Izgara tutorial ─────────────────────────────────────
+    const TUTORIAL_STEPS_MINIGRID = [
+      {
+        icon: '🔲', title: 'Mini Izgara',
+        desc: `Küçük bir grid — ama <strong>tüm hücreleri</strong> doldurman gerekiyor!<br><br>
+               Altın renkli hücre <strong>başlangıç noktandır</strong>. 1 numarayı oraya yerleştirerek başla.`,
+        visual: buildGridPreview([
+          { r:0,c:0,type:'tg-mandatory',label:'1' },
+          { r:0,c:1,type:'tg-empty',    label:'' },
+          { r:0,c:2,type:'tg-empty',    label:'' },
+          { r:1,c:0,type:'tg-empty',    label:'' },
+          { r:1,c:1,type:'tg-empty',    label:'' },
+          { r:1,c:2,type:'tg-empty',    label:'' },
+          { r:2,c:0,type:'tg-empty',    label:'' },
+          { r:2,c:1,type:'tg-empty',    label:'' },
+          { r:2,c:2,type:'tg-empty',    label:'' },
+        ], 3, 3)
+      },
+      {
+        icon: '➡️', title: 'Hareket Kuralları',
+        desc: `Kurallar aynı:<br>
+               • Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>
+               • Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>
+               Küçük gridde seçenekler kısıtlı — dikkatli plan yap!`,
+        visual: buildHVDemo()
+      },
+      {
+        icon: '🧩', title: 'Her Hücreyi Doldur',
+        desc: `Amacın <strong>tek bir boş kare bırakmadan</strong> tüm ızgarayı doldurmak.<br><br>
+               Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> ile geri dönebilirsin.`,
+        visual: ''
+      },
+      {
+        icon: '🏆', title: 'Kazanma',
+        desc: `Son hücreye sayıyı yerleştirdiğinde bulmaca tamamdır! 🎉<br><br>
+               5×5 gridde 25, 6×6 gridde 36 hamle yapman gerekiyor.`,
+        visual: ''
+      },
+    ];
+
+    function getTutorialSteps() {
+      if (currentMode === 'bulmaca' || currentMode === 'gunluk') {
+        return activePuzzle?.type === 'full'
+          ? TUTORIAL_STEPS_MINIGRID
+          : TUTORIAL_STEPS_BULMACA;
+      }
+      return TUTORIAL_STEPS_SERBEST;
+    }
+
+    let tutStep = 0;
+
+    function buildGridPreview(cells, rows, cols) {
+      const map = {};
+      cells.forEach(c => { map[`${c.r},${c.c}`] = c; });
+      let html = `<div class="tut-grid" style="grid-template-columns:repeat(${cols},36px)">`;
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++) {
+          const key = `${r},${c}`;
+          html += map[key]
+            ? `<div class="tg ${map[key].type}">${map[key].label}</div>`
+            : `<div class="tg tg-empty"></div>`;
+        }
+      html += '</div>';
+      return html;
+    }
+
+    function buildHVDemo() {
+      let html = '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">';
+      html += '<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">Yatay</div>';
+      html += `<div class="tut-grid" style="grid-template-columns:repeat(7,36px)">`;
+      ['tg-last','tg-skip','tg-skip','tg-valid','tg-empty','tg-empty','tg-empty'].forEach((t, i) =>
+        html += `<div class="tg ${t}">${['7','·','·','8','','',''][i]}</div>`);
+      html += '</div></div>';
+      html += '<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">Dikey</div>';
+      html += `<div class="tut-grid" style="grid-template-columns:repeat(1,36px)">`;
+      ['tg-last','tg-skip','tg-skip','tg-valid','tg-empty','tg-empty'].forEach((t, i) =>
+        html += `<div class="tg ${t}">${['7','·','·','8','',''][i]}</div>`);
+      html += '</div></div></div>';
+      html += `<div style="font-size:0.78rem;color:var(--text-muted)">· = boş kare &nbsp;|&nbsp; <span style="color:var(--cell-last-border)">■</span> = mevcut &nbsp;|&nbsp; <span style="color:var(--cell-valid-border)">■</span> = geçerli hedef</div>`;
+      return html;
+    }
+
+    function buildDiagDemo() {
+      // Merkez: (2,2). 4 köşe de çapraz 2 kare uzakta → geçerli
+      const cells = [
+        {r:2,c:2,type:'tg-last', label:'12'},
+        // sol-üst çapraz
+        {r:1,c:1,type:'tg-skip', label:'·'},
+        {r:0,c:0,type:'tg-valid',label:'13'},
+        // sağ-üst çapraz
+        {r:1,c:3,type:'tg-skip', label:'·'},
+        {r:0,c:4,type:'tg-valid',label:'13'},
+        // sol-alt çapraz
+        {r:3,c:1,type:'tg-skip', label:'·'},
+        {r:4,c:0,type:'tg-valid',label:'13'},
+        // sağ-alt çapraz
+        {r:3,c:3,type:'tg-skip', label:'·'},
+        {r:4,c:4,type:'tg-valid',label:'13'},
+      ];
+      let html = buildGridPreview(cells, 5, 5);
+      html += `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">45° çaprazda tam 2 kare (1 boş arada) — 4 yön</div>`;
+      return html;
+    }
+
+    function renderTutStep() {
+      const steps = getTutorialSteps();
+      const s = steps[tutStep];
+      document.getElementById('tut-step-indicator').innerHTML =
+        steps.map((_,i) => `<div class="tut-dot ${i === tutStep ? 'active' : ''}"></div>`).join('');
+      document.getElementById('tut-icon').textContent  = s.icon;
+      document.getElementById('tut-title').textContent = s.title;
+      document.getElementById('tut-desc').innerHTML    = s.desc;
+      document.getElementById('tut-visual').innerHTML  = s.visual;
+      document.getElementById('btn-tut-prev').style.display = tutStep === 0 ? 'none' : '';
+      document.getElementById('btn-tut-next').textContent   =
+        tutStep === steps.length - 1 ? '✅ Anladım!' : 'İleri →';
+    }
+
+    function closeTutorial() {
+      document.getElementById('tutorial').classList.add('hidden');
+      localStorage.setItem('tutorialSeen', '1');
+    }
+
+    document.getElementById('btn-tut-next').addEventListener('click', () => {
+      if (tutStep < getTutorialSteps().length - 1) { tutStep++; renderTutStep(); }
+      else closeTutorial();
+    });
+    document.getElementById('btn-tut-prev').addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
+    document.getElementById('btn-tut-skip').addEventListener('click', closeTutorial);
+
+    if (localStorage.getItem('tutorialSeen')) {
+      document.getElementById('tutorial').classList.add('hidden');
+    } else {
+      renderTutStep();
+    }
+
+    // ── PWA Service Worker ───────────────────────────────────────
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+    // ── Start Screen ─────────────────────────────────────────────
+    let gameHasStarted = false;
+
+    (function () {
+      const ss  = document.getElementById('start-screen');
+      const tut = document.getElementById('tutorial');
+
+      // Hide tutorial until after a mode is chosen (avoid z-index clash)
+      tut.classList.add('hidden');
+
+      function populateStats() {
+        const xpData = loadXP();
+        const lvl    = currentLevel(xpData.total);
+        document.getElementById('ss-lvl').textContent = 'Sv. ' + lvl.lvl;
+        document.getElementById('ss-xp').textContent  = (xpData.total || 0) + ' XP toplam';
+      }
+
+      function openStartScreen() {
+        populateStats();
+        ss.classList.remove('hidden');
+        ss.style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
+        if (currentMode === 'zaman') clearInterval(timerInterval);
+      }
+
+      function launchMode(mode) {
+        ss.style.animation = 'ssOut 0.25s ease forwards';
+        setTimeout(() => {
+          ss.classList.add('hidden');
+          currentMode = mode;
+          document.querySelectorAll('.mode-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.mode === mode));
+          if (mode === 'bulmaca') {
+            openPuzzleLevelSelect();
+          } else if (mode === 'gunluk') {
+            openPuzzleIntro();
+          } else if (mode === 'zaman') {
+            openTimeLevelSelect();
+          } else {
+            gameHasStarted = true;
+            if (!localStorage.getItem('tutorialSeen')) {
+              tut.classList.remove('hidden');
+              renderTutStep();
+            }
+            initGame();
+          }
+        }, 220);
+      }
+
+      document.querySelectorAll('.ss-card').forEach(card => {
+        card.addEventListener('click', () => launchMode(card.dataset.mode));
+      });
+
+      document.getElementById('game-title').addEventListener('click', openStartScreen);
+
+      populateStats();
+    })();
+
+    // ── Başlat ───────────────────────────────────────────────────
+    updateXPBar(loadXP().total, false);
+  </script>
+</body>
+</html>
