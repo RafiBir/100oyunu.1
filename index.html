@@ -386,6 +386,41 @@
       transform: scale(1.07);
     }
 
+    /* ── İnteraktif Tutorial ─────────────────────────────────── */
+    #it-overlay {
+      position:fixed; inset:0; z-index:500;
+      background:rgba(0,0,0,.6);
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:all;
+    }
+    #it-bubble  {
+      width:min(88vw,320px);
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:18px; padding:22px 22px 18px;
+      box-shadow:0 8px 32px #000a; text-align:center;
+      pointer-events:all;
+    }
+    #it-step-label { font-size:.72rem; color:var(--text-muted); margin-bottom:6px; }
+    #it-title      { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+    #it-desc       { font-size:.84rem; color:var(--text-muted); line-height:1.55; }
+    #it-btns       { display:flex; gap:10px; justify-content:center; margin-top:14px; }
+    #it-confirm    {
+      padding:9px 28px; border-radius:9px;
+      background:var(--accent); color:#000;
+      border:none; cursor:pointer; font-size:.88rem; font-weight:700;
+    }
+    #it-confirm:hover { opacity:.88; }
+    #it-skip       {
+      padding:9px 16px; border-radius:9px;
+      background:transparent; color:var(--text-muted);
+      border:1px solid var(--border); cursor:pointer; font-size:.82rem;
+    }
+    #it-skip:hover { opacity:.75; }
+    /* Geçerli hücreler dim'in üstünde parlasın */
+    .cell.valid, .cell.hint-best {
+      position:relative; z-index:502;
+    }
+
     .cell.filled {
       cursor: default;
       background: var(--cell-filled);
@@ -441,7 +476,8 @@
       to   { box-shadow: 0 0 20px #22c55ecc; border-color: #4ade80; }
     }
 
-    #btn-hint-best { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+    #btn-hint-best  { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+    #btn-time-boost { background: #1e3a5f; color: #60a5fa; border: 1px solid #3b82f6; }
     #btn-hint-best:hover { background: #166534; }
 
     .hint-undo-pulse {
@@ -494,7 +530,7 @@
     #btn-restart { background: var(--accent-dim); color: #fff; }
     #btn-hints, #btn-sound { background: var(--btn-secondary); color: var(--btn-secondary-text); }
     #btn-hints.active { background: var(--cell-valid-hover); color: var(--cell-valid-border); }
-    #btn-undo, #btn-tutorial, #btn-scores, #btn-achievements { background: var(--btn-secondary); color: var(--btn-secondary-text); }
+    #btn-undo, #btn-tutorial, #btn-scores, #btn-achievements, #btn-lang { background: var(--btn-secondary); color: var(--btn-secondary-text); }
     #btn-undo:disabled { opacity: 0.3; cursor: default; transform: none; }
 
     /* ── Tema seçici ─────────────────────────────────────────────── */
@@ -623,6 +659,34 @@
     .global-submit-btns { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
     #btn-global-send { background: var(--accent-dim); color: #fff; padding: 9px 22px; font-weight: 600; }
     #btn-global-cancel { background: var(--btn-secondary); color: var(--btn-secondary-text); padding: 9px 18px; }
+
+    /* ── Reklam / İpucu Modal ───────────────────────────────────── */
+    #ad-modal {
+      display: none; position: fixed; inset: 0;
+      background: var(--overlay-bg); z-index: 120;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    #ad-modal.show { display: flex; }
+    #ad-modal-box {
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: 16px; padding: 28px 32px;
+      max-width: 340px; width: 100%; text-align: center;
+    }
+    #ad-modal-box h2 { font-size: 1.3rem; margin-bottom: 10px; color: var(--accent); }
+    #ad-modal-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    #ad-progress-bar-track {
+      height: 8px; background: var(--surface2); border-radius: 999px;
+      overflow: hidden; margin-bottom: 10px;
+    }
+    #ad-progress-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+      border-radius: 999px; transition: width 0.1s linear;
+    }
+    #ad-countdown { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 18px; }
+    #ad-modal-btns { display: flex; gap: 10px; justify-content: center; }
+    #btn-ad-watch  { background: var(--accent-dim); color: #fff; padding: 10px 24px; font-weight: 700; }
+    #btn-ad-cancel { background: var(--btn-secondary); color: var(--btn-secondary-text); padding: 10px 20px; }
 
     /* ── Global Skor Tablosu Modal ───────────────────────────────── */
     #global-scores-modal {
@@ -1499,6 +1563,17 @@
       opacity: 0;
       animation: cardIn 0.5s 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
     }
+    #btn-lang-ss {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    #btn-lang-ss:hover { color: var(--text); border-color: var(--accent); }
     .ss-lvl-pill {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -1527,42 +1602,44 @@
     <div class="ss-logo">
       <div class="ss-big-num">100</div>
       <div class="ss-subtitle">O Y U N U</div>
-      <div class="ss-tagline">1'den 100'e — sırayla, kurala göre</div>
+      <div class="ss-tagline" data-i18n="tagline">1'den 100'e — sırayla, kurala göre</div>
     </div>
 
     <div class="ss-modes">
       <div class="ss-card" data-mode="serbest">
         <span class="ss-card-icon">🎮</span>
-        <div class="ss-card-name">Serbest</div>
-        <div class="ss-card-desc">Sınırsız özgür oyun, baskısız</div>
+        <div class="ss-card-name" data-i18n="mode.klasik">Klasik</div>
+        <div class="ss-card-desc" data-i18n="mode.klasik.desc">Tüm kareleri doldur, tahtayı fethet</div>
       </div>
       <div class="ss-card ss-card-daily" data-mode="gunluk">
         <span class="ss-card-icon">📅</span>
-        <div class="ss-card-name">Günlük</div>
-        <div class="ss-card-desc">Bugünün özel bulmacası</div>
+        <div class="ss-card-name" data-i18n="mode.gunluk">Günlük</div>
+        <div class="ss-card-desc" data-i18n="mode.gunluk.desc">Bugünün özel bulmacası</div>
       </div>
       <div class="ss-card ss-card-puzzle" data-mode="bulmaca">
         <span class="ss-card-icon">🧩</span>
-        <div class="ss-card-name">Bulmaca</div>
-        <div class="ss-card-desc">Zorunlu durakları tamamla</div>
+        <div class="ss-card-name" data-i18n="mode.bulmaca">Bulmaca</div>
+        <div class="ss-card-desc" data-i18n="mode.bulmaca.desc">Verilen bulmacaları çöz, zekânı sına</div>
       </div>
       <div class="ss-card ss-card-timed" data-mode="zaman">
         <span class="ss-card-icon">⏱️</span>
-        <div class="ss-card-name">Zaman</div>
-        <div class="ss-card-desc">Sayaç bitmeden 100'e ulaş</div>
+        <div class="ss-card-name" data-i18n="mode.zaman">Zaman</div>
+        <div class="ss-card-desc" data-i18n="mode.zaman.desc">Süre dolmadan olabildiğince ilerle</div>
       </div>
     </div>
 
     <div class="ss-footer">
       <span class="ss-lvl-pill" id="ss-lvl">Sv. 1</span>
       <span id="ss-xp">0 XP toplam</span>
+      <button id="btn-lang-ss">🇬🇧 EN</button>
     </div>
   </div>
 
   <div id="top-bar">
-    <button id="btn-scores">🏆 Skorlar</button>
+    <button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button>
     <h1 id="game-title">100 OYUNU</h1>
     <button id="btn-sound">🔊 Ses</button>
+    <button id="btn-lang">🇬🇧 EN</button>
   </div>
 
   <!-- XP şeridi -->
@@ -1574,18 +1651,18 @@
 
   <!-- Streak + Mod seçici -->
   <div id="meta-bar">
-    <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> gün serisi</div>
+    <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> <span data-i18n="label.streak">gün serisi</span></div>
     <div id="mode-tabs">
-      <button class="mode-tab active" data-mode="serbest">Serbest</button>
-      <button class="mode-tab"        data-mode="gunluk">📅 Günlük</button>
-      <button class="mode-tab"        data-mode="bulmaca">🧩 Bulmaca</button>
-      <button class="mode-tab"        data-mode="zaman">⏱️ Zaman</button>
+      <button class="mode-tab active" data-mode="serbest" data-i18n="mode.klasik">Klasik</button>
+      <button class="mode-tab"        data-mode="gunluk">📅 <span data-i18n="mode.gunluk">Günlük</span></button>
+      <button class="mode-tab"        data-mode="bulmaca">🧩 <span data-i18n="mode.bulmaca">Bulmaca</span></button>
+      <button class="mode-tab"        data-mode="zaman">⏱️ <span data-i18n="mode.zaman">Zaman</span></button>
     </div>
   </div>
 
   <!-- Günlük meydan okuma başlığı -->
   <div id="daily-header">
-    📅 <strong>Günün Bulmacası</strong> — <span id="daily-date"></span> &nbsp;|&nbsp; Bu bulmaca bugün herkese aynı!
+    📅 <strong id="daily-title">Günün Bulmacası</strong> — <span id="daily-date"></span> &nbsp;|&nbsp; <span data-i18n="daily.header">Bu bulmaca bugün herkese aynı!</span>
   </div>
 
   <!-- Bulmaca başlığı -->
@@ -1594,27 +1671,41 @@
   </div>
 
   <div id="info-bar">
-    <div id="current-num">Yerleştirilecek sayı: <span id="num-display">1</span></div>
-    <div id="combo-display">Combo: ×1</div>
+    <div id="current-num"><span data-i18n="label.current">Yerleştirilecek sayı:</span> <span id="num-display">1</span></div>
+    <div id="combo-display"><span data-i18n="label.combo">Combo: ×</span><span id="combo-val">1</span></div>
     <div id="timer-display" style="display:none">⏱ <span id="timer-num">60</span>s</div>
-    <div id="level-display" style="display:none">Bölüm <span id="level-num">1</span>/7</div>
-    <div id="hint">İstediğin hücreye tıkla</div>
+    <div id="level-display" style="display:none"><span data-i18n="label.level">Bölüm</span> <span id="level-num">1</span>/<span id="level-total">7</span></div>
+    <div id="hint" data-i18n="hint.default">İstediğin hücreye tıkla</div>
   </div>
 
   <div id="grid"></div>
 
+  <!-- ── İnteraktif Tutorial Overlay ──────────────────────────── -->
+  <div id="it-overlay" style="display:none">
+    <div id="it-bubble">
+      <div id="it-step-label"></div>
+      <div id="it-title"></div>
+      <div id="it-desc"></div>
+      <div id="it-btns">
+        <button id="it-confirm"></button>
+        <button id="it-skip"></button>
+      </div>
+    </div>
+  </div>
+
   <div id="controls">
-    <button id="btn-restart">Yeniden Başla</button>
-    <button id="btn-tutorial">Nasıl Oynanır?</button>
-    <button id="btn-undo" disabled>↩ Geri Al</button>
-    <button id="btn-hints">Olası Hamleler</button>
+    <button id="btn-restart" data-i18n="btn.restart">Yeniden Başla</button>
+    <button id="btn-tutorial" data-i18n="btn.tutorial">Nasıl Oynanır?</button>
+    <button id="btn-undo" disabled data-i18n="btn.undo">↩ Geri Al</button>
+    <button id="btn-hints" data-i18n="btn.hints">Olası Hamleler</button>
     <button id="btn-hint-best" style="display:none">💡 İpucu Al</button>
-    <button id="btn-achievements">🏅 Başarılar</button>
+    <button id="btn-time-boost" style="display:none">⏱️ +30s (1)</button>
+    <button id="btn-achievements" data-i18n="btn.achievements">🏅 Başarılar</button>
   </div>
 
   <!-- Tema seçici -->
   <div id="theme-bar">
-    <span>Tema:</span>
+    <span data-i18n="btn.theme">Tema:</span>
     <button class="theme-btn active" data-t="gece"      title="Gece"></button>
     <button class="theme-btn"        data-t="okyanus"   title="Okyanus"></button>
     <button class="theme-btn"        data-t="gunbatimi" title="Günbatımı"></button>
@@ -1625,11 +1716,27 @@
   <!-- ── Skor tablosu modalı ──────────────────────────────────── -->
   <div id="scores-modal">
     <div id="scores-box">
-      <h2>🏆 Skorlarım</h2>
+      <h2 data-i18n="modal.scores.title">🏆 Skorlarım</h2>
       <div id="scores-list"></div>
       <div>
-        <button id="btn-scores-clear">Sıfırla</button>
-        <button id="btn-scores-close">Kapat</button>
+        <button id="btn-scores-clear" data-i18n="modal.scores.reset">Sıfırla</button>
+        <button id="btn-scores-close" data-i18n="modal.close">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Reklam / İpucu Modal ─────────────────────────────────── -->
+  <div id="ad-modal">
+    <div id="ad-modal-box">
+      <h2 data-i18n="modal.ad.title">📺 Reklam İzle</h2>
+      <p id="ad-modal-desc" data-i18n="modal.ad.hint.desc">İpucu hakkın bitti. Kısa bir reklam izleyerek +1 ipucu hakkı kazan.</p>
+      <div id="ad-watch-area" style="display:none">
+        <div id="ad-progress-bar-track"><div id="ad-progress-bar-fill"></div></div>
+        <p id="ad-countdown"><span data-i18n="modal.ad.watching">Reklam izleniyor...</span> <span id="ad-seconds">5</span>s</p>
+      </div>
+      <div id="ad-modal-btns">
+        <button id="btn-ad-watch" data-i18n="modal.ad.watch.btn">▶ Reklamı İzle</button>
+        <button id="btn-ad-cancel" data-i18n="modal.ad.cancel">İptal</button>
       </div>
     </div>
   </div>
@@ -1637,13 +1744,13 @@
   <!-- ── Global Skor Submit Modal ─────────────────────────────── -->
   <div id="global-submit-modal">
     <div id="global-submit-box">
-      <h3>🏆 Skoru Gönder</h3>
+      <h3 data-i18n="modal.submit.title">🏆 Skoru Gönder</h3>
       <div id="global-submit-score"></div>
-      <input id="global-nickname-input" type="text" maxlength="20" placeholder="Nicknameni gir..." autocomplete="off" />
+      <input id="global-nickname-input" type="text" maxlength="20" placeholder="Nicknameni gir..." data-i18n="modal.submit.ph" data-i18n-attr="placeholder" autocomplete="off" />
       <div id="global-submit-msg"></div>
       <div class="global-submit-btns">
-        <button id="btn-global-send">Gönder</button>
-        <button id="btn-global-cancel">İptal</button>
+        <button id="btn-global-send" data-i18n="modal.submit.send">Gönder</button>
+        <button id="btn-global-cancel" data-i18n="modal.submit.cancel">İptal</button>
       </div>
     </div>
   </div>
@@ -1651,20 +1758,20 @@
   <!-- ── Global Skor Tablosu Modal ─────────────────────────────── -->
   <div id="global-scores-modal">
     <div id="global-scores-box">
-      <h2>🏆 Skorlar</h2>
-      <div id="global-scores-status">Yükleniyor...</div>
+      <h2 data-i18n="modal.global.title">🏆 Skorlar</h2>
+      <div id="global-scores-status" data-i18n="global.loading">Yükleniyor...</div>
       <div id="global-scores-list"></div>
-      <button id="btn-global-scores-close">Kapat</button>
+      <button id="btn-global-scores-close" data-i18n="modal.close">Kapat</button>
     </div>
   </div>
 
   <!-- ── Başarılar modalı ─────────────────────────────────────── -->
   <div id="ach-modal">
     <div id="ach-box">
-      <h2>🏅 Başarılar</h2>
+      <h2 data-i18n="modal.ach.title">🏅 Başarılar</h2>
       <div id="ach-list"></div>
       <div style="text-align:center;margin-top:16px">
-        <button id="btn-ach-close" style="background:var(--accent-dim);color:#fff;padding:10px 28px">Kapat</button>
+        <button id="btn-ach-close" data-i18n="modal.close" style="background:var(--accent-dim);color:#fff;padding:10px 28px">Kapat</button>
       </div>
     </div>
   </div>
@@ -1673,7 +1780,7 @@
   <div id="ach-toast">
     <div class="toast-icon" id="toast-icon"></div>
     <div class="toast-text">
-      <div class="toast-title">Başarı Açıldı!</div>
+      <div class="toast-title" data-i18n="ach.unlocked">Başarı Açıldı!</div>
       <div class="toast-name" id="toast-name"></div>
       <div class="toast-xp"  id="toast-xp"></div>
     </div>
@@ -1683,7 +1790,7 @@
   <div id="puzzle-intro">
     <div id="puzzle-intro-box">
       <div id="pi-icon">🧩</div>
-      <h2 id="pi-title">Bulmaca Modu</h2>
+      <h2 id="pi-title" data-i18n="puzzle.intro.title">Bulmaca Modu</h2>
       <p id="pi-subtitle">Grid üzerinde <strong>altın renkli</strong> zorunlu duraklar belirir.</p>
 
       <!-- Günün / aktif bulmacasının bilgisi -->
@@ -1692,40 +1799,40 @@
       <div id="pi-steps">
         <div class="pi-step">
           <span class="pi-num">1</span>
-          <span>Yanıp sönen altın hücreden <strong>başla</strong> — sadece oraya tıklayabilirsin.</span>
+          <span data-i18n="pi.step1">Yanıp sönen altın hücreden <strong>başla</strong> — sadece oraya tıklayabilirsin.</span>
         </div>
         <div class="pi-step">
           <span class="pi-num">2</span>
-          <span>Normal hareket kurallarıyla ilerle:<br>yatay/dikey 3 kare · çapraz 2 kare.</span>
+          <span data-i18n="pi.step2">Normal hareket kurallarıyla ilerle:<br>yatay/dikey 3 kare · çapraz 2 kare.</span>
         </div>
         <div class="pi-step">
           <span class="pi-num">3</span>
-          <span>Sıradaki <strong>altın hücreye</strong> ulaşmak zorundasın — başka yere gidemezsin.</span>
+          <span data-i18n="pi.step3">Sıradaki <strong>altın hücreye</strong> ulaşmak zorundasın — başka yere gidemezsin.</span>
         </div>
         <div class="pi-step">
           <span class="pi-num">4</span>
-          <span>Tüm duraklara sırayla ulaşırsan <strong>bulmacayı kazanırsın!</strong></span>
+          <span data-i18n="pi.step4">Tüm duraklara sırayla ulaşırsan <strong>bulmacayı kazanırsın!</strong></span>
         </div>
       </div>
 
       <div id="pi-demo"></div>
 
-      <button id="btn-pi-close">Anladım, Başla!</button>
+      <button id="btn-pi-close" data-i18n="puzzle.intro.btn">Anladım, Başla!</button>
     </div>
   </div>
 
   <!-- ── Tutorial overlay ─────────────────────────────────────── -->
   <div id="tutorial">
     <div id="tut-box">
-      <button id="btn-tut-skip">Atla</button>
+      <button id="btn-tut-skip" data-i18n="tut.skip">Atla</button>
       <div id="tut-step-indicator"></div>
       <span id="tut-icon"></span>
       <div id="tut-title"></div>
       <div id="tut-desc"></div>
       <div id="tut-visual"></div>
       <div id="tut-nav">
-        <button id="btn-tut-prev">← Geri</button>
-        <button id="btn-tut-next">İleri →</button>
+        <button id="btn-tut-prev" data-i18n="tut.prev">← Geri</button>
+        <button id="btn-tut-next" data-i18n="tut.next">İleri →</button>
       </div>
     </div>
   </div>
@@ -1746,10 +1853,10 @@
   <div id="time-level-select">
     <div id="tls-box">
       <div id="tls-header">
-        <h2>⏱️ Zaman Modu</h2>
+        <h2 data-i18n="time.select.title">⏱️ Zaman Modu</h2>
         <button id="btn-tls-close">✕</button>
       </div>
-      <p id="tls-subtitle">Her bölümde giderek büyüyen gridi süre dolmadan doldur!</p>
+      <p id="tls-subtitle" data-i18n="time.select.sub">Her bölümde giderek büyüyen gridi süre dolmadan doldur!</p>
       <div id="tls-grid"></div>
       <div id="tls-best"></div>
     </div>
@@ -1762,12 +1869,528 @@
         <h2>🧩 Bulmacalar</h2>
         <button id="btn-pls-close">✕</button>
       </div>
-      <p id="pls-subtitle">Çözdüğün bulmacaları tekrar oynayabilir, sıradakine geçebilirsin.</p>
+      <p id="pls-subtitle" data-i18n="pls.subtitle">Çözdüğün bulmacaları tekrar oynayabilir, sıradakine geçebilirsin.</p>
       <div id="pls-grid"></div>
     </div>
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════
+    //  I18N
+    // ════════════════════════════════════════════════════════════
+    const STRINGS = {
+      tr: {
+        'tagline':              "1'den 100'e — sırayla, kurala göre",
+        'mode.klasik':          'Klasik',
+        'mode.klasik.desc':     'Tüm kareleri doldur, tahtayı fethet',
+        'mode.gunluk':          'Günlük',
+        'mode.gunluk.desc':     'Bugünün özel bulmacası',
+        'mode.bulmaca':         'Bulmaca',
+        'mode.bulmaca.desc':    'Verilen bulmacaları çöz, zekânı sına',
+        'mode.zaman':           'Zaman',
+        'mode.zaman.desc':      'Süre dolmadan olabildiğince ilerle',
+        'btn.scores':           '🏆 Skorlar',
+        'btn.sound.on':         '🔊 Ses',
+        'btn.sound.off':        '🔇 Ses',
+        'label.current':        'Yerleştirilecek sayı:',
+        'label.combo':          'Combo: ×',
+        'label.level':          'Bölüm',
+        'label.streak':         'gün serisi',
+        'btn.restart':          'Yeniden Başla',
+        'btn.tutorial':         'Nasıl Oynanır?',
+        'btn.undo':             '↩ Geri Al',
+        'btn.hints':            'Olası Hamleler',
+        'btn.hints.hide':       'Gizle',
+        'btn.hint.best':        '💡 En İyi Hamle',
+        'btn.hint.take':        '💡 İpucu Al',
+        'btn.achievements':     '🏅 Başarılar',
+        'btn.theme':            'Tema:',
+        'theme.gece':           'Gece',
+        'theme.okyanus':        'Okyanus',
+        'theme.gunbatimi':      'Günbatımı',
+        'hint.default':         'İstediğin hücreye tıkla',
+        'hint.valid':           'Yeşil hücrelerden birine tıkla',
+        'hint.next':            'Sonraki sayıyı yerleştir',
+        'hint.best':            'En iyi hamle (lokal tahmin) 💡',
+        'hint.go':              'Bu hücreye git! 💡',
+        'hint.notfound':        'İpucu bulunamadı.',
+        'hint.start.mini':      'Altın hücreden başla — tüm ızgarayı doldur!',
+        'hint.start.puzzle':    '1 numaralı altın hücreye tıkla',
+        'hint.undo.prefix':     ' hamle geri alındı — bu hücreye git!',
+        'hint.next.stop':       '. numaralı altın hücreye ulaş!',
+        'win.classic':          '🎉 Kazandın!',
+        'win.classic.msg':      'Tüm 100 kareyi başarıyla doldurdun!',
+        'win.puzzle':           '🎉 Bulmaca Tamam!',
+        'win.puzzle.msg':       'Tüm zorunlu duraklara ulaştın!',
+        'win.mini.msg':         'Tüm {n} hücreyi doldurdun!',
+        'win.mini':             '🎉 Mini Grid Tamam!',
+        'win.time.all':         '🏆 Tüm Bölümler Tamam!',
+        'win.time.all.msg':     'Zaman modunu baştan sona tamamladın!',
+        'lose.classic':         '💀 Oyun Bitti',
+        'lose.puzzle':          '💀 Takıldın!',
+        'lose.time.up':         '⏱️ Süre Doldu!',
+        'lose.no.moves':        '💀 Hamle Kalmadı!',
+        'lose.classic.msg':     '{score} sayısına kadar geldin. Geçerli hamle kalmadı.',
+        'lose.puzzle.msg':      '{n}. sayıda takıldın. Geri al ile devam edebilirsin.',
+        'lose.mini.msg':        '{n}. sayıda sıkıştın. Son hamleyi geri alarak devam edebilirsin!',
+        'lose.time.msg':        "Bölüm {idx}'de kaldın — toplam {score} hücre doldurdun.",
+        'score.top5':           'En İyi 5',
+        'score.record':         '🏅 Yeni Rekor!',
+        'score.rank':           'Bu oyun: #{rank}. sıra',
+        'score.record.time':    '🏅 Yeni Rekor! {score} hücre',
+        'score.total':          'Toplam: {score} hücre',
+        'score.val.time':       '{score} hücre (Bölüm {level})',
+        'scores.empty':         'Henüz kayıtlı skor yok.<br>Oyna ve ilk skorunu kaydet!',
+        'global.sending':       'Gönderiliyor...',
+        'global.rank':          '🎉 #{rank}. sıradasın! ({total} oyuncu arasında)',
+        'global.sent':          '✓ Gönderildi',
+        'global.error':         'Sunucuya bağlanılamadı.',
+        'global.empty':         'Henüz hiç skor yok.',
+        'global.loading':       'Yükleniyor...',
+        'global.count':         '{n} en iyi skor',
+        'nickname.required':    'Lütfen bir nickname gir.',
+        'copied':               'Sonuç panoya kopyalandı!',
+        'level.up':             'Seviye {n}!',
+        'level.badge':          'Sv. {n}',
+        'level.display':        'Bölüm {cur}/{total}',
+        'xp.total':             '{n} XP toplam',
+        'time.level.done':      '⏭️ Bölüm {cur}/{total} Tamam!',
+        'tls.done.count':       '{done}/{total} bölüm tamamlandı',
+        'tls.best':             'En iyi: {score} hücre',
+        'tls.none':             'Henüz tamamlanan bölüm yok. Hadi başla!',
+        'tls.level':            'Bölüm {n}',
+        'tls.seconds':          '{n} saniye',
+        'modal.scores.title':   '🏆 Skorlarım',
+        'modal.scores.reset':   'Sıfırla',
+        'modal.close':          'Kapat',
+        'modal.global.title':   '🏆 Skorlar',
+        'modal.ach.title':      '🏅 Başarılar',
+        'modal.ach.progress':   '{n} / {t} başarı açıldı',
+        'modal.ad.title':       '📺 Reklam İzle',
+        'modal.ad.hint.desc':   'İpucu hakkın bitti. Kısa bir reklam izleyerek +1 ipucu hakkı kazan.',
+        'modal.ad.time.desc':   'Süre artırma hakkın bitti. Kısa bir reklam izleyerek +30 saniye kazan.',
+        'modal.ad.undo.desc':   'Geri alma hakkın bitti. Kısa bir reklam izleyerek +1 geri alma hakkı kazan.',
+        'modal.ad.watching':    'Reklam izleniyor...',
+        'modal.ad.watch.btn':   '▶ Reklamı İzle',
+        'modal.ad.cancel':      'İptal',
+        'modal.submit.title':   '🏆 Skoru Gönder',
+        'modal.submit.ph':      'Nicknameni gir...',
+        'modal.submit.send':    'Gönder',
+        'modal.submit.cancel':  'İptal',
+        'modal.submit.score':   'Skorun: {score} / 100',
+        'puzzle.intro.title':   'Bulmaca Modu',
+        'puzzle.intro.btn':     'Anladım, Başla!',
+        'time.select.title':    '⏱️ Zaman Modu',
+        'time.select.sub':      'Her bölümde giderek büyüyen gridi süre dolmadan doldur!',
+        'tut.skip':             'Atla',
+        'tut.prev':             '← Geri',
+        'tut.next':             'İleri →',
+        'tut.done':             '✅ Anladım!',
+        'daily.title':          'Günün Bulmacası',
+        'daily.header':         'Bugün herkes aynı bulmacayı çözüyor!',
+        'daily.hint':           '{n}. sayıyı altın hücreye götür',
+        'pi.stop':              '{n}. sayı',
+        'diff.entry':       '⭐ Giriş',
+        'diff.easy':        '⭐ Kolay',
+        'diff.medium':      '⭐⭐ Orta',
+        'diff.medium-hard': '⭐⭐⭐ Orta-Zor',
+        'diff.hard':        '⭐⭐⭐⭐ Zor',
+        'diff.expert':      '⭐⭐⭐⭐⭐ Uzman',
+        'rules.text':           'Yatay / Dikey: tam 3 kare uzağa (arada tam 2 boş kare). Çapraz: tam 2 kare uzağa (arada tam 1 boş kare).',
+        'rules.win.classic':    "1'den 100'e kadar tüm kareleri doldurursan kazanırsın!",
+        'rules.win.mini':       'Tüm {n} hücreyi doldurursan kazanırsın!',
+        'rules.win.puzzle':     'Tüm zorunlu duraklara sırayla ulaşırsan kazanırsın!',
+        'ach.cat.general':      '🎮 Genel',
+        'ach.cat.daily':        '📅 Günlük',
+        'ach.cat.puzzle':       '🧩 Zorunlu Duraklar',
+        'ach.cat.mini':         '🔲 Mini Grid',
+        'ach.unlocked':         'Başarı Açıldı!',
+        'ach.first_move.name':  'İlk Adım',
+        'ach.first_move.desc':  'İlk hamleyi yaptın.',
+        'ach.half_way.name':    'Yarı Yol',
+        'ach.half_way.desc':    'Klasik modda 50 sayıya ulaştın.',
+        'ach.winner.name':      'Efsane',
+        'ach.winner.desc':      'Klasik modda 100 sayıyı tamamladın!',
+        'ach.combo5.name':      'Ateşli Başlangıç',
+        'ach.combo5.desc':      '5 ardışık hamle yaptın.',
+        'ach.combo20.name':     'Dur Durma',
+        'ach.combo20.desc':     '20 ardışık hamle yaptın.',
+        'ach.no_undo.name':     'Kararlı',
+        'ach.no_undo.desc':     'Hiç geri almadan 30+ sayıya ulaştın.',
+        'ach.speed_10.name':    'Hızlı Parmaklar',
+        'ach.speed_10.desc':    '10 sayıyı 15 saniyede yerleştirdin.',
+        'ach.daily_done.name':  'Günlük Şampiyon',
+        'ach.daily_done.desc':  'Günlük meydan okumayı tamamladın.',
+        'ach.streak3.name':     '3 Günlük Seri',
+        'ach.streak3.desc':     '3 gün üst üste oynadın.',
+        'ach.streak7.name':     'Haftalık Alışkanlık',
+        'ach.streak7.desc':     '7 gün üst üste oynadın.',
+        'ach.puzzle_first.name':'Bulmaca Kırıcı',
+        'ach.puzzle_first.desc':'İlk Zorunlu Duraklar bulmacasını tamamladın.',
+        'ach.puzzle_half.name': 'Yarı Durak',
+        'ach.puzzle_half.desc': '5 Zorunlu Duraklar bulmacasını tamamladın.',
+        'ach.puzzle_all.name':  'Durak Ustası',
+        'ach.puzzle_all.desc':  'Tüm Zorunlu Duraklar bulmacalarını tamamladın.',
+        'ach.puzzle_no_hint.name':'Kendi Aklım',
+        'ach.puzzle_no_hint.desc':'Bir bulmacayı ipucu almadan tamamladın.',
+        'ach.mini_first.name':  'Mini Uzman',
+        'ach.mini_first.desc':  'İlk Mini Grid bulmacasını tamamladın.',
+        'ach.mini_all.name':    'Grid Hakimi',
+        'ach.mini_all.desc':    'Tüm Mini Grid bulmacalarını tamamladın.',
+        'tut.s.t1': '100 Oyununa Hoş Geldin!',
+        'tut.s.d1': `Amaç basit: <strong>10×10 grid</strong>i <strong>1'den 100'e</strong> kadar sayılarla doldurmak.<br><br>Her tıklamada sıradaki sayı seçtiğin hücreye yerleşir. Ama her hücreye gidemezsin — <strong>hareket kuralları</strong> var!`,
+        'tut.s.t2': 'Yatay & Dikey Hareket',
+        'tut.s.d2': `Yatay veya dikey giderken, iki sayı arasında <strong>tam 2 boş kare</strong> olmalı.<br><br>Yani bir sonraki sayıyı <strong>tam 3 kare</strong> uzağa koymalısın.`,
+        'tut.s.t3': 'Çapraz Hareket',
+        'tut.s.d3': `Çapraz giderken, iki sayı arasında <strong>tam 1 boş kare</strong> olmalı.<br><br>Yani çaprazda <strong>tam 2 kare</strong> uzağa gitmelisin (45° açıyla).`,
+        'tut.s.t4': 'Combo & XP',
+        'tut.s.d4': `Geri almadan art arda hamle yaptıkça <strong>Combo</strong> artar!<br><br>Yüksek combo → <strong>daha fazla XP</strong>. XP biriktirerek <strong>seviye atla!</strong>`,
+        'tut.s.t5': 'Kazanma & Kaybetme',
+        'tut.s.d5': `<strong>100'e ulaşırsan</strong> — kazandın! 🎉<br><br>Geçerli hamle <strong>kalmadıysa</strong> oyun biter. <em>"İpuçlarını Göster"</em> butonu yeşil hücreleri işaretler. Geri al her zaman yanında!`,
+        'tut.b.t1': 'Zorunlu Duraklar',
+        'tut.b.d1': `Bu modda <strong>altın renkli durak hücreleri</strong> var.<br><br>O sayıya geldiğinde <strong>yalnızca o hücreye</strong> gidebilirsin — başka yere gidemezsin!`,
+        'tut.b.t2': 'Hareket Kuralları',
+        'tut.b.d2': `Kurallar aynı:<br>• Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>• Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>Duraklar arasında istediğin geçerli hücreye gidebilirsin.`,
+        'tut.b.t3': 'Sırayla Ulaş',
+        'tut.b.d3': `Duraklar <strong>sırayla</strong> gelir — 5. durağa 5. sayıda, 10. durağa 10. sayıda ulaşman gerekir.<br><br>Aralarındaki sayıları <strong>özgürce</strong> yerleştirebilirsin.`,
+        'tut.b.t4': 'Kazanma',
+        'tut.b.d4': `<strong>Son durağa</strong> ulaştığında bulmaca tamamdır! 🎉<br><br>Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> butonunu kullanabilirsin.`,
+        'tut.m.t1': 'Mini Izgara',
+        'tut.m.d1': `Küçük bir grid — ama <strong>tüm hücreleri</strong> doldurman gerekiyor!<br><br>Altın renkli hücre <strong>başlangıç noktandır</strong>. 1 numarayı oraya yerleştirerek başla.`,
+        'tut.m.t2': 'Hareket Kuralları',
+        'tut.m.d2': `Kurallar aynı:<br>• Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>• Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>Küçük gridde seçenekler kısıtlı — dikkatli plan yap!`,
+        'tut.m.t3': 'Her Hücreyi Doldur',
+        'tut.m.d3': `Amacın <strong>tek bir boş kare bırakmadan</strong> tüm ızgarayı doldurmak.<br><br>Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> ile geri dönebilirsin.`,
+        'tut.m.t4': 'Kazanma',
+        'tut.m.d4': `Son hücreye sayıyı yerleştirdiğinde bulmaca tamamdır! 🎉<br><br>5×5 gridde 25, 6×6 gridde 36 hamle yapman gerekiyor.`,
+        'tut.demo.horiz':  'Yatay',
+        'tut.demo.vert':   'Dikey',
+        'tut.demo.legend': '· = boş kare &nbsp;|&nbsp; <span style="color:var(--cell-last-border)">■</span> = mevcut &nbsp;|&nbsp; <span style="color:var(--cell-valid-border)">■</span> = geçerli hedef',
+        'tut.demo.diag':   '45° çaprazda tam 2 kare (1 boş arada) — 4 yön',
+        // Interactive tutorial
+        'it.step':  'Adım {n}/5',
+        'it.t1': '1 numarayı yerleştir!',
+        'it.d1': 'Herhangi bir hücreye tıkla — 1\'i istediğin yere koy!',
+        'it.t2': 'Yatay & Dikey',
+        'it.d2': 'Yatay veya dikey giderken <strong>tam 3 kare</strong> uzağa git (arada 2 boş kare).',
+        'it.t3': 'Çapraz Hareket',
+        'it.d3': 'Çapraz giderken <strong>tam 2 kare</strong> uzağa git (arada 1 boş kare).',
+        'it.t4': 'Combo!',
+        'it.d4': 'Geri almadan art arda hamle yaparak <strong>Combo</strong> artır ve daha fazla XP kazan.',
+        'it.t5': 'Artık solo oynuyorsun!',
+        'it.d5': 'Yeşil hücreler için <em>Olası Hamleler</em>\'e, sıkışırsan <em>Geri Al</em>\'a bas.',
+        'it.ok':   'Tamam',
+        'it.skip': 'Atla',
+        'it.done': 'Anladım!',
+        'overlay.btn.restart':     'Tekrar Oyna',
+        'overlay.btn.next.puzzle': 'Sonraki Bulmaca →',
+        'overlay.btn.level.select':'📋 Seviye Seç',
+        'overlay.btn.share':       '📋 Sonucu Paylaş',
+        'overlay.btn.submit':      '🏆 Skoru Gönder',
+        'overlay.btn.undo':        '↩ Son Hamleyi Geri Al',
+        'overlay.btn.time.select': '📋 Bölüm Seç',
+        'overlay.btn.time.restart':'🔄 Baştan Oyna',
+        'overlay.xp':              '+{xp} XP kazanıldı',
+        'overlay.xp.daily':        '+{xp} XP kazanıldı (Günlük ×1.5!)',
+        'confirm.clear.scores':    'Tüm skorlar silinsin mi?',
+        'share.mode.daily':        '📅 Günlük',
+        'share.mode.classic':      '🎮 Klasik',
+        'puzzle.word':             'Bulmaca',
+        'pls.subtitle':            'Çözdüğün bulmacaları tekrar oynayabilir, sıradakine geçebilirsin.',
+        'pls.cat.stop.title':      'Zorunlu Duraklar',
+        'pls.cat.stop.desc':       '10×10 grid · Belirli hücrelere sırayla ulaş',
+        'pls.cat.full.title':      'Mini Izgara',
+        'pls.cat.full.desc':       '5×5 veya 6×6 grid · Tüm hücreleri doldur',
+        'pls.done.of':             '{done}/{total} tamamlandı',
+        'pls.fill.all':            'Tüm {n} hücreyi doldur',
+        'pls.last.stop':           'Son durak: {n}',
+        'pi.sub.daily':            'Bugün herkes aynı bulmacayı çözüyor — <strong>altın duraklara sırayla ulaş!</strong>',
+        'pi.sub.daily.mini':       'Bugün herkes aynı bulmacayı çözüyor — <strong>tüm hücreleri doldur!</strong>',
+        'pi.step1':                'Yanıp sönen altın hücreden <strong>başla</strong> — sadece oraya tıklayabilirsin.',
+        'pi.step2':                'Normal hareket kurallarıyla ilerle:<br>yatay/dikey 3 kare · çapraz 2 kare.',
+        'pi.step3':                'Sıradaki <strong>altın hücreye</strong> ulaşmak zorundasın — başka yere gidemezsin.',
+        'pi.step4':                'Tüm duraklara sırayla ulaşırsan <strong>bulmacayı kazanırsın!</strong>',
+        'pi.mini.step1':           'Yanıp sönen altın hücreden <strong>başla</strong> — 1 numarayı oraya koy.',
+        'pi.mini.step2':           'Normal hareket kurallarıyla ilerle:<br>yatay/dikey 3 kare · çapraz 2 kare.',
+        'pi.mini.step3':           'Izgaradaki <strong>tüm hücreleri</strong> doldurman gerekiyor.',
+        'pi.mini.step4':           'Tüm hücreleri doldurursan <strong>kazanırsın!</strong>',
+        'rules.label':             'Kurallar',
+      },
+      en: {
+        'tagline':              'Place 1 to 100 — in order, by the rules',
+        'mode.klasik':          'Classic',
+        'mode.klasik.desc':     'Fill all cells, conquer the board',
+        'mode.gunluk':          'Daily',
+        'mode.gunluk.desc':     "Today's special puzzle",
+        'mode.bulmaca':         'Puzzle',
+        'mode.bulmaca.desc':    'Solve the puzzles, test your mind',
+        'mode.zaman':           'Time',
+        'mode.zaman.desc':      'Go as far as you can before time runs out',
+        'btn.scores':           '🏆 Scores',
+        'btn.sound.on':         '🔊 Sound',
+        'btn.sound.off':        '🔇 Sound',
+        'label.current':        'Next number:',
+        'label.combo':          'Combo: ×',
+        'label.level':          'Level',
+        'label.streak':         'day streak',
+        'btn.restart':          'Restart',
+        'btn.tutorial':         'How to Play?',
+        'btn.undo':             '↩ Undo',
+        'btn.hints':            'Show Moves',
+        'btn.hints.hide':       'Hide',
+        'btn.hint.best':        '💡 Best Move',
+        'btn.hint.take':        '💡 Get Hint',
+        'btn.achievements':     '🏅 Achievements',
+        'btn.theme':            'Theme:',
+        'theme.gece':           'Night',
+        'theme.okyanus':        'Ocean',
+        'theme.gunbatimi':      'Sunset',
+        'hint.default':         'Tap any cell to place',
+        'hint.valid':           'Tap one of the green cells',
+        'hint.next':            'Place the next number',
+        'hint.best':            'Best move (local estimate) 💡',
+        'hint.go':              'Go to this cell! 💡',
+        'hint.notfound':        'No hint available.',
+        'hint.start.mini':      'Start from the golden cell — fill every cell!',
+        'hint.start.puzzle':    'Tap the golden cell for number 1',
+        'hint.undo.prefix':     ' move(s) undone — go to this cell!',
+        'hint.next.stop':       '. — reach the golden cell!',
+        'win.classic':          '🎉 You Won!',
+        'win.classic.msg':      'You successfully filled all 100 cells!',
+        'win.puzzle':           '🎉 Puzzle Complete!',
+        'win.puzzle.msg':       'You reached all mandatory stops!',
+        'win.mini.msg':         'You filled all {n} cells!',
+        'win.mini':             '🎉 Mini Grid Complete!',
+        'win.time.all':         '🏆 All Levels Complete!',
+        'win.time.all.msg':     'You completed the entire Time mode!',
+        'lose.classic':         '💀 Game Over',
+        'lose.puzzle':          '💀 Stuck!',
+        'lose.time.up':         "⏱️ Time's Up!",
+        'lose.no.moves':        '💀 No Moves Left!',
+        'lose.classic.msg':     'You reached {score}. No valid moves left.',
+        'lose.puzzle.msg':      'Stuck at number {n}. Use undo to continue.',
+        'lose.mini.msg':        'Stuck at number {n}. Undo your last move to continue!',
+        'lose.time.msg':        'You made it to Level {idx} — {score} cells total.',
+        'score.top5':           'Top 5',
+        'score.record':         '🏅 New Record!',
+        'score.rank':           'This game: #{rank}',
+        'score.record.time':    '🏅 New Record! {score} cells',
+        'score.total':          'Total: {score} cells',
+        'score.val.time':       '{score} cells (Level {level})',
+        'scores.empty':         'No scores yet.<br>Play and save your first score!',
+        'global.sending':       'Sending...',
+        'global.rank':          "🎉 You're #{rank}! ({total} players)",
+        'global.sent':          '✓ Submitted',
+        'global.error':         'Could not connect to server.',
+        'global.empty':         'No scores yet.',
+        'global.loading':       'Loading...',
+        'global.count':         '{n} top scores',
+        'nickname.required':    'Please enter a nickname.',
+        'copied':               'Result copied to clipboard!',
+        'level.up':             'Level {n}!',
+        'level.badge':          'Lv. {n}',
+        'level.display':        'Level {cur}/{total}',
+        'xp.total':             '{n} XP total',
+        'time.level.done':      '⏭️ Level {cur}/{total} Done!',
+        'tls.done.count':       '{done}/{total} levels completed',
+        'tls.best':             'Best: {score} cells',
+        'tls.none':             'No levels completed yet. Let\'s start!',
+        'tls.level':            'Level {n}',
+        'tls.seconds':          '{n} seconds',
+        'modal.scores.title':   '🏆 My Scores',
+        'modal.scores.reset':   'Reset',
+        'modal.close':          'Close',
+        'modal.global.title':   '🏆 Leaderboard',
+        'modal.ach.title':      '🏅 Achievements',
+        'modal.ach.progress':   '{n} / {t} achievements unlocked',
+        'modal.ad.title':       '📺 Watch Ad',
+        'modal.ad.hint.desc':   'Out of hints. Watch a short ad to earn +1 hint.',
+        'modal.ad.time.desc':   'Out of time boosts. Watch a short ad to earn +30 seconds.',
+        'modal.ad.undo.desc':   'Out of undos. Watch a short ad to earn +1 undo.',
+        'modal.ad.watching':    'Ad playing...',
+        'modal.ad.watch.btn':   '▶ Watch Ad',
+        'modal.ad.cancel':      'Cancel',
+        'modal.submit.title':   '🏆 Submit Score',
+        'modal.submit.ph':      'Enter your nickname...',
+        'modal.submit.send':    'Submit',
+        'modal.submit.cancel':  'Cancel',
+        'modal.submit.score':   'Your score: {score} / 100',
+        'puzzle.intro.title':   'Puzzle Mode',
+        'puzzle.intro.btn':     "Got it, Let's Play!",
+        'time.select.title':    '⏱️ Time Mode',
+        'time.select.sub':      'Fill each increasingly larger grid before time runs out!',
+        'tut.skip':             'Skip',
+        'tut.prev':             '← Back',
+        'tut.next':             'Next →',
+        'tut.done':             '✅ Got it!',
+        'daily.title':          "Today's Puzzle",
+        'daily.header':         'Everyone plays the same puzzle today!',
+        'daily.hint':           'Guide number {n} to the golden cell',
+        'pi.stop':              'No. {n}',
+        'diff.entry':       '⭐ Entry',
+        'diff.easy':        '⭐ Easy',
+        'diff.medium':      '⭐⭐ Medium',
+        'diff.medium-hard': '⭐⭐⭐ Medium-Hard',
+        'diff.hard':        '⭐⭐⭐⭐ Hard',
+        'diff.expert':      '⭐⭐⭐⭐⭐ Expert',
+        'rules.text':           'Horizontal / Vertical: exactly 3 cells away (2 empty in between). Diagonal: exactly 2 cells away (1 empty in between).',
+        'rules.win.classic':    'Fill all cells from 1 to 100 to win!',
+        'rules.win.mini':       'Fill all {n} cells to win!',
+        'rules.win.puzzle':     'Reach all mandatory stops in order to win!',
+        'ach.cat.general':      '🎮 General',
+        'ach.cat.daily':        '📅 Daily',
+        'ach.cat.puzzle':       '🧩 Mandatory Stops',
+        'ach.cat.mini':         '🔲 Mini Grid',
+        'ach.unlocked':         'Achievement Unlocked!',
+        'ach.first_move.name':  'First Step',
+        'ach.first_move.desc':  'Made your first move.',
+        'ach.half_way.name':    'Halfway',
+        'ach.half_way.desc':    'Reached 50 numbers in Classic mode.',
+        'ach.winner.name':      'Legend',
+        'ach.winner.desc':      'Completed 100 numbers in Classic mode!',
+        'ach.combo5.name':      'On Fire',
+        'ach.combo5.desc':      'Made 5 moves in a row.',
+        'ach.combo20.name':     'Unstoppable',
+        'ach.combo20.desc':     'Made 20 moves in a row.',
+        'ach.no_undo.name':     'Decisive',
+        'ach.no_undo.desc':     'Reached 30+ without undoing.',
+        'ach.speed_10.name':    'Quick Fingers',
+        'ach.speed_10.desc':    'Placed 10 numbers in 15 seconds.',
+        'ach.daily_done.name':  'Daily Champion',
+        'ach.daily_done.desc':  'Completed the daily challenge.',
+        'ach.streak3.name':     '3-Day Streak',
+        'ach.streak3.desc':     'Played 3 days in a row.',
+        'ach.streak7.name':     'Weekly Habit',
+        'ach.streak7.desc':     'Played 7 days in a row.',
+        'ach.puzzle_first.name':'Puzzle Breaker',
+        'ach.puzzle_first.desc':'Completed your first Mandatory Stops puzzle.',
+        'ach.puzzle_half.name': 'Halfway Stops',
+        'ach.puzzle_half.desc': 'Completed 5 Mandatory Stops puzzles.',
+        'ach.puzzle_all.name':  'Stop Master',
+        'ach.puzzle_all.desc':  'Completed all Mandatory Stops puzzles.',
+        'ach.puzzle_no_hint.name':'Self-Sufficient',
+        'ach.puzzle_no_hint.desc':'Completed a puzzle without any hints.',
+        'ach.mini_first.name':  'Mini Expert',
+        'ach.mini_first.desc':  'Completed your first Mini Grid puzzle.',
+        'ach.mini_all.name':    'Grid Master',
+        'ach.mini_all.desc':    'Completed all Mini Grid puzzles.',
+        'tut.s.t1': 'Welcome to 100 Game!',
+        'tut.s.d1': `The goal is simple: fill the <strong>10×10 grid</strong> with numbers <strong>1 to 100</strong>.<br><br>Each tap places the next number in the selected cell. But you can't go anywhere — there are <strong>movement rules</strong>!`,
+        'tut.s.t2': 'Horizontal & Vertical',
+        'tut.s.d2': `Moving horizontally or vertically, there must be <strong>exactly 2 empty cells</strong> between numbers.<br><br>So place the next number <strong>exactly 3 cells</strong> away.`,
+        'tut.s.t3': 'Diagonal Movement',
+        'tut.s.d3': `Moving diagonally, there must be <strong>exactly 1 empty cell</strong> between numbers.<br><br>So go <strong>exactly 2 cells</strong> diagonally (at 45°).`,
+        'tut.s.t4': 'Combo & XP',
+        'tut.s.d4': `Consecutive moves without undoing build your <strong>Combo</strong>!<br><br>Higher combo → <strong>more XP</strong>. Earn XP to <strong>level up!</strong>`,
+        'tut.s.t5': 'Win & Lose',
+        'tut.s.d5': `Reach <strong>100</strong> — you win! 🎉<br><br>If there are <strong>no valid moves</strong> left, the game ends. Use <em>"Show Moves"</em> to see green cells. Undo is always there!`,
+        'tut.b.t1': 'Mandatory Stops',
+        'tut.b.d1': `This mode has <strong>golden stop cells</strong>.<br><br>When you reach that number you <strong>must go to that cell</strong> — nowhere else!`,
+        'tut.b.t2': 'Movement Rules',
+        'tut.b.d2': `Same rules:<br>• Horizontal / Vertical: <strong>exactly 3 cells</strong> away<br>• Diagonal: <strong>exactly 2 cells</strong> away<br><br>Between stops you can go to any valid cell.`,
+        'tut.b.t3': 'Reach Them In Order',
+        'tut.b.d3': `Stops come <strong>in order</strong> — reach stop 5 at number 5, stop 10 at number 10.<br><br>Numbers between stops can be placed <strong>freely</strong>.`,
+        'tut.b.t4': 'Winning',
+        'tut.b.d4': `When you reach the <strong>last stop</strong> the puzzle is complete! 🎉<br><br>If stuck, use <em>"↩ Undo Last Move"</em>.`,
+        'tut.m.t1': 'Mini Grid',
+        'tut.m.d1': `A small grid — but you must fill <strong>every cell</strong>!<br><br>The golden cell is your <strong>starting point</strong>. Begin by placing 1 there.`,
+        'tut.m.t2': 'Movement Rules',
+        'tut.m.d2': `Same rules:<br>• Horizontal / Vertical: <strong>exactly 3 cells</strong> away<br>• Diagonal: <strong>exactly 2 cells</strong> away<br><br>Options are limited on a small grid — plan carefully!`,
+        'tut.m.t3': 'Fill Every Cell',
+        'tut.m.d3': `Your goal is to fill the entire grid <strong>without leaving a single empty cell</strong>.<br><br>If stuck, use <em>"↩ Undo Last Move"</em> to go back.`,
+        'tut.m.t4': 'Winning',
+        'tut.m.d4': `Place the last number to complete the puzzle! 🎉<br><br>A 5×5 grid needs 25 moves, a 6×6 needs 36.`,
+        'tut.demo.horiz':  'Horizontal',
+        'tut.demo.vert':   'Vertical',
+        'tut.demo.legend': '· = empty &nbsp;|&nbsp; <span style="color:var(--cell-last-border)">■</span> = current &nbsp;|&nbsp; <span style="color:var(--cell-valid-border)">■</span> = valid target',
+        'tut.demo.diag':   '2 cells diagonally (1 empty in between) — 4 directions',
+        // Interactive tutorial
+        'it.step':  'Step {n}/5',
+        'it.t1': 'Place number 1!',
+        'it.d1': 'Tap any cell — place 1 wherever you like!',
+        'it.t2': 'Horizontal & Vertical',
+        'it.d2': 'Move <strong>exactly 3 cells</strong> horizontally or vertically (2 empty in between).',
+        'it.t3': 'Diagonal',
+        'it.d3': 'Move <strong>exactly 2 cells</strong> diagonally (1 empty in between).',
+        'it.t4': 'Combo!',
+        'it.d4': 'Chain moves without undoing to grow your <strong>Combo</strong> and earn more XP.',
+        'it.t5': "You're on your own now!",
+        'it.d5': 'Use <em>Show Moves</em> for green hints, <em>Undo</em> if you get stuck.',
+        'it.ok':   'OK',
+        'it.skip': 'Skip',
+        'it.done': 'Got it!',
+        'overlay.btn.restart':     'Play Again',
+        'overlay.btn.next.puzzle': 'Next Puzzle →',
+        'overlay.btn.level.select':'📋 Level Select',
+        'overlay.btn.share':       '📋 Share Result',
+        'overlay.btn.submit':      '🏆 Submit Score',
+        'overlay.btn.undo':        '↩ Undo Last Move',
+        'overlay.btn.time.select': '📋 Level Select',
+        'overlay.btn.time.restart':'🔄 Play Again',
+        'overlay.xp':              '+{xp} XP earned',
+        'overlay.xp.daily':        '+{xp} XP earned (Daily ×1.5!)',
+        'confirm.clear.scores':    'Delete all scores?',
+        'share.mode.daily':        '📅 Daily',
+        'share.mode.classic':      '🎮 Classic',
+        'puzzle.word':             'Puzzle',
+        'pls.subtitle':            'Replay solved puzzles or move on to the next one.',
+        'pls.cat.stop.title':      'Mandatory Stops',
+        'pls.cat.stop.desc':       '10×10 grid · Reach specific cells in order',
+        'pls.cat.full.title':      'Mini Grid',
+        'pls.cat.full.desc':       '5×5 or 6×6 grid · Fill every cell',
+        'pls.done.of':             '{done}/{total} completed',
+        'pls.fill.all':            'Fill all {n} cells',
+        'pls.last.stop':           'Last stop: {n}',
+        'pi.sub.daily':            'Everyone plays the same puzzle today — <strong>reach all golden stops in order!</strong>',
+        'pi.sub.daily.mini':       'Everyone plays the same puzzle today — <strong>fill every cell!</strong>',
+        'pi.step1':                'Start from the <strong>blinking golden cell</strong> — you can only tap that one.',
+        'pi.step2':                'Move by the standard rules:<br>horizontal/vertical 3 cells · diagonal 2 cells.',
+        'pi.step3':                'You <strong>must reach each golden cell</strong> — you cannot go elsewhere.',
+        'pi.step4':                'Reach all stops in order and you <strong>win the puzzle!</strong>',
+        'pi.mini.step1':           'Start from the <strong>blinking golden cell</strong> — place 1 there.',
+        'pi.mini.step2':           'Move by the standard rules:<br>horizontal/vertical 3 cells · diagonal 2 cells.',
+        'pi.mini.step3':           'You must fill <strong>every cell</strong> in the grid.',
+        'pi.mini.step4':           'Fill all cells and you <strong>win!</strong>',
+        'rules.label':             'Rules',
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang_100oyunu') || 'tr';
+
+    function T(key, vars = {}) {
+      const str = STRINGS[currentLang]?.[key] ?? STRINGS.tr[key] ?? key;
+      return str.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+    }
+
+    const DIFF_MAP = {
+      '⭐ Giriş': 'diff.entry', '⭐ Kolay': 'diff.easy',
+      '⭐⭐ Orta': 'diff.medium', '⭐⭐⭐ Orta-Zor': 'diff.medium-hard',
+      '⭐⭐⭐ Zor': 'diff.hard', '⭐⭐⭐⭐ Zor': 'diff.hard',
+      '⭐⭐⭐⭐ Uzman': 'diff.expert', '⭐⭐⭐⭐⭐ Uzman': 'diff.expert',
+    };
+    function tDiff(d) { return d ? T(DIFF_MAP[d] ?? d) : ''; }
+
+    function applyLang() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key  = el.dataset.i18n;
+        const attr = el.dataset.i18nAttr;
+        const val  = T(key);
+        if (attr) el.setAttribute(attr, val);
+        else el.innerHTML = val;
+      });
+      updateHintBtnLabel();
+      updateTimeBoostBtn();
+      const sndBtn = document.getElementById('btn-sound');
+      if (sndBtn) sndBtn.textContent = soundEnabled ? T('btn.sound.on') : T('btn.sound.off');
+      const label = currentLang === 'tr' ? '🇬🇧 EN' : '🇹🇷 TR';
+      const langBtn = document.getElementById('btn-lang');
+      if (langBtn) langBtn.textContent = label;
+      const langBtnSS = document.getElementById('btn-lang-ss');
+      if (langBtnSS) langBtnSS.textContent = label;
+      document.documentElement.lang = currentLang;
+      if (itMode && itStep > 0 && itPhase === 'read') showITStep(itStep);
+    }
+
     // ════════════════════════════════════════════════════════════
     //  SABITLER & DURUM
     // ════════════════════════════════════════════════════════════
@@ -1845,10 +2468,10 @@
         const onclick  = isLocked ? '' : `onclick="startTimeLevel(${i})"`;
         return `<div class="tls-card ${cls}" ${onclick}>
           ${badge}
-          <div class="tls-card-num">Bölüm ${i + 1}</div>
+          <div class="tls-card-num">${T('tls.level', { n: i + 1 })}</div>
           <div class="tls-card-size">${lvl.label}</div>
-          <div class="tls-card-time">⏱ ${lvl.time} saniye</div>
-          <div class="tls-card-diff">${TIME_LEVEL_DIFFS[i]}</div>
+          <div class="tls-card-time">⏱ ${T('tls.seconds', { n: lvl.time })}</div>
+          <div class="tls-card-diff">${tDiff(TIME_LEVEL_DIFFS[i])}</div>
         </div>`;
       }).join('');
 
@@ -1857,9 +2480,9 @@
       const doneCount = completed.size;
       const bestEl    = document.getElementById('tls-best');
       bestEl.innerHTML = doneCount > 0
-        ? `${doneCount}/${TIME_LEVELS.length} bölüm tamamlandı` +
-          (best ? ` · En iyi: <strong>${best.score} hücre</strong>` : '')
-        : 'Henüz tamamlanan bölüm yok. Hadi başla!';
+        ? T('tls.done.count', { done: doneCount, total: TIME_LEVELS.length }) +
+          (best ? ` · ${T('tls.best', { score: best.score })}` : '')
+        : T('tls.none');
 
       document.getElementById('time-level-select').classList.add('show');
     }
@@ -1876,8 +2499,7 @@
 
     document.getElementById('btn-tls-close').addEventListener('click', () => {
       document.getElementById('time-level-select').classList.remove('show');
-      currentMode = 'serbest';
-      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'serbest'));
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === currentMode));
       if (!gameHasStarted) {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
@@ -1907,6 +2529,7 @@
 
     let grid = [], currentNumber = 1, lastR = -1, lastC = -1;
     let gameActive = true, showHints = false, soundEnabled = true;
+    let itMode = false, itStep = 0, itPhase = 'read', itHvOnly = false, itDiagOnly = false;
     let history = [];
     let comboCount = 0;          // ardışık hamle sayısı (geri al sıfırlar)
     let currentMode = 'serbest'; // 'serbest' | 'gunluk' | 'bulmaca'
@@ -2122,7 +2745,7 @@
     function updateXPBar(total, flash) {
       const { lvl, prev, next } = currentLevel(total);
       const pct = Math.min(100, ((total - prev) / (next - prev)) * 100);
-      document.getElementById('level-badge').textContent = `Sv. ${lvl}`;
+      document.getElementById('level-badge').textContent = T('level.badge', { n: lvl });
       document.getElementById('xp-fill').style.width     = pct + '%';
       document.getElementById('xp-label').textContent    = `${total - prev} / ${next - prev} XP`;
       if (flash) {
@@ -2180,28 +2803,26 @@
     // ════════════════════════════════════════════════════════════
     const ACH_KEY = 'achievements_100oyunu';
 
-    const ACHIEVEMENTS = [
-      // ── Genel ────────────────────────────────────────────────────
-      { id: 'first_move',      icon: '👶', name: 'İlk Adım',            desc: 'İlk hamleyi yaptın.',                              xp: 10,  check: (s) => s.placed >= 1 },
-      { id: 'half_way',        icon: '🌗', name: 'Yarı Yol',             desc: 'Serbest modda 50 sayıya ulaştın.',                 xp: 30,  check: (s) => s.placed >= 50 && s.mode === 'serbest' },
-      { id: 'winner',          icon: '🏆', name: 'Efsane',               desc: 'Serbest modda 100 sayıyı tamamladın!',             xp: 150, check: (s) => s.won && s.mode === 'serbest' },
-      { id: 'combo5',          icon: '🔥', name: 'Ateşli Başlangıç',     desc: '5 ardışık hamle yaptın.',                          xp: 20,  check: (s) => s.maxCombo >= 5 },
-      { id: 'combo20',         icon: '💥', name: 'Dur Durma',            desc: '20 ardışık hamle yaptın.',                         xp: 50,  check: (s) => s.maxCombo >= 20 },
-      { id: 'no_undo',         icon: '🎯', name: 'Kararlı',              desc: 'Hiç geri almadan 30+ sayıya ulaştın.',             xp: 40,  check: (s) => s.noUndoPlaced >= 30 },
-      { id: 'speed_10',        icon: '⚡', name: 'Hızlı Parmaklar',      desc: '10 sayıyı 15 saniyede yerleştirdin.',              xp: 35,  check: (s) => s.speed10 },
-      // ── Günlük ───────────────────────────────────────────────────
-      { id: 'daily_done',      icon: '📅', name: 'Günlük Şampiyon',      desc: 'Günlük meydan okumayı tamamladın.',                xp: 60,  check: (s) => s.dailyWon },
-      { id: 'streak3',         icon: '📆', name: '3 Günlük Seri',        desc: '3 gün üst üste oynadın.',                          xp: 40,  check: (s) => s.streak >= 3 },
-      { id: 'streak7',         icon: '🗓️', name: 'Haftalık Alışkanlık',  desc: '7 gün üst üste oynadın.',                          xp: 100, check: (s) => s.streak >= 7 },
-      // ── Zorunlu Duraklar ─────────────────────────────────────────
-      { id: 'puzzle_first',    icon: '🧩', name: 'Bulmaca Kırıcı',       desc: 'İlk Zorunlu Duraklar bulmacasını tamamladın.',     xp: 40,  check: (s) => s.stopSolved >= 1 },
-      { id: 'puzzle_half',     icon: '🔓', name: 'Yarı Durak',           desc: '5 Zorunlu Duraklar bulmacasını tamamladın.',       xp: 80,  check: (s) => s.stopSolved >= 5 },
-      { id: 'puzzle_all',      icon: '🎖️', name: 'Durak Ustası',         desc: 'Tüm Zorunlu Duraklar bulmacalarını tamamladın.',   xp: 200, check: (s) => s.stopSolved >= 10 },
-      { id: 'puzzle_no_hint',  icon: '🧠', name: 'Kendi Aklım',          desc: 'Bir bulmacayı ipucu almadan tamamladın.',          xp: 60,  check: (s) => s.puzzleWonNoHint },
-      // ── Mini Grid ────────────────────────────────────────────────
-      { id: 'mini_first',      icon: '🔲', name: 'Mini Uzman',           desc: 'İlk Mini Grid bulmacasını tamamladın.',            xp: 40,  check: (s) => s.miniSolved >= 1 },
-      { id: 'mini_all',        icon: '✨', name: 'Grid Hakimi',           desc: 'Tüm Mini Grid bulmacalarını tamamladın.',          xp: 150, check: (s) => s.miniSolved >= 4 },
-    ];
+    function getAchievements() {
+      return [
+        { id: 'first_move',      icon: '👶', name: T('ach.first_move.name'),      desc: T('ach.first_move.desc'),      xp: 10,  check: (s) => s.placed >= 1 },
+        { id: 'half_way',        icon: '🌗', name: T('ach.half_way.name'),         desc: T('ach.half_way.desc'),        xp: 30,  check: (s) => s.placed >= 50 && s.mode === 'serbest' },
+        { id: 'winner',          icon: '🏆', name: T('ach.winner.name'),           desc: T('ach.winner.desc'),          xp: 150, check: (s) => s.won && s.mode === 'serbest' },
+        { id: 'combo5',          icon: '🔥', name: T('ach.combo5.name'),           desc: T('ach.combo5.desc'),          xp: 20,  check: (s) => s.maxCombo >= 5 },
+        { id: 'combo20',         icon: '💥', name: T('ach.combo20.name'),          desc: T('ach.combo20.desc'),         xp: 50,  check: (s) => s.maxCombo >= 20 },
+        { id: 'no_undo',         icon: '🎯', name: T('ach.no_undo.name'),          desc: T('ach.no_undo.desc'),         xp: 40,  check: (s) => s.noUndoPlaced >= 30 },
+        { id: 'speed_10',        icon: '⚡', name: T('ach.speed_10.name'),         desc: T('ach.speed_10.desc'),        xp: 35,  check: (s) => s.speed10 },
+        { id: 'daily_done',      icon: '📅', name: T('ach.daily_done.name'),       desc: T('ach.daily_done.desc'),      xp: 60,  check: (s) => s.dailyWon },
+        { id: 'streak3',         icon: '📆', name: T('ach.streak3.name'),          desc: T('ach.streak3.desc'),         xp: 40,  check: (s) => s.streak >= 3 },
+        { id: 'streak7',         icon: '🗓️', name: T('ach.streak7.name'),          desc: T('ach.streak7.desc'),         xp: 100, check: (s) => s.streak >= 7 },
+        { id: 'puzzle_first',    icon: '🧩', name: T('ach.puzzle_first.name'),     desc: T('ach.puzzle_first.desc'),    xp: 40,  check: (s) => s.stopSolved >= 1 },
+        { id: 'puzzle_half',     icon: '🔓', name: T('ach.puzzle_half.name'),      desc: T('ach.puzzle_half.desc'),     xp: 80,  check: (s) => s.stopSolved >= 5 },
+        { id: 'puzzle_all',      icon: '🎖️', name: T('ach.puzzle_all.name'),       desc: T('ach.puzzle_all.desc'),      xp: 200, check: (s) => s.stopSolved >= 10 },
+        { id: 'puzzle_no_hint',  icon: '🧠', name: T('ach.puzzle_no_hint.name'),   desc: T('ach.puzzle_no_hint.desc'),  xp: 60,  check: (s) => s.puzzleWonNoHint },
+        { id: 'mini_first',      icon: '🔲', name: T('ach.mini_first.name'),       desc: T('ach.mini_first.desc'),      xp: 40,  check: (s) => s.miniSolved >= 1 },
+        { id: 'mini_all',        icon: '✨', name: T('ach.mini_all.name'),          desc: T('ach.mini_all.desc'),        xp: 150, check: (s) => s.miniSolved >= 4 },
+      ];
+    }
 
     function loadAch()       { try { return JSON.parse(localStorage.getItem(ACH_KEY)) || {}; } catch { return {}; } }
     function saveAch(data)   { localStorage.setItem(ACH_KEY, JSON.stringify(data)); }
@@ -2231,7 +2852,7 @@
 
     function checkAchievements(state) {
       const data = loadAch();
-      ACHIEVEMENTS.forEach(a => {
+      getAchievements().forEach(a => {
         if (!data[a.id] && a.check(state)) {
           data[a.id] = true;
           saveAch(data);
@@ -2241,19 +2862,22 @@
       });
     }
 
-    const ACH_CATEGORIES = [
-      { label: '🎮 Genel',             ids: ['first_move','half_way','winner','combo5','combo20','no_undo','speed_10'] },
-      { label: '📅 Günlük',            ids: ['daily_done','streak3','streak7'] },
-      { label: '🧩 Zorunlu Duraklar',  ids: ['puzzle_first','puzzle_half','puzzle_all','puzzle_no_hint'] },
-      { label: '🔲 Mini Grid',         ids: ['mini_first','mini_all'] },
-    ];
+    function getAchCategories() {
+      return [
+        { label: T('ach.cat.general'), ids: ['first_move','half_way','winner','combo5','combo20','no_undo','speed_10'] },
+        { label: T('ach.cat.daily'),   ids: ['daily_done','streak3','streak7'] },
+        { label: T('ach.cat.puzzle'),  ids: ['puzzle_first','puzzle_half','puzzle_all','puzzle_no_hint'] },
+        { label: T('ach.cat.mini'),    ids: ['mini_first','mini_all'] },
+      ];
+    }
 
     function renderAchModal() {
       const data = loadAch();
+      const ACHIEVEMENTS = getAchievements();
       const totalUnlocked = ACHIEVEMENTS.filter(a => data[a.id]).length;
-      let html = `<div style="text-align:center;margin-bottom:12px;opacity:.7;font-size:.85rem">${totalUnlocked} / ${ACHIEVEMENTS.length} başarı açıldı</div>`;
+      let html = `<div style="text-align:center;margin-bottom:12px;opacity:.7;font-size:.85rem">${T('modal.ach.progress', { n: totalUnlocked, t: ACHIEVEMENTS.length })}</div>`;
 
-      for (const cat of ACH_CATEGORIES) {
+      for (const cat of getAchCategories()) {
         const catAchs = cat.ids.map(id => ACHIEVEMENTS.find(a => a.id === id)).filter(Boolean);
         html += `<div class="ach-category-label">${cat.label}</div>`;
         html += catAchs.map(a => {
@@ -2300,7 +2924,7 @@
     }
 
     // Günlük bulmaca için sadece durak tabanlı bulmacalar kullan
-    const STOP_PUZZLES = PUZZLES.filter(p => p.type !== 'full');
+    const STOP_PUZZLES = PUZZLES;
 
     function getDailyStartCell() {
       const rand = seededRand(getDailySeed());
@@ -2323,11 +2947,21 @@
     // ════════════════════════════════════════════════════════════
     let maxComboThisGame = 0;
     let noUndoPlaced = 0;      // geri almadan yapılan hamle sayısı
-    let hintUsedThisGame = false; // bu oyunda ipucu kullanıldı mı?
+    let hintsUsedThisGame = 0;
+    const FREE_HINTS_PER_GAME = 3;
+    const FREE_UNDOS_PER_GAME = 3;
+    let undosUsedThisGame = 0;
+    const TIME_BOOST_SECONDS  = 30;
+    let timeBoostFreeUsed = false; // oyun başına 1 ücretsiz hak
 
     function updateComboDisplay() {
-      const el = document.getElementById('combo-display');
-      el.textContent = `Combo: ×${comboCount}`;
+      const el  = document.getElementById('combo-display');
+      const val = document.getElementById('combo-val');
+      if (val) {
+        val.textContent = comboCount;
+      } else {
+        el.textContent = T('label.combo') + comboCount;
+      }
       el.classList.remove('hot', 'fire');
       if (comboCount >= 20) el.classList.add('fire');
       else if (comboCount >= 8) el.classList.add('hot');
@@ -2472,14 +3106,14 @@
         const lvl = TIME_LEVELS[currentTimeLevelIdx];
         winLine = ` ${lvl.label} gridi doldurursan sonraki bölüme geçersin! Süre: ${lvl.time}s`;
       } else if (!isPuzzle) {
-        winLine = ' 1\'den 100\'e kadar tüm kareleri doldurursan kazanırsın!';
+        winLine = ' ' + T('rules.win.classic');
       } else if (isMini) {
-        winLine = ` Tüm ${activePuzzle.size * activePuzzle.size} hücreyi doldurursan kazanırsın!`;
+        winLine = ' ' + T('rules.win.mini', { n: activePuzzle.size * activePuzzle.size });
       } else {
-        winLine = ' Tüm zorunlu duraklara sırayla ulaşırsan kazanırsın!';
+        winLine = ' ' + T('rules.win.puzzle');
       }
       document.getElementById('rules').innerHTML =
-        `<strong>Kurallar:</strong> Yatay / Dikey: tam 3 kare uzağa (arada tam 2 boş kare). Çapraz: tam 2 kare uzağa (arada tam 1 boş kare).${winLine}`;
+        `<strong>${T('rules.label')}:</strong> ${T('rules.text')}${winLine}`;
     }
 
     function initGame() {
@@ -2496,14 +3130,18 @@
       hintCell = null;
       maxComboThisGame = 0;
       noUndoPlaced     = 0;
-      hintUsedThisGame = false;
+      hintsUsedThisGame = 0;
+      undosUsedThisGame = 0;
+      timeBoostFreeUsed = false;
+      updateHintBtnLabel();
+      updateTimeBoostBtn();
       speed10Done      = false;
       speed10Start = Date.now();
       gameStartTime = Date.now();
 
       document.getElementById('overlay').classList.remove('show');
       document.getElementById('num-display').textContent = '1';
-      document.getElementById('hint').textContent = 'İstediğin hücreye tıkla';
+      document.getElementById('hint').textContent = T('hint.default');
       updateUndoBtn();
       updateComboDisplay();
 
@@ -2516,7 +3154,16 @@
       if (currentMode === 'gunluk') {
         // Günlük mod: bugünün tarihine göre havuzdan bulmaca seç
         const dailyPuzzle = STOP_PUZZLES[getDailySeed() % STOP_PUZZLES.length];
-        puzzleStops = dailyPuzzle.stops.map(s => ({ ...s }));
+        const isMini = dailyPuzzle.type === 'full';
+        if (isMini) {
+          activeSize = dailyPuzzle.size;
+          activeRows = activeSize;
+          activeCols = activeSize;
+          grid = Array.from({ length: activeRows }, () => Array(activeCols).fill(0));
+          puzzleStops = [{ n: 1, r: dailyPuzzle.start.r, c: dailyPuzzle.start.c }];
+        } else {
+          puzzleStops = dailyPuzzle.stops.map(s => ({ ...s }));
+        }
         const firstStop = puzzleStops[0];
         grid[firstStop.r][firstStop.c] = 1;
         lastR = firstStop.r; lastC = firstStop.c;
@@ -2524,9 +3171,10 @@
         document.getElementById('num-display').textContent = '2';
         const d = new Date();
         document.getElementById('daily-date').textContent =
-          d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+          d.toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('daily-title').textContent = T('daily.title');
         document.getElementById('daily-header').classList.add('show');
-        document.getElementById('hint').textContent = `${puzzleStops[1].n}. sayıyı altın hücreye götür`;
+        document.getElementById('hint').textContent = isMini ? T('hint.start.mini') : T('daily.hint', { n: puzzleStops[1]?.n });
       } else if (currentMode === 'bulmaca') {
         const puzzle    = activePuzzle;
         const idx       = currentPuzzleIdx % PUZZLES.length;
@@ -2539,16 +3187,16 @@
 
         if (isFull) {
           puzzleStops = [{ n: 1, r: puzzle.start.r, c: puzzle.start.c }];
-          document.getElementById('puzzle-name').textContent = puzzle.name;
+          document.getElementById('puzzle-name').textContent = puzzle.name.replace(/^Bulmaca/, T('puzzle.word'));
           document.getElementById('puzzle-progress').textContent =
             ` — ${puzzle.size}×${puzzle.size} · ${catSolved} / ${catTotal} tamamlandı`;
-          document.getElementById('hint').textContent = 'Altın hücreden başla — tüm ızgarayı doldur!';
+          document.getElementById('hint').textContent = T('hint.start.mini');
         } else {
           puzzleStops = puzzle.stops.map(s => ({ ...s }));
-          document.getElementById('puzzle-name').textContent = puzzle.name;
+          document.getElementById('puzzle-name').textContent = puzzle.name.replace(/^Bulmaca/, T('puzzle.word'));
           document.getElementById('puzzle-progress').textContent =
             ` — ${catSolved} / ${catTotal} tamamlandı`;
-          document.getElementById('hint').textContent = '1 numaralı altın hücreye tıkla';
+          document.getElementById('hint').textContent = T('hint.start.puzzle');
         }
         document.getElementById('puzzle-header').classList.add('show');
       } else if (currentMode === 'zaman') {
@@ -2559,7 +3207,8 @@
         puzzleStops = [];
         document.getElementById('timer-display').style.display = '';
         document.getElementById('level-display').style.display = '';
-        document.getElementById('level-num').textContent = `${currentTimeLevelIdx + 1}`;
+        document.getElementById('level-num').textContent   = `${currentTimeLevelIdx + 1}`;
+        document.getElementById('level-total').textContent = `${TIME_LEVELS.length}`;
         startTimer(lvl.time);
       } else {
         puzzleStops = [];
@@ -2575,13 +3224,91 @@
     }
 
     function updateUndoBtn() {
-      document.getElementById('btn-undo').disabled = history.length === 0;
+      const btn = document.getElementById('btn-undo');
+      const hasHistory = history.length > 0;
+      btn.disabled = !hasHistory;
+      const remaining = Math.max(0, FREE_UNDOS_PER_GAME - undosUsedThisGame);
+      btn.textContent = hasHistory && remaining === 0
+        ? `${T('btn.undo')} 📺`
+        : remaining < FREE_UNDOS_PER_GAME && hasHistory
+          ? `${T('btn.undo')} (${remaining})`
+          : T('btn.undo');
     }
 
     function updateHintBtnVisibility() {
-      document.getElementById('btn-hint-best').style.display    = currentMode === 'zaman' ? 'none' : '';
-      document.getElementById('btn-hint-best').textContent      = currentMode === 'serbest' ? '💡 En İyi Hamle' : '💡 İpucu Al';
-      document.getElementById('btn-scores').style.display = currentMode === 'serbest' ? '' : 'none';
+      document.getElementById('btn-hint-best').style.display  = currentMode === 'zaman' ? 'none' : '';
+      document.getElementById('btn-time-boost').style.display = currentMode === 'zaman' ? '' : 'none';
+      document.getElementById('btn-scores').style.display     = currentMode === 'serbest' ? '' : 'none';
+      updateHintBtnLabel();
+      updateTimeBoostBtn();
+    }
+
+    function updateTimeBoostBtn() {
+      const btn = document.getElementById('btn-time-boost');
+      if (!btn || btn.style.display === 'none') return;
+      btn.textContent = timeBoostFreeUsed ? '⏱️ +30s 📺' : '⏱️ +30s (1)';
+      btn.style.opacity = '1';
+    }
+
+    function updateHintBtnLabel() {
+      const btn = document.getElementById('btn-hint-best');
+      if (!btn || btn.style.display === 'none') return;
+      const remaining = Math.max(0, FREE_HINTS_PER_GAME - hintsUsedThisGame);
+      const baseText  = currentMode === 'serbest' ? T('btn.hint.best') : T('btn.hint.take');
+      btn.textContent = remaining > 0 ? `${baseText} (${remaining})` : `${baseText} 📺`;
+      btn.style.opacity = remaining > 0 ? '' : '0.7';
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  İNTERAKTİF TUTORIAL
+    // ════════════════════════════════════════════════════════════
+    function startInteractiveTutorial() {
+      initGame();
+      itMode = true;
+      itPhase = 'read';
+      itStep = 0;
+      showITStep(1);
+    }
+
+    function showITStep(step) {
+      itStep = step;
+      itPhase = 'read';
+      itHvOnly = false; itDiagOnly = false;
+      document.getElementById('it-overlay').style.display = 'flex';
+      document.getElementById('it-bubble').style.display = '';
+      document.getElementById('it-step-label').textContent = T('it.step', { n: step });
+      document.getElementById('it-title').innerHTML = T('it.t' + step);
+      document.getElementById('it-desc').innerHTML  = T('it.d' + step);
+      document.getElementById('it-confirm').textContent = step === 5 ? T('it.done') : T('it.ok');
+      document.getElementById('it-skip').textContent = T('it.skip');
+      showHints = false;
+      renderGrid();
+    }
+
+    function confirmITStep() {
+      if (itStep === 5) { closeIT(); return; }
+      itPhase = 'play';
+      document.getElementById('it-overlay').style.display = 'none';
+      itHvOnly   = (itStep === 2);
+      itDiagOnly = (itStep === 3);
+      showHints = true;
+      renderGrid();
+    }
+
+    function closeIT() {
+      itMode = false; itStep = 0; itPhase = 'read'; itHvOnly = false; itDiagOnly = false;
+      document.getElementById('it-overlay').style.display = 'none';
+      showHints = false;
+      renderGrid();
+      localStorage.setItem('itSeen', '1');
+    }
+
+    function handleITProgress() {
+      if (itPhase !== 'play') return;
+      if (itStep === 1 && currentNumber >= 2) showITStep(2);
+      else if (itStep === 2 && currentNumber >= 3) showITStep(3);
+      else if (itStep === 3 && currentNumber >= 4) showITStep(4);
+      else if (itStep === 4 && currentNumber >= 5) showITStep(5);
     }
 
     // ════════════════════════════════════════════════════════════
@@ -2618,8 +3345,7 @@
     // ════════════════════════════════════════════════════════════
     function placeNumber(r, c) {
       if (!isValidMove(r, c)) {
-        flashCell(r, c);
-        soundInvalid();
+        if (grid[r][c] === 0) { flashCell(r, c); soundInvalid(); }
         comboCount = 0;
         updateComboDisplay();
         return;
@@ -2655,7 +3381,7 @@
         const rect = cellEl.getBoundingClientRect();
         showXPFloat(xpGain, rect.left + rect.width / 2, rect.top);
       }
-      if (leveled) showToast({ icon: '⬆️', name: `Seviye ${newLevel}!`, xp: 0 });
+      if (leveled) showToast({ icon: '⬆️', name: T('level.up', { n: newLevel }), xp: 0 });
 
       renderGrid();
       // Pop animasyonu son hücreye
@@ -2671,13 +3397,15 @@
         if (currentNumber > lastStop.n) { endGame(true); return; }
         const nextStop = puzzleStops.find(s => s.n === currentNumber);
         document.getElementById('hint').textContent = nextStop
-          ? `${nextStop.n} numaralı altın hücreye ulaş!`
-          : 'Sonraki sayıyı yerleştir';
+          ? nextStop.n + T('hint.next.stop')
+          : T('hint.next');
       }
 
       document.getElementById('num-display').textContent = currentNumber;
       if (!hasAnyValidMove()) endGame(false);
-      else if (currentMode === 'serbest' || currentMode === 'zaman') document.getElementById('hint').textContent = showHints ? 'Yeşil hücrelerden birine tıkla' : 'Sonraki sayıyı yerleştir';
+      else if (currentMode === 'serbest' || currentMode === 'zaman') document.getElementById('hint').textContent = showHints ? T('hint.valid') : T('hint.next');
+
+      if (itMode) handleITProgress();
     }
 
     // ════════════════════════════════════════════════════════════
@@ -2718,16 +3446,21 @@
             const stop = puzzleStops.find(s => s.r === r && s.c === c);
             if (stop) {
               cell.textContent = stop.n;
-              if (stop.n === currentNumber) {
-                cell.classList.add('mandatory-next'); // sıradaki durak → yanıp söner
+              if (stop.n === currentNumber && isValidMove(r, c)) {
+                cell.classList.add('mandatory-next'); // sıradaki durak + ulaşılabilir → yanıp söner
               } else {
-                cell.classList.add('mandatory');       // ilerideki duraklar
+                cell.classList.add('mandatory');       // ilerideki duraklar veya henüz ulaşılamayan
               }
             } else if (showHints && isValidMove(r, c)) {
               cell.classList.add('valid');
             }
           } else if (showHints && isValidMove(r, c)) {
-            cell.classList.add('valid');
+            const dr = Math.abs(r - lastR), dc = Math.abs(c - lastC);
+            const isDiag = dr === dc && dr === 2;
+            const isHV   = (dr === 0 || dc === 0);
+            if (itHvOnly && !isHV) { /* skip */ }
+            else if (itDiagOnly && !isDiag) { /* skip */ }
+            else cell.classList.add('valid');
           }
 
           // İpucu hücresi — olası hamleler gösteriminin üstüne yaz
@@ -2776,11 +3509,11 @@
       const rank = scores.findIndex(s => s.score === currentScore) + 1;
       const isRecord = rank === 1 && scores.filter(s => s.score === currentScore).length === 1;
 
-      if (isRecord && currentScore > 1) highlight.innerHTML = `<span class="new-record">🏅 Yeni Rekor!</span>`;
-      else if (rank > 0) highlight.innerHTML = `Bu oyun: <strong>#${rank}. sıra</strong>`;
+      if (isRecord && currentScore > 1) highlight.innerHTML = `<span class="new-record">${T('score.record')}</span>`;
+      else if (rank > 0) highlight.innerHTML = T('score.rank', { rank });
       else highlight.innerHTML = '';
 
-      let html = '<h4>En İyi 5</h4>';
+      let html = `<h4>${T('score.top5')}</h4>`;
       scores.forEach((s, i) => {
         const isCur   = i === rank - 1 && s.score === currentScore;
         const medal   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
@@ -2800,22 +3533,22 @@
       const rank      = savedScores.findIndex(s => s.score === finalScore) + 1;
       const isRecord  = rank === 1 && savedScores.filter(s => s.score === finalScore).length === 1;
       highlight.innerHTML = isRecord && finalScore > 0
-        ? `<span class="new-record">🏅 Yeni Rekor! ${finalScore} hücre</span>`
-        : `Toplam: <strong>${finalScore} hücre</strong>`;
-      let html = '<h4>En İyi 5</h4>';
+        ? `<span class="new-record">${T('score.record.time', { score: finalScore })}</span>`
+        : T('score.total', { score: finalScore });
+      let html = `<h4>${T('score.top5')}</h4>`;
       savedScores.forEach((s, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
         const isCur = s.score === finalScore && i === rank - 1;
         html += `<div class="score-row ${isCur ? 'highlight' : ''}">
           <span class="score-rank">${medal}</span>
-          <span class="score-val">${s.score} hücre (Bölüm ${s.level})</span>
+          <span class="score-val">${T('score.val.time', { score: s.score, level: s.level })}</span>
           <span class="score-date">${s.date}</span>
         </div>`;
       });
       board.innerHTML = html;
     }
 
-    function _buildTimeModeOverlayBtns() {
+    function _buildTimeModeOverlayBtns(isAllComplete = false) {
       const btns = document.getElementById('overlay-btns');
       btns.innerHTML = '';
       const makeBtn = (id, label, style, onClick) => {
@@ -2825,17 +3558,16 @@
         b.addEventListener('click', onClick);
         btns.appendChild(b);
       };
-      makeBtn('btn-time-select', '📋 Bölüm Seç',
+      makeBtn('btn-time-select', T('overlay.btn.time.select'),
         'background:var(--accent-dim);color:#fff',
         () => {
           document.getElementById('overlay').classList.remove('show');
           openTimeLevelSelect();
         });
-      makeBtn('btn-time-restart', '🔄 Baştan Oyna',
+      makeBtn('btn-time-restart', T('overlay.btn.time.restart'),
         'background:var(--surface2);color:var(--text);border:1px solid var(--border)',
         () => {
-          currentTimeLevelIdx = 0;
-          timeModeScore       = 0;
+          if (isAllComplete) { currentTimeLevelIdx = 0; timeModeScore = 0; }
           clearInterval(timerInterval);
           document.getElementById('overlay').classList.remove('show');
           initGame();
@@ -2846,6 +3578,7 @@
     //  OYUN SONU
     // ════════════════════════════════════════════════════════════
     function endGame(won) {
+      if (itMode) closeIT();
       // ── Zaman modu özel akış ─────────────────────────────────────
       if (currentMode === 'zaman') {
         clearInterval(timerInterval);
@@ -2864,14 +3597,15 @@
             const savedScores  = saveTimeScore(finalScore, TIME_LEVELS.length);
             const box = document.getElementById('overlay-box');
             box.className = 'win';
-            document.getElementById('overlay-title').textContent   = '🏆 Tüm Bölümler Tamam!';
-            document.getElementById('overlay-msg').textContent     = 'Zaman modunu baştan sona tamamladın!';
-            document.getElementById('overlay-xp-gain').textContent = '';
-            _renderTimeScores(savedScores, finalScore);
-            _buildTimeModeOverlayBtns();
+            document.getElementById('overlay-title').textContent   = T('win.time.all');
+            document.getElementById('overlay-msg').textContent     = T('win.time.all.msg');
+            document.getElementById('overlay-xp-gain').textContent    = '';
+            document.getElementById('overlay-score-highlight').innerHTML = '';
+            document.getElementById('overlay-scores').innerHTML          = '';
+            _buildTimeModeOverlayBtns(true);
             document.getElementById('overlay').classList.add('show');
           } else {
-            showToast({ icon: '⏭️', name: `Bölüm ${currentTimeLevelIdx}/${TIME_LEVELS.length} Tamam!`, xp: 0 });
+            showToast({ icon: '⏭️', name: T('time.level.done', { cur: currentTimeLevelIdx, total: TIME_LEVELS.length }), xp: 0 });
             setTimeout(() => initGame(), 1200);
           }
           return;
@@ -2883,12 +3617,12 @@
         const savedScores  = saveTimeScore(finalScore, currentTimeLevelIdx + 1);
         const box = document.getElementById('overlay-box');
         box.className = 'lose';
-        document.getElementById('overlay-title').textContent   = timeLeft <= 0 ? '⏱️ Süre Doldu!' : '💀 Hamle Kalmadı!';
-        document.getElementById('overlay-msg').textContent     =
-          `Bölüm ${currentTimeLevelIdx + 1}'de kaldın — toplam ${finalScore} hücre doldurdun.`;
-        document.getElementById('overlay-xp-gain').textContent = '';
-        _renderTimeScores(savedScores, finalScore);
-        _buildTimeModeOverlayBtns();
+        document.getElementById('overlay-title').textContent   = timeLeft <= 0 ? T('lose.time.up') : T('lose.no.moves');
+        document.getElementById('overlay-msg').textContent     = T('lose.time.msg', { idx: currentTimeLevelIdx + 1, score: finalScore });
+        document.getElementById('overlay-xp-gain').textContent    = '';
+        document.getElementById('overlay-score-highlight').innerHTML = '';
+        document.getElementById('overlay-scores').innerHTML          = '';
+        _buildTimeModeOverlayBtns(false);
         document.getElementById('overlay').classList.add('show');
         return;
       }
@@ -2917,8 +3651,9 @@
       if (currentMode === 'gunluk') totalXP = Math.floor(totalXP * 1.5);
       addXP(0); // sadece barı yenilemek için (oyun boyunca zaten eklendi)
 
-      document.getElementById('overlay-xp-gain').textContent =
-        `+${totalXP} XP kazanıldı${currentMode === 'gunluk' ? ' (Günlük ×1.5!)' : ''}`;
+      document.getElementById('overlay-xp-gain').textContent = currentMode === 'gunluk'
+        ? T('overlay.xp.daily', { xp: totalXP })
+        : T('overlay.xp', { xp: totalXP });
 
       // Başarı kontrolü
       const completedSet   = loadCompleted();
@@ -2938,7 +3673,7 @@
         speed10:         speed10Done,
         stopSolved,
         miniSolved,
-        puzzleWonNoHint: isPuzzleWon && !hintUsedThisGame,
+        puzzleWonNoHint: isPuzzleWon && hintsUsedThisGame === 0,
       });
 
       const box = document.getElementById('overlay-box');
@@ -2947,21 +3682,23 @@
       // Bulmaca ve günlük modda mesajı özelleştir
       const isPuzzleMode = currentMode === 'bulmaca' || currentMode === 'gunluk';
       if (isPuzzleMode) {
-        document.getElementById('overlay-title').textContent = won ? '🎉 Bulmaca Tamam!' : '💀 Takıldın!';
+        document.getElementById('overlay-title').textContent = won
+          ? (isMiniGrid ? T('win.mini') : T('win.puzzle'))
+          : T('lose.puzzle');
         if (won) {
           document.getElementById('overlay-msg').textContent = isMiniGrid
-            ? `Tüm ${activePuzzle.size * activePuzzle.size} hücreyi doldurdun!`
-            : `Tüm zorunlu duraklara ulaştın!`;
+            ? T('win.mini.msg', { n: activePuzzle.size * activePuzzle.size })
+            : T('win.puzzle.msg');
         } else {
           document.getElementById('overlay-msg').textContent = isMiniGrid
-            ? `${currentNumber - 1}. sayıda sıkıştın. Son hamleyi geri alarak devam edebilirsin!`
-            : `${currentNumber - 1}. sayıda takıldın. Geri al ile devam edebilirsin.`;
+            ? T('lose.mini.msg', { n: currentNumber - 1 })
+            : T('lose.puzzle.msg', { n: currentNumber - 1 });
         }
       } else {
-        document.getElementById('overlay-title').textContent = won ? '🎉 Kazandın!' : '💀 Oyun Bitti';
+        document.getElementById('overlay-title').textContent = won ? T('win.classic') : T('lose.classic');
         document.getElementById('overlay-msg').textContent = won
-          ? 'Tüm 100 kareyi başarıyla doldurdun!'
-          : `${score} sayısına kadar geldin. Geçerli hamle kalmadı.`;
+          ? T('win.classic.msg')
+          : T('lose.classic.msg', { score });
       }
 
       if (isMiniGrid || currentMode === 'serbest') {
@@ -2993,38 +3730,38 @@
           const nextIdx = (currentPuzzleIdx % PUZZLES.length) + 1;
           const hasNext = nextIdx < PUZZLES.length;
           if (hasNext) {
-            makeBtn('btn-next-puzzle', 'Sonraki Bulmaca →',
+            makeBtn('btn-next-puzzle', T('overlay.btn.next.puzzle'),
               'background:#f59e0b;color:#000;font-weight:700',
               () => { startPuzzle(currentPuzzleIdx + 1); });
           }
-          makeBtn('btn-level-select', '📋 Seviye Seç',
+          makeBtn('btn-level-select', T('overlay.btn.level.select'),
             'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
             () => { document.getElementById('overlay').classList.remove('show'); openPuzzleLevelSelect(); });
         }
-        makeBtn('btn-restart-puzzle', 'Tekrar Oyna', null, restartGame);
+        makeBtn('btn-restart-puzzle', T('overlay.btn.restart'), null, restartGame);
         if (!won && history.length > 0) {
-          makeBtn('btn-undo-overlay', '↩ Son Hamleyi Geri Al',
+          makeBtn('btn-undo-overlay', T('overlay.btn.undo'),
             'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
             undoMove);
         }
       } else if (currentMode === 'gunluk') {
-        makeBtn('btn-share-overlay', '📋 Sonucu Paylaş',
+        makeBtn('btn-share-overlay', T('overlay.btn.share'),
           'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
           () => shareResult(score, won));
-        makeBtn('btn-restart-overlay', 'Tekrar Oyna', null, restartGame);
+        makeBtn('btn-restart-overlay', T('overlay.btn.restart'), null, restartGame);
         if (!won && history.length > 0) {
-          makeBtn('btn-undo-overlay', '↩ Son Hamleyi Geri Al',
+          makeBtn('btn-undo-overlay', T('overlay.btn.undo'),
             'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
             undoMove);
         }
       } else {
-        makeBtn('btn-share-overlay', '📋 Sonucu Paylaş',
+        makeBtn('btn-share-overlay', T('overlay.btn.share'),
           'background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:0.88rem',
           () => shareResult(score, won));
-        makeBtn('btn-global-submit-open', '🏆 Skoru Gönder',
+        makeBtn('btn-global-submit-open', T('overlay.btn.submit'),
           'background:#0c2a1a;color:#4ade80;border:1px solid #22c55e;font-weight:600',
           () => openGlobalSubmit(score));
-        makeBtn('btn-restart-overlay', 'Tekrar Oyna', null, restartGame);
+        makeBtn('btn-restart-overlay', T('overlay.btn.restart'), null, restartGame);
       }
 
       document.getElementById('overlay').classList.add('show');
@@ -3037,12 +3774,12 @@
       const pct    = Math.floor(score);
       const blocks = Math.floor(score / 10);
       const bar    = '🟩'.repeat(blocks) + '⬜'.repeat(10 - blocks);
-      const mode   = currentMode === 'gunluk' ? '📅 Günlük' : '🎮 Serbest';
+      const mode   = currentMode === 'gunluk' ? T('share.mode.daily') : T('share.mode.classic');
       const text   = `100 Oyunu ${mode}\n${won ? '🏆' : '💀'} ${score}/100\n${bar}\n#100Oyunu`;
       if (navigator.share) {
         navigator.share({ title: '100 Oyunu', text }).catch(() => {});
       } else {
-        navigator.clipboard.writeText(text).then(() => alert('Sonuç panoya kopyalandı!')).catch(() => alert(text));
+        navigator.clipboard.writeText(text).then(() => alert(T('copied'))).catch(() => alert(text));
       }
     }
 
@@ -3051,6 +3788,11 @@
     // ════════════════════════════════════════════════════════════
     function undoMove() {
       if (!history.length) return;
+      if (undosUsedThisGame >= FREE_UNDOS_PER_GAME) {
+        openAdModal('undo');
+        return;
+      }
+      undosUsedThisGame++;
       hintCell = null;
       const snap    = history.pop();
       grid          = snap.grid;
@@ -3062,9 +3804,8 @@
       gameActive    = true;
       document.getElementById('overlay').classList.remove('show');
       document.getElementById('num-display').textContent = currentNumber;
-      document.getElementById('hint').textContent =
-        showHints ? 'Yeşil hücrelerden birine tıkla' : 'Sonraki sayıyı yerleştir';
-      if (currentNumber === 1) document.getElementById('hint').textContent = 'İstediğin hücreye tıkla';
+      document.getElementById('hint').textContent = showHints ? T('hint.valid') : T('hint.next');
+      if (currentNumber === 1) document.getElementById('hint').textContent = T('hint.default');
       updateUndoBtn();
       updateComboDisplay();
       renderGrid();
@@ -3075,43 +3816,52 @@
     // ════════════════════════════════════════════════════════════
     // ── Günlük için küçük intro ──────────────────────────────────
     function openPuzzleIntro() {
-      const puzzle = STOP_PUZZLES[getDailySeed() % STOP_PUZZLES.length];
+      const puzzle  = STOP_PUZZLES[getDailySeed() % STOP_PUZZLES.length];
+      const isMini  = puzzle.type === 'full';
       document.getElementById('pi-icon').textContent   = '📅';
-      document.getElementById('pi-title').textContent  = 'Günlük Bulmaca';
-      document.getElementById('pi-subtitle').innerHTML = `Bugün herkes aynı bulmacayı çözüyor — <strong>altın duraklara sırayla ulaş!</strong>`;
-      const d = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' });
-      const stopsHtml = puzzle.stops.map((s, i) =>
-        (i > 0 ? '<span class="pi-stop-arrow">→</span>' : '') +
-        `<span class="pi-stop-chip">${s.n}. sayı</span>`
+      document.getElementById('pi-title').textContent  = T('daily.title');
+      document.getElementById('pi-subtitle').innerHTML = isMini ? T('pi.sub.daily.mini') : T('pi.sub.daily');
+      const stepKeys = isMini
+        ? ['pi.mini.step1','pi.mini.step2','pi.mini.step3','pi.mini.step4']
+        : ['pi.step1','pi.step2','pi.step3','pi.step4'];
+      document.getElementById('pi-steps').innerHTML = stepKeys.map((k,i) =>
+        `<div class="pi-step"><span class="pi-num">${i+1}</span><span>${T(k)}</span></div>`
       ).join('');
-      document.getElementById('pi-puzzle-info').innerHTML =
-        `<div class="pi-info-name">📅 ${d} — ${puzzle.name}</div>
-         <div class="pi-stops-row">${stopsHtml}</div>`;
-      const demoStops = puzzle.stops.slice(0, 3);
-      document.getElementById('pi-demo').innerHTML = demoStops.map((s, i) =>
-        (i > 0 ? '<div class="pi-arrow">→</div><div class="pi-cell pi-empty">·</div><div class="pi-arrow">→</div>' : '') +
-        `<div class="pi-cell ${i === 0 ? 'pi-mandatory-next' : 'pi-mandatory'}">${s.n}</div>`
-      ).join('') + '<div class="pi-arrow">→ …</div>';
+      const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+      const d = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+      if (isMini) {
+        document.getElementById('pi-puzzle-info').innerHTML =
+          `<div class="pi-info-name">📅 ${d}</div>
+           <div class="pi-stops-row"><span class="pi-stop-chip">🔲 ${puzzle.size}×${puzzle.size} Mini Grid</span></div>`;
+        document.getElementById('pi-demo').innerHTML =
+          `<div class="pi-cell pi-mandatory-next">1</div>
+           <div class="pi-arrow">→</div><div class="pi-cell pi-empty">·</div>
+           <div class="pi-arrow">→</div><div class="pi-cell pi-empty">·</div>
+           <div class="pi-arrow">→ …</div>`;
+      } else {
+        const stopsHtml = puzzle.stops.map((s, i) =>
+          (i > 0 ? '<span class="pi-stop-arrow">→</span>' : '') +
+          `<span class="pi-stop-chip">${T('pi.stop', { n: s.n })}</span>`
+        ).join('');
+        document.getElementById('pi-puzzle-info').innerHTML =
+          `<div class="pi-info-name">📅 ${d}</div>
+           <div class="pi-stops-row">${stopsHtml}</div>`;
+        const demoStops = puzzle.stops.slice(0, 3);
+        document.getElementById('pi-demo').innerHTML = demoStops.map((s, i) =>
+          (i > 0 ? '<div class="pi-arrow">→</div><div class="pi-cell pi-empty">·</div><div class="pi-arrow">→</div>' : '') +
+          `<div class="pi-cell ${i === 0 ? 'pi-mandatory-next' : 'pi-mandatory'}">${s.n}</div>`
+        ).join('') + '<div class="pi-arrow">→ …</div>';
+      }
       document.getElementById('puzzle-intro').classList.add('show');
     }
 
     // ── Bulmaca seviye seçim ekranı ──────────────────────────────
-    const CATEGORIES = [
-      {
-        key:   'stop',
-        icon:  '🚩',
-        title: 'Zorunlu Duraklar',
-        desc:  '10×10 grid · Belirli hücrelere sırayla ulaş',
-        filter: p => p.type !== 'full',
-      },
-      {
-        key:   'full',
-        icon:  '🔲',
-        title: 'Mini Izgara',
-        desc:  '5×5 veya 6×6 grid · Tüm hücreleri doldur',
-        filter: p => p.type === 'full',
-      },
-    ];
+    function getCategories() {
+      return [
+        { key: 'stop', icon: '🚩', title: T('pls.cat.stop.title'), desc: T('pls.cat.stop.desc'), filter: p => p.type !== 'full' },
+        { key: 'full', icon: '🔲', title: T('pls.cat.full.title'), desc: T('pls.cat.full.desc'), filter: p => p.type === 'full' },
+      ];
+    }
 
     function openPuzzleLevelSelect() {
       const completed = loadCompleted();
@@ -3134,14 +3884,14 @@
                            : isLocked ? '<span class="pls-badge">🔒</span>'
                            : '<span class="pls-badge">▶</span>';
           const infoText   = p.type === 'full'
-            ? `${p.size}×${p.size} · Tüm ${p.size * p.size} hücreyi doldur`
-            : `Son durak: ${p.stops[p.stops.length - 1].n} · ${p.stops.map(s => s.n).join('→')}`;
-          const diffLabel  = p.difficulty ? `<div class="pls-card-diff">${p.difficulty}</div>` : '';
+            ? `${p.size}×${p.size} · ${T('pls.fill.all', { n: p.size * p.size })}`
+            : `${T('pls.last.stop', { n: p.stops[p.stops.length - 1].n })} · ${p.stops.map(s => s.n).join('→')}`;
+          const diffLabel  = p.difficulty ? `<div class="pls-card-diff">${tDiff(p.difficulty)}</div>` : '';
           const numLabel   = `#${puzzlesInCat.findIndex(x => x.i === i) + 1}`;
           return `<div class="pls-card ${stateClass}" data-idx="${i}" ${isLocked ? '' : `onclick="startPuzzle(${i})"`}>
             ${badge}
             <div class="pls-card-num">${numLabel}</div>
-            <div class="pls-card-name">${p.name}</div>
+            <div class="pls-card-name">${p.name.replace(/^Bulmaca/, T('puzzle.word'))}</div>
             ${diffLabel}
             <div class="pls-card-stops">${infoText}</div>
           </div>`;
@@ -3152,13 +3902,13 @@
           <div class="pls-cat-header">
             <span class="pls-cat-icon">${cat.icon}</span>
             <span class="pls-cat-title">${cat.title}</span>
-            <span class="pls-cat-desc">${doneCount}/${puzzlesInCat.length} tamamlandı · ${cat.desc}</span>
+            <span class="pls-cat-desc">${T('pls.done.of', { done: doneCount, total: puzzlesInCat.length })} · ${cat.desc}</span>
           </div>
           <div class="pls-cards-row">${cards}</div>
         </div>`;
       }
 
-      document.getElementById('pls-grid').innerHTML = CATEGORIES.map(buildCategory).join('');
+      document.getElementById('pls-grid').innerHTML = getCategories().map(buildCategory).join('');
       document.getElementById('puzzle-level-select').classList.add('show');
     }
 
@@ -3173,8 +3923,7 @@
 
     document.getElementById('btn-pls-close').addEventListener('click', () => {
       document.getElementById('puzzle-level-select').classList.remove('show');
-      currentMode = 'serbest';
-      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'serbest'));
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === currentMode));
       if (!gameHasStarted) {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
@@ -3223,6 +3972,7 @@
     //  KONTROLLER
     // ════════════════════════════════════════════════════════════
     function restartGame() {
+      if (itMode) closeIT();
       if (currentMode === 'zaman') {
         clearInterval(timerInterval);
         openTimeLevelSelect();
@@ -3233,11 +3983,13 @@
 
     document.getElementById('btn-restart').addEventListener('click', restartGame);
     document.getElementById('btn-undo').addEventListener('click', undoMove);
+    document.getElementById('it-confirm').addEventListener('click', confirmITStep);
+    document.getElementById('it-skip').addEventListener('click', closeIT);
 
     document.getElementById('btn-hints').addEventListener('click', () => {
       showHints = !showHints;
       const btn = document.getElementById('btn-hints');
-      btn.textContent = showHints ? 'Gizle' : 'Olası Hamleler';
+      btn.textContent = showHints ? T('btn.hints.hide') : T('btn.hints');
       btn.classList.toggle('active', showHints);
       renderGrid();
     });
@@ -3427,14 +4179,22 @@
 
     function getHint() {
       if (!gameActive) return;
+
+      if (hintsUsedThisGame >= FREE_HINTS_PER_GAME) {
+        openAdModal();
+        return;
+      }
+      hintsUsedThisGame++;
+      updateHintBtnLabel();
+
       const isFull = activePuzzle?.type === 'full';
 
       // ── Serbest / Zaman mod: sadece Warnsdorff ──────────────────
       if (currentMode === 'serbest' || currentMode === 'zaman') {
         const best = getBestMove();
-        if (!best) return;
+        if (!best) { hintsUsedThisGame--; updateHintBtnLabel(); return; }
         hintCell = best;
-        document.getElementById('hint').textContent = 'En iyi hamle (lokal tahmin) 💡';
+        document.getElementById('hint').textContent = T('hint.best');
         renderGrid();
         return;
       }
@@ -3458,18 +4218,16 @@
           best = solveMiniGrid();
         }
 
-        if (!best) return; // çözülemeyen bulmaca (olmamalı)
+        if (!best) { hintsUsedThisGame--; updateHintBtnLabel(); return; }
 
-        hintUsedThisGame = true;
         hintCell = best;
         if (undoneCount > 0) {
-          document.getElementById('hint').textContent =
-            `${undoneCount} hamle geri alındı — bu hücreye git!`;
+          document.getElementById('hint').textContent = undoneCount + T('hint.undo.prefix');
           document.getElementById('num-display').textContent = currentNumber;
           updateUndoBtn();
           updateComboDisplay();
         } else {
-          document.getElementById('hint').textContent = 'Bu hücreye git! 💡';
+          document.getElementById('hint').textContent = T('hint.go');
         }
         renderGrid();
         return;
@@ -3493,20 +4251,19 @@
       // Gerçek çözücüyü çalıştır
       const best = solveZorunluDuraklar();
       if (!best) {
-        document.getElementById('hint').textContent = 'İpucu bulunamadı.';
+        hintsUsedThisGame--; updateHintBtnLabel();
+        document.getElementById('hint').textContent = T('hint.notfound');
         return;
       }
 
-      hintUsedThisGame = true;
       hintCell = best;
       if (undoneCount > 0) {
-        document.getElementById('hint').textContent =
-          `${undoneCount} hamle geri alındı — bu hücreye git!`;
+        document.getElementById('hint').textContent = undoneCount + T('hint.undo.prefix');
         document.getElementById('num-display').textContent = currentNumber;
         updateUndoBtn();
         updateComboDisplay();
       } else {
-        document.getElementById('hint').textContent = 'Bu hücreye git! 💡';
+        document.getElementById('hint').textContent = T('hint.go');
       }
       renderGrid();
     }
@@ -3515,9 +4272,17 @@
 
     document.getElementById('btn-sound').addEventListener('click', () => {
       soundEnabled = !soundEnabled;
-      document.getElementById('btn-sound').textContent  = soundEnabled ? '🔊 Ses' : '🔇 Ses';
+      document.getElementById('btn-sound').textContent = soundEnabled ? T('btn.sound.on') : T('btn.sound.off');
       document.getElementById('btn-sound').classList.toggle('muted', !soundEnabled);
     });
+
+    function toggleLang() {
+      currentLang = currentLang === 'tr' ? 'en' : 'tr';
+      localStorage.setItem('lang_100oyunu', currentLang);
+      applyLang();
+    }
+    document.getElementById('btn-lang').addEventListener('click', toggleLang);
+    document.getElementById('btn-lang-ss').addEventListener('click', toggleLang);
 
     document.getElementById('btn-tutorial').addEventListener('click', () => {
       tutStep = 0; renderTutStep();
@@ -3529,7 +4294,7 @@
       const scores = loadScores();
       const list   = document.getElementById('scores-list');
       if (!scores.length) {
-        list.innerHTML = '<div id="scores-empty">Henüz kayıtlı skor yok.<br>Oyna ve ilk skorunu kaydet!</div>';
+        list.innerHTML = `<div id="scores-empty">${T('scores.empty')}</div>`;
       } else {
         const medals = ['🥇','🥈','🥉'];
         list.innerHTML = scores.map((s, i) => `
@@ -3545,7 +4310,7 @@
     document.getElementById('btn-scores').addEventListener('click', openGlobalScoresModal);
     document.getElementById('btn-scores-close').addEventListener('click', () => document.getElementById('scores-modal').classList.remove('show'));
     document.getElementById('btn-scores-clear').addEventListener('click', () => {
-      if (confirm('Tüm skorlar silinsin mi?')) { localStorage.removeItem(HS_KEY); openScoresModal(); }
+      if (confirm(T('confirm.clear.scores'))) { localStorage.removeItem(HS_KEY); openScoresModal(); }
     });
     document.getElementById('scores-modal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('scores-modal')) document.getElementById('scores-modal').classList.remove('show');
@@ -3558,7 +4323,7 @@
     const NICK_KEY = 'nickname_100oyunu';
 
     function openGlobalSubmit(score) {
-      document.getElementById('global-submit-score').textContent = `Skorun: ${score} / 100`;
+      document.getElementById('global-submit-score').textContent = T('modal.submit.score', { score });
       document.getElementById('global-nickname-input').value = localStorage.getItem(NICK_KEY) || '';
       document.getElementById('global-submit-msg').textContent = '';
       document.getElementById('global-submit-msg').className = 'global-submit-msg';
@@ -3574,13 +4339,13 @@
       const msgEl = document.getElementById('global-submit-msg');
 
       if (!nickname) {
-        msgEl.textContent = 'Lütfen bir nickname gir.';
+        msgEl.textContent = T('nickname.required');
         msgEl.className = 'global-submit-msg error';
         return;
       }
 
       document.getElementById('btn-global-send').disabled = true;
-      msgEl.textContent = 'Gönderiliyor...';
+      msgEl.textContent = T('global.sending');
       msgEl.className = 'global-submit-msg';
 
       try {
@@ -3593,16 +4358,16 @@
         if (!res.ok) throw new Error(data.error || 'Hata');
 
         localStorage.setItem(NICK_KEY, nickname);
-        msgEl.textContent = `🎉 #${data.rank}. sıradasın! (${data.total} oyuncu arasında)`;
+        msgEl.textContent = T('global.rank', { rank: data.rank, total: data.total });
         msgEl.className = 'global-submit-msg success';
-        document.getElementById('btn-global-send').textContent = '✓ Gönderildi';
+        document.getElementById('btn-global-send').textContent = T('global.sent');
         setTimeout(() => {
           document.getElementById('global-submit-modal').classList.remove('show');
           openGlobalScoresModal();
         }, 1500);
       } catch (err) {
         msgEl.textContent = err.message === 'Failed to fetch'
-          ? 'Sunucuya bağlanılamadı.' : err.message;
+          ? T('global.error') : err.message;
         msgEl.className = 'global-submit-msg error';
         document.getElementById('btn-global-send').disabled = false;
       }
@@ -3613,7 +4378,7 @@
       const list   = document.getElementById('global-scores-list');
       const status = document.getElementById('global-scores-status');
       list.innerHTML = '';
-      status.textContent = 'Yükleniyor...';
+      status.textContent = T('global.loading');
       modal.classList.add('show');
 
       const myNick = localStorage.getItem(NICK_KEY) || '';
@@ -3622,8 +4387,8 @@
         const res  = await fetch(`${GLOBAL_API}/api/scores?limit=20`);
         const rows = await res.json();
 
-        if (!rows.length) { status.textContent = 'Henüz hiç skor yok.'; return; }
-        status.textContent = `${rows.length} en iyi skor`;
+        if (!rows.length) { status.textContent = T('global.empty'); return; }
+        status.textContent = T('global.count', { n: rows.length });
 
         const medals = ['🥇', '🥈', '🥉'];
         list.innerHTML = rows.map(r => {
@@ -3636,7 +4401,7 @@
           </div>`;
         }).join('');
       } catch {
-        status.textContent = 'Sunucuya bağlanılamadı.';
+        status.textContent = T('global.error');
       }
     }
 
@@ -3658,124 +4423,73 @@
     //  TUTORIAL
     // ════════════════════════════════════════════════════════════
     // ── Serbest mod tutorial ─────────────────────────────────────
-    const TUTORIAL_STEPS_SERBEST = [
-      {
-        icon: '🎯', title: '100 Oyununa Hoş Geldin!',
-        desc: `Amaç basit: <strong>10×10 grid</strong>i <strong>1'den 100'e</strong> kadar sayılarla doldurmak.<br><br>
-               Her tıklamada sıradaki sayı seçtiğin hücreye yerleşir. Ama her hücreye gidemezsin — <strong>hareket kuralları</strong> var!`,
-        visual: buildGridPreview([
-          { r:0,c:0,type:'tg-filled',label:'1' }, { r:0,c:3,type:'tg-filled',label:'2' },
-          { r:2,c:5,type:'tg-filled',label:'3' }, { r:4,c:3,type:'tg-filled',label:'4' },
-          { r:2,c:1,type:'tg-valid', label:'5?' },
-        ], 6, 6)
-      },
-      {
-        icon: '➡️', title: 'Yatay & Dikey Hareket',
-        desc: `Yatay veya dikey giderken, iki sayı arasında <strong>tam 2 boş kare</strong> olmalı.<br><br>
-               Yani bir sonraki sayıyı <strong>tam 3 kare</strong> uzağa koymalısın.`,
-        visual: buildHVDemo()
-      },
-      {
-        icon: '↗️', title: 'Çapraz Hareket',
-        desc: `Çapraz giderken, iki sayı arasında <strong>tam 1 boş kare</strong> olmalı.<br><br>
-               Yani çaprazda <strong>tam 2 kare</strong> uzağa gitmelisin (45° açıyla).`,
-        visual: buildDiagDemo()
-      },
-      {
-        icon: '🔥', title: 'Combo & XP',
-        desc: `Geri almadan art arda hamle yaptıkça <strong>Combo</strong> artar!<br><br>
-               Yüksek combo → <strong>daha fazla XP</strong>. XP biriktirerek <strong>seviye atla!</strong>`,
-        visual: ''
-      },
-      {
-        icon: '🏆', title: 'Kazanma & Kaybetme',
-        desc: `<strong>100'e ulaşırsan</strong> — kazandın! 🎉<br><br>
-               Geçerli hamle <strong>kalmadıysa</strong> oyun biter. <em>"İpuçlarını Göster"</em> butonu yeşil hücreleri işaretler. Geri al her zaman yanında!`,
-        visual: ''
-      },
-    ];
+    function getTutorialStepsSerbest() {
+      return [
+        {
+          icon: '🎯', title: T('tut.s.t1'),
+          desc: T('tut.s.d1'),
+          visual: buildGridPreview([
+            { r:0,c:0,type:'tg-filled',label:'1' }, { r:0,c:3,type:'tg-filled',label:'2' },
+            { r:2,c:5,type:'tg-filled',label:'3' }, { r:4,c:3,type:'tg-filled',label:'4' },
+            { r:2,c:1,type:'tg-valid', label:'5?' },
+          ], 6, 6)
+        },
+        { icon: '➡️', title: T('tut.s.t2'), desc: T('tut.s.d2'), visual: buildHVDemo() },
+        { icon: '↗️', title: T('tut.s.t3'), desc: T('tut.s.d3'), visual: buildDiagDemo() },
+        { icon: '🔥', title: T('tut.s.t4'), desc: T('tut.s.d4'), visual: '' },
+        { icon: '🏆', title: T('tut.s.t5'), desc: T('tut.s.d5'), visual: '' },
+      ];
+    }
 
     // ── Zorunlu Duraklar tutorial ────────────────────────────────
-    const TUTORIAL_STEPS_BULMACA = [
-      {
-        icon: '🚩', title: 'Zorunlu Duraklar',
-        desc: `Bu modda <strong>altın renkli durak hücreleri</strong> var.<br><br>
-               O sayıya geldiğinde <strong>yalnızca o hücreye</strong> gidebilirsin — başka yere gidemezsin!`,
-        visual: buildGridPreview([
-          { r:0,c:0,type:'tg-filled',   label:'1'  },
-          { r:2,c:2,type:'tg-mandatory',label:'5'  },
-          { r:0,c:4,type:'tg-empty',    label:''   },
-        ], 3, 5)
-      },
-      {
-        icon: '➡️', title: 'Hareket Kuralları',
-        desc: `Kurallar aynı:<br>
-               • Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>
-               • Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>
-               Duraklar arasında istediğin geçerli hücreye gidebilirsin.`,
-        visual: buildHVDemo()
-      },
-      {
-        icon: '🎯', title: 'Sırayla Ulaş',
-        desc: `Duraklar <strong>sırayla</strong> gelir — 5. durağa 5. sayıda, 10. durağa 10. sayıda ulaşman gerekir.<br><br>
-               Aralarındaki sayıları <strong>özgürce</strong> yerleştirebilirsin.`,
-        visual: ''
-      },
-      {
-        icon: '🏆', title: 'Kazanma',
-        desc: `<strong>Son durağa</strong> ulaştığında bulmaca tamamdır! 🎉<br><br>
-               Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> butonunu kullanabilirsin.`,
-        visual: ''
-      },
-    ];
+    function getTutorialStepsBulmaca() {
+      return [
+        {
+          icon: '🚩', title: T('tut.b.t1'),
+          desc: T('tut.b.d1'),
+          visual: buildGridPreview([
+            { r:0,c:0,type:'tg-filled',   label:'1'  },
+            { r:2,c:2,type:'tg-mandatory',label:'5'  },
+            { r:0,c:4,type:'tg-empty',    label:''   },
+          ], 3, 5)
+        },
+        { icon: '➡️', title: T('tut.b.t2'), desc: T('tut.b.d2'), visual: buildHVDemo() },
+        { icon: '🎯', title: T('tut.b.t3'), desc: T('tut.b.d3'), visual: '' },
+        { icon: '🏆', title: T('tut.b.t4'), desc: T('tut.b.d4'), visual: '' },
+      ];
+    }
 
     // ── Mini Izgara tutorial ─────────────────────────────────────
-    const TUTORIAL_STEPS_MINIGRID = [
-      {
-        icon: '🔲', title: 'Mini Izgara',
-        desc: `Küçük bir grid — ama <strong>tüm hücreleri</strong> doldurman gerekiyor!<br><br>
-               Altın renkli hücre <strong>başlangıç noktandır</strong>. 1 numarayı oraya yerleştirerek başla.`,
-        visual: buildGridPreview([
-          { r:0,c:0,type:'tg-mandatory',label:'1' },
-          { r:0,c:1,type:'tg-empty',    label:'' },
-          { r:0,c:2,type:'tg-empty',    label:'' },
-          { r:1,c:0,type:'tg-empty',    label:'' },
-          { r:1,c:1,type:'tg-empty',    label:'' },
-          { r:1,c:2,type:'tg-empty',    label:'' },
-          { r:2,c:0,type:'tg-empty',    label:'' },
-          { r:2,c:1,type:'tg-empty',    label:'' },
-          { r:2,c:2,type:'tg-empty',    label:'' },
-        ], 3, 3)
-      },
-      {
-        icon: '➡️', title: 'Hareket Kuralları',
-        desc: `Kurallar aynı:<br>
-               • Yatay / Dikey: <strong>tam 3 kare</strong> uzağa<br>
-               • Çapraz: <strong>tam 2 kare</strong> uzağa<br><br>
-               Küçük gridde seçenekler kısıtlı — dikkatli plan yap!`,
-        visual: buildHVDemo()
-      },
-      {
-        icon: '🧩', title: 'Her Hücreyi Doldur',
-        desc: `Amacın <strong>tek bir boş kare bırakmadan</strong> tüm ızgarayı doldurmak.<br><br>
-               Takılırsan <em>"↩ Son Hamleyi Geri Al"</em> ile geri dönebilirsin.`,
-        visual: ''
-      },
-      {
-        icon: '🏆', title: 'Kazanma',
-        desc: `Son hücreye sayıyı yerleştirdiğinde bulmaca tamamdır! 🎉<br><br>
-               5×5 gridde 25, 6×6 gridde 36 hamle yapman gerekiyor.`,
-        visual: ''
-      },
-    ];
+    function getTutorialStepsMini() {
+      return [
+        {
+          icon: '🔲', title: T('tut.m.t1'),
+          desc: T('tut.m.d1'),
+          visual: buildGridPreview([
+            { r:0,c:0,type:'tg-mandatory',label:'1' },
+            { r:0,c:1,type:'tg-empty',    label:'' },
+            { r:0,c:2,type:'tg-empty',    label:'' },
+            { r:1,c:0,type:'tg-empty',    label:'' },
+            { r:1,c:1,type:'tg-empty',    label:'' },
+            { r:1,c:2,type:'tg-empty',    label:'' },
+            { r:2,c:0,type:'tg-empty',    label:'' },
+            { r:2,c:1,type:'tg-empty',    label:'' },
+            { r:2,c:2,type:'tg-empty',    label:'' },
+          ], 3, 3)
+        },
+        { icon: '➡️', title: T('tut.m.t2'), desc: T('tut.m.d2'), visual: buildHVDemo() },
+        { icon: '🧩', title: T('tut.m.t3'), desc: T('tut.m.d3'), visual: '' },
+        { icon: '🏆', title: T('tut.m.t4'), desc: T('tut.m.d4'), visual: '' },
+      ];
+    }
 
     function getTutorialSteps() {
       if (currentMode === 'bulmaca' || currentMode === 'gunluk') {
         return activePuzzle?.type === 'full'
-          ? TUTORIAL_STEPS_MINIGRID
-          : TUTORIAL_STEPS_BULMACA;
+          ? getTutorialStepsMini()
+          : getTutorialStepsBulmaca();
       }
-      return TUTORIAL_STEPS_SERBEST;
+      return getTutorialStepsSerbest();
     }
 
     let tutStep = 0;
@@ -3797,17 +4511,17 @@
 
     function buildHVDemo() {
       let html = '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">';
-      html += '<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">Yatay</div>';
+      html += `<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">${T('tut.demo.horiz')}</div>`;
       html += `<div class="tut-grid" style="grid-template-columns:repeat(7,36px)">`;
       ['tg-last','tg-skip','tg-skip','tg-valid','tg-empty','tg-empty','tg-empty'].forEach((t, i) =>
         html += `<div class="tg ${t}">${['7','·','·','8','','',''][i]}</div>`);
       html += '</div></div>';
-      html += '<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">Dikey</div>';
+      html += `<div><div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">${T('tut.demo.vert')}</div>`;
       html += `<div class="tut-grid" style="grid-template-columns:repeat(1,36px)">`;
       ['tg-last','tg-skip','tg-skip','tg-valid','tg-empty','tg-empty'].forEach((t, i) =>
         html += `<div class="tg ${t}">${['7','·','·','8','',''][i]}</div>`);
       html += '</div></div></div>';
-      html += `<div style="font-size:0.78rem;color:var(--text-muted)">· = boş kare &nbsp;|&nbsp; <span style="color:var(--cell-last-border)">■</span> = mevcut &nbsp;|&nbsp; <span style="color:var(--cell-valid-border)">■</span> = geçerli hedef</div>`;
+      html += `<div style="font-size:0.78rem;color:var(--text-muted)">${T('tut.demo.legend')}</div>`;
       return html;
     }
 
@@ -3829,7 +4543,7 @@
         {r:4,c:4,type:'tg-valid',label:'13'},
       ];
       let html = buildGridPreview(cells, 5, 5);
-      html += `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">45° çaprazda tam 2 kare (1 boş arada) — 4 yön</div>`;
+      html += `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">${T('tut.demo.diag')}</div>`;
       return html;
     }
 
@@ -3844,7 +4558,7 @@
       document.getElementById('tut-visual').innerHTML  = s.visual;
       document.getElementById('btn-tut-prev').style.display = tutStep === 0 ? 'none' : '';
       document.getElementById('btn-tut-next').textContent   =
-        tutStep === steps.length - 1 ? '✅ Anladım!' : 'İleri →';
+        tutStep === steps.length - 1 ? T('tut.done') : T('tut.next');
     }
 
     function closeTutorial() {
@@ -3881,11 +4595,12 @@
       function populateStats() {
         const xpData = loadXP();
         const lvl    = currentLevel(xpData.total);
-        document.getElementById('ss-lvl').textContent = 'Sv. ' + lvl.lvl;
-        document.getElementById('ss-xp').textContent  = (xpData.total || 0) + ' XP toplam';
+        document.getElementById('ss-lvl').textContent = T('level.badge', { n: lvl.lvl });
+        document.getElementById('ss-xp').textContent  = T('xp.total', { n: xpData.total || 0 });
       }
 
       function openStartScreen() {
+        if (itMode) closeIT();
         populateStats();
         ss.classList.remove('hidden');
         ss.style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
@@ -3907,11 +4622,11 @@
             openTimeLevelSelect();
           } else {
             gameHasStarted = true;
-            if (!localStorage.getItem('tutorialSeen')) {
-              tut.classList.remove('hidden');
-              renderTutStep();
+            if (!localStorage.getItem('itSeen')) {
+              startInteractiveTutorial();
+            } else {
+              initGame();
             }
-            initGame();
           }
         }, 220);
       }
@@ -3927,6 +4642,99 @@
 
     // ── Başlat ───────────────────────────────────────────────────
     updateXPBar(loadXP().total, false);
+    applyLang();
+
+    // ════════════════════════════════════════════════════════════
+    //  AD MODAL — simüle reklam (gerçek AdMob için showRealAd'ı doldur)
+    // ════════════════════════════════════════════════════════════
+    const AD_DURATION = 5;
+    let adRewardTarget = 'hint'; // 'hint' | 'time'
+
+    function openAdModal(target = 'hint') {
+      adRewardTarget = target;
+      if (target === 'time' && timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('ad-modal-desc').textContent =
+        target === 'time' ? T('modal.ad.time.desc') :
+        target === 'undo' ? T('modal.ad.undo.desc') : T('modal.ad.hint.desc');
+      document.getElementById('ad-watch-area').style.display = 'none';
+      document.getElementById('ad-modal-btns').style.display = '';
+      document.getElementById('ad-modal').classList.add('show');
+    }
+
+    function closeAdModal() {
+      document.getElementById('ad-modal').classList.remove('show');
+      if (adRewardTarget === 'time' && gameActive && currentMode === 'zaman' && !timerInterval) {
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          updateTimerDisplay();
+          if (timeLeft <= 0) { clearInterval(timerInterval); endGame(false); }
+        }, 1000);
+      }
+    }
+
+    function showRealAd(onSuccess, onFail) {
+      // TODO: window.AdMob?.showRewardedAd(onSuccess, onFail); return true;
+      return false;
+    }
+
+    function startSimulatedAd() {
+      const watchArea = document.getElementById('ad-watch-area');
+      const fill      = document.getElementById('ad-progress-bar-fill');
+      const secondsEl = document.getElementById('ad-seconds');
+      const btns      = document.getElementById('ad-modal-btns');
+
+      btns.style.display      = 'none';
+      watchArea.style.display = '';
+      secondsEl.textContent   = AD_DURATION;
+      fill.style.width        = '0%';
+
+      let elapsed = 0;
+      const tick  = 100;
+      const total = AD_DURATION * 1000;
+
+      const iv = setInterval(() => {
+        elapsed += tick;
+        fill.style.width      = `${Math.min(100, (elapsed / total) * 100)}%`;
+        secondsEl.textContent = Math.max(0, Math.ceil((total - elapsed) / 1000));
+        if (elapsed >= total) { clearInterval(iv); onAdReward(); }
+      }, tick);
+    }
+
+    function onAdReward() {
+      if (adRewardTarget === 'time') {
+        timeLeft += TIME_BOOST_SECONDS;
+        updateTimerDisplay();
+        updateTimeBoostBtn();
+      } else if (adRewardTarget === 'undo') {
+        undosUsedThisGame = Math.max(0, undosUsedThisGame - 1);
+        updateUndoBtn();
+        undoMove();
+      } else {
+        hintsUsedThisGame = Math.max(0, hintsUsedThisGame - 1);
+        updateHintBtnLabel();
+      }
+      closeAdModal();
+    }
+
+    document.getElementById('btn-ad-watch').addEventListener('click', () => {
+      if (!showRealAd(onAdReward, startSimulatedAd)) startSimulatedAd();
+    });
+    document.getElementById('btn-ad-cancel').addEventListener('click', closeAdModal);
+
+    document.getElementById('btn-time-boost').addEventListener('click', () => {
+      if (!gameActive) return;
+      if (!timeBoostFreeUsed) {
+        timeBoostFreeUsed = true;
+        timeLeft += TIME_BOOST_SECONDS;
+        updateTimerDisplay();
+        updateTimeBoostBtn();
+      } else {
+        openAdModal('time');
+      }
+    });
   </script>
 </body>
 </html>
