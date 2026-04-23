@@ -1,0 +1,7 @@
+Add rematch feature for online race mode
+
+- Keep room alive 30s after game ends for rematch window
+- Handle rematch message: notify opponent, restart room when both accept
+- Extract startRoomGame helper used by both createRoom and rematch
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
