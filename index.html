@@ -2332,6 +2332,7 @@
         'ach.cat.puzzle':       '🧩 Zorunlu Duraklar',
         'ach.cat.mini':         '🔲 Mini Grid',
         'ach.unlocked':         'Başarı Açıldı!',
+        'toast.error':          'Bağlantı Hatası',
         'ach.first_move.name':  'İlk Adım',
         'ach.first_move.desc':  'İlk hamleyi yaptın.',
         'ach.half_way.name':    'Yarı Yol',
@@ -2651,6 +2652,7 @@
         'ach.cat.puzzle':       '🧩 Mandatory Stops',
         'ach.cat.mini':         '🔲 Mini Grid',
         'ach.unlocked':         'Achievement Unlocked!',
+        'toast.error':          'Connection Error',
         'ach.first_move.name':  'First Step',
         'ach.first_move.desc':  'Made your first move.',
         'ach.half_way.name':    'Halfway',
@@ -3359,9 +3361,12 @@
       if (!toastQueue.length) { toastBusy = false; return; }
       toastBusy = true;
       const ach = toastQueue.shift();
-      document.getElementById('toast-icon').textContent = ach.icon;
-      document.getElementById('toast-name').textContent = ach.name;
-      document.getElementById('toast-xp').textContent   = `+${ach.xp} XP`;
+      const isErr = ach.type === 'error';
+      document.getElementById('toast-icon').textContent  = ach.icon;
+      document.getElementById('toast-name').textContent  = ach.name;
+      document.getElementById('toast-xp').textContent    = isErr ? '' : `+${ach.xp} XP`;
+      const titleEl = document.querySelector('#ach-toast .toast-title');
+      if (titleEl) titleEl.textContent = isErr ? T('toast.error') : T('ach.unlocked');
       const t = document.getElementById('ach-toast');
       t.classList.add('show');
       setTimeout(() => {
@@ -5213,7 +5218,7 @@
       } catch(e) {
         closeOnlineWaiting();
         isOnlineRace = false;
-        showToast({ icon: '❌', name: T('online.error'), xp: 0 });
+        showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
         return;
       }
 
@@ -5227,7 +5232,7 @@
         closeOnlineWaiting();
         isOnlineRace = false;
         onlineSocket = null;
-        showToast({ icon: '❌', name: T('online.error'), xp: 0 });
+        showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
       };
       onlineSocket.onclose = () => {
         // gameActive kontrolü yok — oyuncu hamlesiz kalmışsa da overlay göster
