@@ -2153,7 +2153,7 @@
     <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> <span data-i18n="label.streak">gün serisi</span></div>
     <div id="rank-badge"></div>
     <div id="mode-select-wrap">
-      <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label" data-i18n="mode.klasik">Klasik</span></button>
+      <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label">Klasik</span></button>
       <div id="mode-dropdown">
         <button class="mode-opt active" data-mode="serbest">🎮 <span data-i18n="mode.klasik">Klasik</span></button>
         <button class="mode-opt"        data-mode="gunluk">📅 <span data-i18n="mode.gunluk">Günlük</span></button>
@@ -3292,6 +3292,8 @@
       if (langBtnSS) langBtnSS.textContent = label;
       document.documentElement.lang = currentLang;
       if (itMode && itStep > 0 && itPhase === 'read') showITStep(itStep);
+      const modeLabel = document.getElementById('mode-select-label');
+      if (modeLabel) modeLabel.textContent = T('mode.' + (currentMode === 'serbest' ? 'klasik' : currentMode));
     }
 
     // ════════════════════════════════════════════════════════════
