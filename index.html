@@ -2082,7 +2082,7 @@
       </div>
       <div class="ss-card ss-card-coop" data-mode="coop">
         <span class="ss-card-icon">🤝</span>
-        <div class="ss-card-name" data-i18n="mode.coop">Kooperatif</div>
+        <div class="ss-card-name" data-i18n="mode.coop">Eşli Mod</div>
         <div class="ss-card-desc" data-i18n="mode.coop.desc">2 oyuncu, 1 grid: tek-çift sayıları sıraya diz!</div>
       </div>
     </div>
@@ -2423,7 +2423,7 @@
         <div id="online-mode-tabs" style="display:flex;gap:6px;width:100%;margin-bottom:4px">
           <button id="tab-quick" class="online-tab active" onclick="switchOnlineTab('quick')" style="flex:1">🔍 Hızlı Eşleş</button>
           <button id="tab-private" class="online-tab" onclick="switchOnlineTab('private')" style="flex:1">🔑 Özel Oda</button>
-          <button id="tab-coop" class="online-tab" onclick="switchOnlineTab('coop')" style="flex:1">🤝 Kooperatif</button>
+          <button id="tab-coop" class="online-tab" onclick="switchOnlineTab('coop')" style="flex:1">🤝 Eşli Mod</button>
         </div>
         <input id="online-nick-inp" type="text" maxlength="20" autocomplete="off">
         <!-- Hızlı eşleş alanı -->
@@ -2448,7 +2448,7 @@
         <!-- Kooperatif alanı -->
         <div id="online-tab-coop" style="display:none;flex-direction:column;gap:8px;width:100%">
           <div style="font-size:0.78rem;color:var(--text-muted);text-align:center;line-height:1.5">
-            <strong style="color:var(--text)">🤝 Kooperatif Mod</strong><br>
+            <strong style="color:var(--text)">🤝 Eşli Mod</strong><br>
             2 oyuncu · 1 grid · Tek sayılar + Çift sayılar
           </div>
           <button id="btn-coop-connect" style="width:100%;padding:10px;border-radius:8px;background:#0e7490;color:#fff;border:none;font-weight:700;cursor:pointer;font-size:0.9rem">🤝 Partner Bul</button>
@@ -2813,11 +2813,11 @@
         'online.leave':            '🚪 Terk Et',
         'btn.focus':               '🔍',
         'btn.focus.exit':          '✕ Odaktan Çık',
-        'mode.coop':               'Kooperatif',
+        'mode.coop':               'Eşli Mod',
         'mode.coop.desc':          '2 oyuncu, 1 grid: tek-çift sayıları sıraya diz!',
         'coop.btn.connect':        '🤝 Partner Bul',
         'coop.waiting.title':      'Partner Aranıyor...',
-        'coop.waiting.sub':        'Kooperatif mod için partner aranıyor',
+        'coop.waiting.sub':        'Eşli mod için partner aranıyor',
         'coop.matched.odd':        ' ile eşleşildi – Sen: Tek Sayılar (1,3,5...)',
         'coop.matched.even':       ' ile eşleşildi – Sen: Çift Sayılar (2,4,6...)',
         'coop.turn.yours':         '🟢 Sıra Sende!',
@@ -2829,7 +2829,7 @@
         'coop.lose':               '💀 Takıldınız!',
         'coop.lose.msg':           '{score} sayısına kadar gelebildiniz.',
         'coop.new.game':           '🤝 Yeni Partner Bul',
-        'stats.mode.coop':         'Kooperatif',
+        'stats.mode.coop':         'Eşli Mod',
       },
       en: {
         'tagline':              'Place 1 to 100, in order, by the rules',
@@ -3169,7 +3169,7 @@
         'online.leave':            '🚪 Leave',
         'btn.focus':               '🔍',
         'btn.focus.exit':          '✕ Exit Focus',
-        'mode.coop':               'Cooperative',
+        'mode.coop':               'Paired Mode',
         'mode.coop.desc':          '2 players, 1 grid: place odd & even numbers in order!',
         'coop.btn.connect':        '🤝 Find Partner',
         'coop.waiting.title':      'Finding Partner...',
@@ -3185,7 +3185,7 @@
         'coop.lose':               '💀 Stuck!',
         'coop.lose.msg':           'You made it to {score} together.',
         'coop.new.game':           '🤝 Find New Partner',
-        'stats.mode.coop':         'Cooperative',
+        'stats.mode.coop':         'Paired Mode',
       }
     };
 
@@ -3380,7 +3380,7 @@
     let onlineOpponentNickname = '';
     let onlineOpponentRank = null;
     let focusMode = false;
-    // ── Kooperatif mod state ────────────────────────────────────────
+    // ── Eşli mod state ────────────────────────────────────────
     let isCoopMode = false;
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
