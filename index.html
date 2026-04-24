@@ -5366,35 +5366,25 @@
           document.getElementById('race-level-select').classList.remove('show');
           currentMode = 'yaris';
           gameHasStarted = true;
-          // Rakip isim + rütbe
+          // Rakip isim + rütbe sembolü
           const _bl = document.getElementById('race-bot-label');
-          if (_bl) _bl.textContent = onlineOpponentNickname || 'OPPONENT';
-          const _br = document.getElementById('race-bot-rank');
-          if (_br) {
-            if (onlineOpponentRank) {
-              _br.textContent = `${onlineOpponentRank.icon} ${onlineOpponentRank.name}`;
-              _br.style.display = '';
-            } else {
-              _br.style.display = 'none';
-            }
+          if (_bl) {
+            const oppIcon = onlineOpponentRank ? ` ${onlineOpponentRank.icon}` : '';
+            _bl.textContent = (onlineOpponentNickname || 'OPPONENT') + oppIcon;
           }
-          // Kendi isim + rütbe
+          const _br = document.getElementById('race-bot-rank');
+          if (_br) _br.style.display = 'none';
+          // Kendi isim + rütbe sembolü
           const _pl = document.getElementById('race-player-label');
           if (_pl) {
             const myNick = localStorage.getItem('nickname_100oyunu') || 'SEN';
-            _pl.textContent = myNick;
+            const myRankInfo = getClassicRankInfo();
+            const myIcon = myRankInfo ? ` ${myRankInfo.tier.icon}` : '';
+            _pl.textContent = myNick + myIcon;
             _pl.removeAttribute('data-i18n');
           }
           const _pr = document.getElementById('race-player-rank');
-          if (_pr) {
-            const myRankInfo = getClassicRankInfo();
-            if (myRankInfo) {
-              _pr.textContent = `${myRankInfo.tier.icon} ${myRankInfo.tier.name}`;
-              _pr.style.display = '';
-            } else {
-              _pr.style.display = 'none';
-            }
-          }
+          if (_pr) _pr.style.display = 'none';
           updateModeUI('yaris');
           initGame();
           break;
