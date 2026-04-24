@@ -5539,6 +5539,9 @@
     });
 
     document.getElementById('btn-online-cancel').addEventListener('click', cancelOnlineRace);
+    document.getElementById('online-waiting-overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('online-waiting-overlay')) cancelOnlineRace();
+    });
 
     function exitFocusMode() {
       focusMode = false;
@@ -5823,6 +5826,12 @@
       const coopBtn = document.getElementById('btn-coop-connect');
       if (coopBtn) { coopBtn.disabled = false; coopBtn.textContent = T('coop.btn.connect'); }
       closeOnlineWaiting();
+      gameHasStarted = false;
+      currentMode = 'serbest';
+      updateModeUI('serbest');
+      const ss = document.getElementById('start-screen');
+      ss.classList.remove('hidden');
+      ss.style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
     }
 
     function connectOnlineRace(nickname) {
