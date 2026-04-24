@@ -2829,6 +2829,10 @@
         'coop.lose':               '💀 Takıldınız!',
         'coop.lose.msg':           '{score} sayısına kadar gelebildiniz.',
         'coop.new.game':           '🤝 Yeni Partner Bul',
+        'coop.partner.left':       '⚠️ Partner oyundan düştü!',
+        'coop.partner.left.msg':   'Kaldığın yerden solo devam edebilir ya da çıkabilirsin.',
+        'coop.continue.solo':      '▶ Devam Et (Solo)',
+        'coop.exit':               '🚪 Çık',
         'stats.mode.coop':         'Eşli Mod',
       },
       en: {
@@ -3185,6 +3189,10 @@
         'coop.lose':               '💀 Stuck!',
         'coop.lose.msg':           'You made it to {score} together.',
         'coop.new.game':           '🤝 Find New Partner',
+        'coop.partner.left':       '⚠️ Partner disconnected!',
+        'coop.partner.left.msg':   'You can continue solo from where you left off, or exit.',
+        'coop.continue.solo':      '▶ Continue (Solo)',
+        'coop.exit':               '🚪 Exit',
         'stats.mode.coop':         'Paired Mode',
       }
     };
@@ -6014,9 +6022,7 @@
           botGameOver = true;
           if (raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
           if (isCoopMode) {
-            coopIsMyTurn = false;
-            isCoopMode = false;
-            showCoopResult(currentNumber - 1, 'stuck');
+            showCoopPartnerLeft();
           } else {
             showOnlineResult(currentNumber - 1, 0, 'you', true);
           }
@@ -6318,10 +6324,9 @@
       onlineSocket.onclose = () => {
         if (isCoopMode) {
           gameActive = false;
-          coopIsMyTurn = false;
           closeOnlineWaiting();
           if (!document.getElementById('overlay').classList.contains('show'))
-            showCoopResult(currentNumber - 1, 'stuck');
+            showCoopPartnerLeft();
         }
       };
     }
@@ -6343,6 +6348,62 @@
       if (lbl)  lbl.textContent  = coopIsMyTurn ? T('coop.turn.yours') : T('coop.turn.partner');
       if (role) role.textContent = coopMyRole === 'odd' ? T('coop.role.odd') : T('coop.role.even');
       bar.classList.toggle('my-turn', coopIsMyTurn);
+    }
+
+    function showCoopPartnerLeft() {
+      soundLose();
+      if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
+      isCoopMode = false;
+      coopIsMyTurn = false;
+
+      const box = document.getElementById('overlay-box');
+      box.className = 'lose';
+      document.getElementById('overlay-title').textContent = T('coop.partner.left');
+      document.getElementById('overlay-msg').textContent   = T('coop.partner.left.msg');
+      document.getElementById('overlay-xp-gain').textContent      = '';
+      document.getElementById('overlay-score-highlight').innerHTML = '';
+      document.getElementById('overlay-scores').innerHTML          = '';
+
+      const btns = document.getElementById('overlay-btns');
+      btns.innerHTML = '';
+
+      const soloBtn = document.createElement('button');
+      soloBtn.textContent = T('coop.continue.solo');
+      soloBtn.addEventListener('click', () => {
+        document.getElementById('overlay').classList.remove('show');
+        // Coop UI'ı temizle, solo serbest moda geç
+        coopPartnerCells = new Set();
+        coopPartnerLastR = -1; coopPartnerLastC = -1;
+        document.getElementById('coop-turn-bar').style.display = 'none';
+        currentMode = 'serbest';
+        gameActive = true;
+        updateModeUI('serbest');
+        updateUndoBtn();
+        updateComboDisplay();
+        document.getElementById('hint').textContent = T('hint.default');
+        document.getElementById('num-display').textContent = currentNumber;
+        renderGrid();
+        if (!hasAnyValidMove()) endGame(false);
+      });
+      btns.appendChild(soloBtn);
+
+      const exitBtn = document.createElement('button');
+      exitBtn.textContent = T('coop.exit');
+      exitBtn.addEventListener('click', () => {
+        document.getElementById('overlay').classList.remove('show');
+        coopPartnerCells = new Set();
+        coopPartnerLastR = -1; coopPartnerLastC = -1;
+        document.getElementById('coop-turn-bar').style.display = 'none';
+        gameHasStarted = false;
+        currentMode = 'serbest';
+        updateModeUI('serbest');
+        const ss = document.getElementById('start-screen');
+        ss.classList.remove('hidden');
+        ss.style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
+      });
+      btns.appendChild(exitBtn);
+
+      document.getElementById('overlay').classList.add('show');
     }
 
     function showCoopResult(score, outcome) {
