@@ -1543,6 +1543,13 @@
       border-color: #3b82f6 !important;
       color: #93c5fd !important;
     }
+    .cell.coop-partner-last {
+      background: #1d4ed8 !important;
+      border-color: #60a5fa !important;
+      color: #fff !important;
+      box-shadow: 0 0 10px 3px #3b82f6aa !important;
+      font-weight: 800 !important;
+    }
 
     #btn-online-leave { background: #450a0a; color: #fca5a5; border: 1px solid #dc2626; }
     #btn-online-leave:hover { background: #7f1d1d; border-color: #ef4444; }
@@ -3380,6 +3387,7 @@
     let coopPartnerName = '';
     let coopPartnerRank = null;
     let coopPartnerCells = new Set(); // "r,c" strings for partner cell coloring
+    let coopPartnerLastR = -1, coopPartnerLastC = -1;
     // ── Sürpriz mod state ───────────────────────────────────────────
     let surpriseCells  = [];   // [{r, c, eventType}]
     let activeEffects  = [];   // [{type, movesLeft}]
@@ -4686,7 +4694,10 @@
           if (val !== 0) {
             cell.textContent = val;
             cell.classList.add('filled');
-            if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) cell.classList.add('coop-partner');
+            if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) {
+              cell.classList.add('coop-partner');
+              if (r === coopPartnerLastR && c === coopPartnerLastC) cell.classList.add('coop-partner-last');
+            }
             if (r === lastR && c === lastC) {
               cell.classList.add('last');
               if (currentMode === 'gunluk' && currentNumber === 2) cell.classList.add('start-blink');
@@ -6030,6 +6041,7 @@
           currentMode = 'coop';
           gameHasStarted = true;
           coopPartnerCells = new Set();
+          coopPartnerLastR = -1; coopPartnerLastC = -1;
           coopIsMyTurn = (coopMyRole === 'odd');
           updateModeUI('coop');
           initGame();
@@ -6040,6 +6052,7 @@
           if (!isCoopMode) break;
           grid[data.r][data.c] = data.n;
           coopPartnerCells.add(`${data.r},${data.c}`);
+          coopPartnerLastR = data.r; coopPartnerLastC = data.c;
           lastR = data.r; lastC = data.c;
           renderGrid();
           break;
@@ -6339,6 +6352,7 @@
       saveGameStat('coop_online', { won: won ? 'win' : 'lose', score });
 
       coopPartnerCells = new Set();
+      coopPartnerLastR = -1; coopPartnerLastC = -1;
       document.getElementById('coop-turn-bar').style.display = 'none';
 
       const box = document.getElementById('overlay-box');
