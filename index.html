@@ -4765,10 +4765,9 @@
             cell.classList.add('filled');
             if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) {
               cell.classList.add('coop-partner');
-              if (r === coopPartnerLastR && c === coopPartnerLastC) cell.classList.add('coop-partner-last');
             }
             if (r === lastR && c === lastC) {
-              cell.classList.add('last');
+              cell.classList.add(isCoopMode ? 'coop-partner-last' : 'last');
               if (currentMode === 'gunluk' && currentNumber === 2) cell.classList.add('start-blink');
             }
           } else if ((currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
@@ -5972,7 +5971,7 @@
             const cb = document.getElementById('btn-cs-create');
             if (cb) { cb.disabled = true; cb.textContent = '⏳ Partner bekleniyor...'; }
             document.getElementById('cs-code-val').textContent = data.code;
-            document.getElementById('cs-code-display').style.display = '';
+            document.getElementById('cs-code-display').style.display = 'block';
           } else {
             const btn = document.getElementById('btn-create-private');
             btn.disabled    = true;
