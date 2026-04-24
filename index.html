@@ -5641,6 +5641,7 @@
       document.getElementById('online-waiting-overlay').classList.add('show');
     }
     function closeOnlineWaiting() {
+      if (_privateTimeout) { clearTimeout(_privateTimeout); _privateTimeout = null; }
       document.getElementById('online-waiting-overlay').classList.remove('show');
       document.getElementById('private-code-display').style.display = 'none';
       document.getElementById('private-code-val').textContent = '';
@@ -5715,6 +5716,7 @@
           break;
 
         case 'privateCreated': {
+          if (_privateTimeout) { clearTimeout(_privateTimeout); _privateTimeout = null; }
           const btn = document.getElementById('btn-create-private');
           btn.disabled    = true;
           btn.textContent = '⏳ Arkadaş bekleniyor...';
@@ -5726,6 +5728,7 @@
         }
 
         case 'privateNotFound': {
+          if (_privateTimeout) { clearTimeout(_privateTimeout); _privateTimeout = null; }
           const joinBtn = document.getElementById('btn-join-private');
           joinBtn.disabled = false; joinBtn.textContent = 'Katıl';
           document.getElementById('private-code-inp').style.borderColor = '#ef4444';
@@ -5986,13 +5989,27 @@
       onlineSocket.onerror   = () => showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
     }
 
+    let _privateTimeout = null;
+
+    function _resetPrivateButtons() {
+      const c = document.getElementById('btn-create-private');
+      const j = document.getElementById('btn-join-private');
+      if (c) { c.disabled = false; c.textContent = '🏠 Oda Oluştur'; }
+      if (j) { j.disabled = false; j.textContent  = 'Katıl'; }
+      if (_privateTimeout) { clearTimeout(_privateTimeout); _privateTimeout = null; }
+    }
+
     function createPrivateRoom() {
       const nick = getNickForOnline();
       if (!nick) return;
-      // Butonu devre dışı bırak, bağlanıyor göster
       const btn = document.getElementById('btn-create-private');
-      btn.disabled  = true;
+      btn.disabled    = true;
       btn.textContent = '⏳ Bağlanıyor...';
+      _privateTimeout = setTimeout(() => {
+        if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
+        _resetPrivateButtons();
+        showToast({ icon: '❌', name: 'Sunucuya bağlanılamadı. Tekrar dene.', xp: 0, type: 'error' });
+      }, 8000);
       _openOnlineSocket({ type: 'createPrivate', nickname: nick });
     }
 
@@ -6002,8 +6019,13 @@
       const code = document.getElementById('private-code-inp').value.trim().toUpperCase();
       if (code.length < 4) { document.getElementById('private-code-inp').focus(); return; }
       const btn = document.getElementById('btn-join-private');
-      btn.disabled = true;
+      btn.disabled    = true;
       btn.textContent = '⏳';
+      _privateTimeout = setTimeout(() => {
+        if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
+        _resetPrivateButtons();
+        showToast({ icon: '❌', name: 'Sunucuya bağlanılamadı. Tekrar dene.', xp: 0, type: 'error' });
+      }, 8000);
       _openOnlineSocket({ type: 'joinPrivate', code, nickname: nick });
     }
 
