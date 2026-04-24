@@ -158,6 +158,31 @@
       font-weight: 600;
       color: var(--text);
     }
+    #rank-badge {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: default;
+    }
+    #overlay-rank-row {
+      margin: 6px 0 2px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    #overlay-rank-row .rank-avg {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
 
     #streak-badge .flame { font-size: 1rem; }
     #streak-badge.active-streak { border-color: #f97316; color: #f97316; }
@@ -1920,6 +1945,7 @@
   <!-- Streak + Mod seçici -->
   <div id="meta-bar">
     <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> <span data-i18n="label.streak">gün serisi</span></div>
+    <div id="rank-badge"></div>
     <div id="mode-select-wrap">
       <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label" data-i18n="mode.klasik">Klasik</span></button>
       <div id="mode-dropdown">
@@ -2138,6 +2164,7 @@
       <h2 id="overlay-title"></h2>
       <p  id="overlay-msg"></p>
       <div id="overlay-score-highlight"></div>
+      <div id="overlay-rank-row" style="display:none"></div>
       <div id="overlay-xp-gain"></div>
       <div id="overlay-scores"></div>
       <div id="overlay-btns"></div>
@@ -4374,6 +4401,47 @@
 
     function loadScores() { try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch { return []; } }
 
+    // ── Rütbe Sistemi ────────────────────────────────────────────
+    const RANK_SCORES_KEY = 'rank_scores_100oyunu';
+    const RANK_TIERS = [
+      { min: 98, icon: '🌟', name: 'Grandmaster' },
+      { min: 91, icon: '👑', name: 'Efsane'      },
+      { min: 83, icon: '💎', name: 'Uzman'        },
+      { min: 73, icon: '💫', name: 'Usta'         },
+      { min: 63, icon: '🔥', name: 'Deneyimli'   },
+      { min: 51, icon: '🎯', name: 'Becerikli'   },
+      { min: 36, icon: '⚔️', name: 'Sefer Başı'  },
+      { min: 21, icon: '🌿', name: 'Acemi'        },
+      { min: 0,  icon: '🌑', name: 'Yeni Başlayan'},
+    ];
+
+    function saveClassicRankScore(score) {
+      const arr = JSON.parse(localStorage.getItem(RANK_SCORES_KEY) || '[]');
+      arr.push(score);
+      if (arr.length > 20) arr.splice(0, arr.length - 20);
+      localStorage.setItem(RANK_SCORES_KEY, JSON.stringify(arr));
+      return arr;
+    }
+
+    function getClassicRankInfo() {
+      const arr = JSON.parse(localStorage.getItem(RANK_SCORES_KEY) || '[]');
+      if (!arr.length) return null;
+      const last = arr.slice(-10);
+      const avg  = Math.round(last.reduce((a, b) => a + b, 0) / last.length);
+      const tier = RANK_TIERS.find(r => avg >= r.min);
+      return { avg, tier, total: arr.length };
+    }
+
+    function updateRankBadge() {
+      const el = document.getElementById('rank-badge');
+      if (!el) return;
+      const info = (currentMode === 'serbest') ? getClassicRankInfo() : null;
+      if (!info) { el.style.display = 'none'; return; }
+      el.style.display = 'flex';
+      el.textContent = `${info.tier.icon} ${info.tier.name}`;
+      el.title = `Son ${Math.min(info.total, 10)} oyun ortalaması: ${info.avg}`;
+    }
+
     function saveScore(score) {
       const scores = loadScores();
       const date = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
@@ -4650,9 +4718,26 @@
       if (isMiniGrid || currentMode === 'serbest' || currentMode === 'bulmaca' || currentMode === 'surpriz') {
         document.getElementById('overlay-score-highlight').innerHTML = '';
         document.getElementById('overlay-scores').innerHTML = '';
-        if (currentMode === 'surpriz') saveSurprizScore(score); // skoru kaydet ama gösterme
+        if (currentMode === 'surpriz') saveSurprizScore(score);
       } else {
         renderScores(scores, score);
+      }
+
+      // Klasik mod rütbe güncelle ve göster
+      const rankRow = document.getElementById('overlay-rank-row');
+      if (currentMode === 'serbest' && rankRow) {
+        saveClassicRankScore(score);
+        const ri = getClassicRankInfo();
+        if (ri) {
+          const g = Math.min(ri.total, 10);
+          rankRow.innerHTML = `${ri.tier.icon} <strong>${ri.tier.name}</strong><span class="rank-avg">Son ${g} ort: ${ri.avg}</span>`;
+          rankRow.style.display = '';
+        } else {
+          rankRow.style.display = 'none';
+        }
+        updateRankBadge();
+      } else if (rankRow) {
+        rankRow.style.display = 'none';
       }
 
       // Tamamlanan bulmacayı kaydet
@@ -4976,6 +5061,7 @@
       if (icon)  icon.textContent  = ICONS[mode] || '🎮';
       if (label) label.textContent = T('mode.' + (mode === 'serbest' ? 'klasik' : mode));
       document.querySelectorAll('.mode-opt').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+      updateRankBadge();
     }
 
     document.getElementById('btn-mode-select').addEventListener('click', (e) => {
