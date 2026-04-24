@@ -3457,6 +3457,7 @@
     let coopPartnerRank = null;
     let coopPartnerCells = new Set(); // "r,c" strings for partner cell coloring
     let coopPartnerLastR = -1, coopPartnerLastC = -1;
+    let coopMyLastR = -1, coopMyLastC = -1;
     // ── Sürpriz mod state ───────────────────────────────────────────
     let surpriseCells  = [];   // [{r, c, eventType}]
     let activeEffects  = [];   // [{type, movesLeft}]
@@ -4626,6 +4627,7 @@
       if (isCoopMode && onlineSocket?.readyState === WebSocket.OPEN)
         onlineSocket.send(JSON.stringify({ type: 'coopMove', r, c, n: currentNumber }));
       lastR = r; lastC = c;
+      if (isCoopMode) { coopMyLastR = r; coopMyLastC = c; }
       currentNumber++;
       if (currentMode === 'yaris') document.getElementById('race-player-score').textContent = currentNumber - 1;
       comboCount++;
@@ -4765,9 +4767,13 @@
             cell.classList.add('filled');
             if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) {
               cell.classList.add('coop-partner');
+              if (r === coopPartnerLastR && c === coopPartnerLastC) cell.classList.add('coop-partner-last');
             }
-            if (r === lastR && c === lastC) {
-              cell.classList.add(isCoopMode ? 'coop-partner-last' : 'last');
+            if (r === coopMyLastR && c === coopMyLastC && isCoopMode) {
+              cell.classList.add('last');
+            }
+            if (!isCoopMode && r === lastR && c === lastC) {
+              cell.classList.add('last');
               if (currentMode === 'gunluk' && currentNumber === 2) cell.classList.add('start-blink');
             }
           } else if ((currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
@@ -6125,7 +6131,7 @@
           currentMode = 'coop';
           gameHasStarted = true;
           coopPartnerCells = new Set();
-          coopPartnerLastR = -1; coopPartnerLastC = -1;
+          coopPartnerLastR = -1; coopPartnerLastC = -1; coopMyLastR = -1; coopMyLastC = -1;
           coopIsMyTurn = (coopMyRole === 'odd');
           updateModeUI('coop');
           initGame();
@@ -6571,7 +6577,7 @@
         document.getElementById('overlay').classList.remove('show');
         // Coop UI'ı temizle, solo serbest moda geç
         coopPartnerCells = new Set();
-        coopPartnerLastR = -1; coopPartnerLastC = -1;
+        coopPartnerLastR = -1; coopPartnerLastC = -1; coopMyLastR = -1; coopMyLastC = -1;
         document.getElementById('coop-turn-bar').style.display = 'none';
         currentMode = 'serbest';
         gameActive = true;
@@ -6590,7 +6596,7 @@
       exitBtn.addEventListener('click', () => {
         document.getElementById('overlay').classList.remove('show');
         coopPartnerCells = new Set();
-        coopPartnerLastR = -1; coopPartnerLastC = -1;
+        coopPartnerLastR = -1; coopPartnerLastC = -1; coopMyLastR = -1; coopMyLastC = -1;
         document.getElementById('coop-turn-bar').style.display = 'none';
         gameHasStarted = false;
         currentMode = 'serbest';
@@ -6611,7 +6617,7 @@
       saveGameStat('coop_online', { won: won ? 'win' : 'lose', score });
 
       coopPartnerCells = new Set();
-      coopPartnerLastR = -1; coopPartnerLastC = -1;
+      coopPartnerLastR = -1; coopPartnerLastC = -1; coopMyLastR = -1; coopMyLastC = -1;
       document.getElementById('coop-turn-bar').style.display = 'none';
 
       const box = document.getElementById('overlay-box');
