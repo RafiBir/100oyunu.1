@@ -2232,7 +2232,7 @@
   <!-- ── İstatistik Modalı ────────────────────────────────────── -->
   <div id="stats-modal">
     <div id="stats-box">
-      <h2>📊 İstatistiklerim</h2>
+      <h2 data-i18n="stats.title">📊 İstatistiklerim</h2>
       <div id="stats-tabs"></div>
       <div id="stats-content"></div>
       <div style="text-align:center;margin-top:18px">
@@ -2442,6 +2442,24 @@
         'btn.hint.take':        '💡 İpucu Al',
         'btn.achievements':     '🏅 Başarılar',
         'btn.stats':            '📊 İstatistik',
+        'stats.title':          '📊 İstatistiklerim',
+        'stats.empty':          'Henüz bu modda oyun oynamadınız.',
+        'stats.total':          'Toplam Oyun',
+        'stats.best':           'En İyi Skor',
+        'stats.avg':            'Son 10 Oyun Ort.',
+        'stats.puzzles':        'Tamamlanan Bulmaca',
+        'stats.levels':         'Tamamlanan Seviye',
+        'stats.wins':           'Kazanma',
+        'stats.losses':         'Kaybetme',
+        'stats.draws':          'Beraberlik',
+        'stats.winrate':        'Kazanma Oranı',
+        'stats.mode.klasik':    'Klasik',
+        'stats.mode.surpriz':   'Sürpriz',
+        'stats.mode.gunluk':    'Günlük',
+        'stats.mode.bulmaca':   'Bulmaca',
+        'stats.mode.zaman':     'Zaman',
+        'stats.mode.yaris_bot': 'Yarış-Bot',
+        'stats.mode.yaris_online': 'Yarış-Online',
         'hint.default':         'İstediğin hücreye tıkla',
         'hint.valid':           'Yeşil hücrelerden birine tıkla',
         'hint.next':            'Sonraki sayıyı yerleştir',
@@ -2763,6 +2781,24 @@
         'btn.hint.take':        '💡 Get Hint',
         'btn.achievements':     '🏅 Achievements',
         'btn.stats':            '📊 Statistics',
+        'stats.title':          '📊 My Statistics',
+        'stats.empty':          'No games played in this mode yet.',
+        'stats.total':          'Total Games',
+        'stats.best':           'Best Score',
+        'stats.avg':            'Last 10 Avg.',
+        'stats.puzzles':        'Puzzles Completed',
+        'stats.levels':         'Levels Completed',
+        'stats.wins':           'Wins',
+        'stats.losses':         'Losses',
+        'stats.draws':          'Draws',
+        'stats.winrate':        'Win Rate',
+        'stats.mode.klasik':    'Classic',
+        'stats.mode.surpriz':   'Surprise',
+        'stats.mode.gunluk':    'Daily',
+        'stats.mode.bulmaca':   'Puzzle',
+        'stats.mode.zaman':     'Time',
+        'stats.mode.yaris_bot': 'Race-Bot',
+        'stats.mode.yaris_online': 'Race-Online',
         'hint.default':         'Tap any cell to place',
         'hint.valid':           'Tap one of the green cells',
         'hint.next':            'Place the next number',
@@ -4698,13 +4734,13 @@
     // ── Oyuncu İstatistikleri ────────────────────────────────────
     const STATS_KEY = 'stats_100oyunu';
     const STATS_MODES = [
-      { key: 'serbest',      label: 'Klasik',      type: 'score'  },
-      { key: 'surpriz',      label: 'Sürpriz',     type: 'score'  },
-      { key: 'gunluk',       label: 'Günlük',      type: 'score'  },
-      { key: 'bulmaca',      label: 'Bulmaca',     type: 'puzzle' },
-      { key: 'zaman',        label: 'Zaman',       type: 'time'   },
-      { key: 'yaris_bot',    label: 'Yarış-Bot',   type: 'race'   },
-      { key: 'yaris_online', label: 'Yarış-Online',type: 'online' },
+      { key: 'serbest',      i18n: 'stats.mode.klasik',       type: 'score'  },
+      { key: 'surpriz',      i18n: 'stats.mode.surpriz',      type: 'score'  },
+      { key: 'gunluk',       i18n: 'stats.mode.gunluk',       type: 'score'  },
+      { key: 'bulmaca',      i18n: 'stats.mode.bulmaca',      type: 'puzzle' },
+      { key: 'zaman',        i18n: 'stats.mode.zaman',        type: 'time'   },
+      { key: 'yaris_bot',    i18n: 'stats.mode.yaris_bot',    type: 'race'   },
+      { key: 'yaris_online', i18n: 'stats.mode.yaris_online', type: 'online' },
     ];
 
     function loadStats() {
@@ -4746,7 +4782,7 @@
       const contentEl = document.getElementById('stats-content');
 
       tabsEl.innerHTML = STATS_MODES.map(m =>
-        `<button class="stats-tab${_statsActiveTab === m.key ? ' active' : ''}" data-mkey="${m.key}">${m.label}</button>`
+        `<button class="stats-tab${_statsActiveTab === m.key ? ' active' : ''}" data-mkey="${m.key}">${T(m.i18n)}</button>`
       ).join('');
 
       tabsEl.querySelectorAll('.stats-tab').forEach(btn => {
@@ -4761,24 +4797,24 @@
       const total = s.totalGames || 0;
 
       if (!total) {
-        contentEl.innerHTML = `<div class="stats-empty">Henüz bu modda oyun oynamadınız.</div>`;
+        contentEl.innerHTML = `<div class="stats-empty">${T('stats.empty')}</div>`;
         return;
       }
 
-      let rows = [`<div class="stats-row"><span>Toplam Oyun</span><span class="stats-val">${total}</span></div>`];
+      let rows = [`<div class="stats-row"><span>${T('stats.total')}</span><span class="stats-val">${total}</span></div>`];
 
       if (mode.type === 'score' || mode.type === 'puzzle' || mode.type === 'time') {
         if (s.bestScore !== undefined)
-          rows.push(`<div class="stats-row"><span>En İyi Skor</span><span class="stats-val">${s.bestScore}</span></div>`);
+          rows.push(`<div class="stats-row"><span>${T('stats.best')}</span><span class="stats-val">${s.bestScore}</span></div>`);
         if (s.scores && s.scores.length) {
           const last = s.scores.slice(-10);
           const avg = Math.round(last.reduce((a, b) => a + b, 0) / last.length);
-          rows.push(`<div class="stats-row"><span>Son 10 Oyun Ort.</span><span class="stats-val">${avg}</span></div>`);
+          rows.push(`<div class="stats-row"><span>${T('stats.avg')}</span><span class="stats-val">${avg}</span></div>`);
         }
         if (s.completedPuzzles !== undefined)
-          rows.push(`<div class="stats-row"><span>Tamamlanan Bulmaca</span><span class="stats-val">${s.completedPuzzles}</span></div>`);
+          rows.push(`<div class="stats-row"><span>${T('stats.puzzles')}</span><span class="stats-val">${s.completedPuzzles}</span></div>`);
         if (s.completedLevels !== undefined)
-          rows.push(`<div class="stats-row"><span>Tamamlanan Seviye</span><span class="stats-val">${s.completedLevels}</span></div>`);
+          rows.push(`<div class="stats-row"><span>${T('stats.levels')}</span><span class="stats-val">${s.completedLevels}</span></div>`);
       }
 
       if (mode.type === 'race' || mode.type === 'online') {
@@ -4786,11 +4822,11 @@
         const losses = s.losses || 0;
         const draws  = s.draws  || 0;
         const wr = total ? Math.round((wins / total) * 100) : 0;
-        rows.push(`<div class="stats-row"><span>Kazanma</span><span class="stats-val" style="color:#4ade80">${wins}</span></div>`);
-        rows.push(`<div class="stats-row"><span>Kaybetme</span><span class="stats-val" style="color:var(--lose-color)">${losses}</span></div>`);
+        rows.push(`<div class="stats-row"><span>${T('stats.wins')}</span><span class="stats-val" style="color:#4ade80">${wins}</span></div>`);
+        rows.push(`<div class="stats-row"><span>${T('stats.losses')}</span><span class="stats-val" style="color:var(--lose-color)">${losses}</span></div>`);
         if (mode.type === 'online')
-          rows.push(`<div class="stats-row"><span>Beraberlik</span><span class="stats-val" style="color:var(--text-muted)">${draws}</span></div>`);
-        rows.push(`<div class="stats-row"><span>Kazanma Oranı</span><span class="stats-val">%${wr}</span></div>`);
+          rows.push(`<div class="stats-row"><span>${T('stats.draws')}</span><span class="stats-val" style="color:var(--text-muted)">${draws}</span></div>`);
+        rows.push(`<div class="stats-row"><span>${T('stats.winrate')}</span><span class="stats-val">%${wr}</span></div>`);
       }
 
       contentEl.innerHTML = rows.join('');
