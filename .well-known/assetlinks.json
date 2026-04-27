@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.rafibir.centium",
+    "sha256_cert_fingerprints": [
+      "5B:4A:D9:A8:5B:83:AD:9D:9D:73:02:C9:0A:1C:CC:E2:21:79:9E:2B:A1:27:A6:20:7E:73:7C:F6:2C:A9:78:B2"
+    ]
+  }
+}]
