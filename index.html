@@ -2523,7 +2523,7 @@
   <div id="rank-modal">
     <div id="rank-modal-box">
       <h2>🏅 Rütbe Sistemi</h2>
-      <p class="rank-logic">Rütbeniz, klasik modda oynadığınız son 10 oyunun ortalamasına göre hesaplanır. Ne kadar çok oynarsanız o kadar doğru bir ölçüm elde edilir.</p>
+      <p class="rank-logic" id="rank-modal-logic"></p>
       <div id="rank-my-status"></div>
       <div id="rank-tier-list"></div>
       <div style="text-align:center;margin-top:18px">
@@ -3107,6 +3107,28 @@
         'coop.continue.solo':      '▶ Devam Et (Solo)',
         'coop.exit':               '🚪 Çık',
         'stats.mode.coop':         'Eşli Mod',
+        'rank.tier.grandmaster':   'Grandmaster',
+        'rank.tier.legend':        'Efsane',
+        'rank.tier.expert':        'Uzman',
+        'rank.tier.master':        'Usta',
+        'rank.tier.experienced':   'Deneyimli',
+        'rank.tier.skilled':       'Becerikli',
+        'rank.tier.veteran':       'Sefer Başı',
+        'rank.tier.novice':        'Acemi',
+        'rank.tier.beginner':      'Yeni Başlayan',
+        'rank.tier.desc.0':        'Oyunun zirvesi. Efsanelerin de üstünde.',
+        'rank.tier.desc.1':        'Oyunu olağanüstü bir seviyede oynuyorsun.',
+        'rank.tier.desc.2':        'Stratejin güçlü, sezgin keskin.',
+        'rank.tier.desc.3':        'Deneyim ve beceri bir arada.',
+        'rank.tier.desc.4':        'Oyunun içinde rahatça geziniyorsun.',
+        'rank.tier.desc.5':        'Temel stratejilere hakimsin.',
+        'rank.tier.desc.6':        'Oyunu anlıyorsun, gelişiyorsun.',
+        'rank.tier.desc.7':        'Henüz öğrenme aşamasındasın.',
+        'rank.tier.desc.8':        'Her yolculuk bir adımla başlar.',
+        'rank.badge.title':        'Klasik mod, son {n} oyun ortalaması: {avg}',
+        'rank.modal.avg':          'Son {n} oyun ortalaması:',
+        'rank.modal.no_games':     'Henüz klasik mod oynaman gerekiyor.',
+        'rank.modal.logic':        'Rütbeniz, klasik modda oynadığınız son 10 oyunun ortalamasına göre hesaplanır. Ne kadar çok oynarsanız o kadar doğru bir ölçüm elde edilir.',
       },
       en: {
         'tagline':              'Path to 100',
@@ -3467,6 +3489,28 @@
         'coop.continue.solo':      '▶ Continue (Solo)',
         'coop.exit':               '🚪 Exit',
         'stats.mode.coop':         'Paired Mode',
+        'rank.tier.grandmaster':   'Grandmaster',
+        'rank.tier.legend':        'Legend',
+        'rank.tier.expert':        'Expert',
+        'rank.tier.master':        'Master',
+        'rank.tier.experienced':   'Experienced',
+        'rank.tier.skilled':       'Skilled',
+        'rank.tier.veteran':       'Veteran',
+        'rank.tier.novice':        'Novice',
+        'rank.tier.beginner':      'Beginner',
+        'rank.tier.desc.0':        'The pinnacle of the game. Beyond legends.',
+        'rank.tier.desc.1':        'You play at an extraordinary level.',
+        'rank.tier.desc.2':        'Your strategy is sharp, your instincts keen.',
+        'rank.tier.desc.3':        'Experience and skill combined.',
+        'rank.tier.desc.4':        'You navigate the game with ease.',
+        'rank.tier.desc.5':        'You have mastered the basic strategies.',
+        'rank.tier.desc.6':        'You understand the game and are improving.',
+        'rank.tier.desc.7':        'Still in the learning phase.',
+        'rank.tier.desc.8':        'Every journey begins with a single step.',
+        'rank.badge.title':        'Classic mode, last {n} games average: {avg}',
+        'rank.modal.avg':          'Last {n} games average:',
+        'rank.modal.no_games':     'You need to play classic mode first.',
+        'rank.modal.logic':        'Your rank is calculated based on your last 10 classic mode games. The more you play, the more accurate your rank will be.',
       }
     };
 
@@ -5051,15 +5095,15 @@
     // ── Rütbe Sistemi ────────────────────────────────────────────
     const RANK_SCORES_KEY = 'rank_scores_100oyunu';
     const RANK_TIERS = [
-      { min: 98, icon: '🌟', name: 'Grandmaster' },
-      { min: 91, icon: '👑', name: 'Efsane'      },
-      { min: 83, icon: '💎', name: 'Uzman'        },
-      { min: 73, icon: '💫', name: 'Usta'         },
-      { min: 63, icon: '🔥', name: 'Deneyimli'   },
-      { min: 51, icon: '🎯', name: 'Becerikli'   },
-      { min: 36, icon: '⚔️', name: 'Sefer Başı'  },
-      { min: 21, icon: '🌿', name: 'Acemi'        },
-      { min: 0,  icon: '🌑', name: 'Yeni Başlayan'},
+      { min: 98, icon: '🌟', nameKey: 'rank.tier.grandmaster' },
+      { min: 91, icon: '👑', nameKey: 'rank.tier.legend'      },
+      { min: 83, icon: '💎', nameKey: 'rank.tier.expert'      },
+      { min: 73, icon: '💫', nameKey: 'rank.tier.master'      },
+      { min: 63, icon: '🔥', nameKey: 'rank.tier.experienced' },
+      { min: 51, icon: '🎯', nameKey: 'rank.tier.skilled'     },
+      { min: 36, icon: '⚔️', nameKey: 'rank.tier.veteran'    },
+      { min: 21, icon: '🌿', nameKey: 'rank.tier.novice'      },
+      { min: 0,  icon: '🌑', nameKey: 'rank.tier.beginner'   },
     ];
 
     function saveClassicRankScore(score) {
@@ -5085,26 +5129,17 @@
       const info = getClassicRankInfo();
       if (!info) { el.style.display = 'none'; return; }
       el.style.display = 'flex';
-      el.textContent = `${info.tier.icon} ${info.tier.name}`;
-      el.title = `Klasik mod, son ${Math.min(info.total, 10)} oyun ortalaması: ${info.avg}`;
+      el.textContent = `${info.tier.icon} ${T(info.tier.nameKey)}`;
+      el.title = T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg });
     }
 
-    const RANK_TIER_DESCS = [
-      'Oyunun zirvesi. Efsanelerin de üstünde.',
-      'Oyunu olağanüstü bir seviyede oynuyorsun.',
-      'Stratejin güçlü, sezgin keskin.',
-      'Deneyim ve beceri bir arada.',
-      'Oyunun içinde rahatça geziniyorsun.',
-      'Temel stratejilere hakimsin.',
-      'Oyunu anlıyorsun, gelişiyorsun.',
-      'Henüz öğrenme aşamasındasın.',
-      'Her yolculuk bir adımla başlar.',
-    ];
+    const RANK_TIER_DESCS = [0,1,2,3,4,5,6,7,8].map(i => () => T(`rank.tier.desc.${i}`));
 
     function openRankModal() {
       const modal   = document.getElementById('rank-modal');
       const myDiv   = document.getElementById('rank-my-status');
       const listDiv = document.getElementById('rank-tier-list');
+      document.getElementById('rank-modal-logic').textContent = T('rank.modal.logic');
       const info    = getClassicRankInfo();
 
       if (info) {
@@ -5112,12 +5147,12 @@
         myDiv.innerHTML = `<div class="rank-my">
           <span style="font-size:1.4rem">${info.tier.icon}</span>
           <div style="flex:1">
-            <div style="font-weight:700">${info.tier.name}</div>
-            <div style="font-size:0.78rem;color:var(--text-muted)">Son ${gamesUsed} oyun ortalaması: <strong>${info.avg}</strong></div>
+            <div style="font-weight:700">${T(info.tier.nameKey)}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted)">${T('rank.modal.avg', { n: gamesUsed })} <strong>${info.avg}</strong></div>
           </div>
         </div>`;
       } else {
-        myDiv.innerHTML = `<div class="rank-my" style="text-align:center;color:var(--text-muted);font-size:0.82rem">Henüz klasik mod oynaman gerekiyor.</div>`;
+        myDiv.innerHTML = `<div class="rank-my" style="text-align:center;color:var(--text-muted);font-size:0.82rem">${T('rank.modal.no_games')}</div>`;
       }
 
       listDiv.innerHTML = RANK_TIERS.map((tier, i) => {
@@ -5128,8 +5163,8 @@
         return `<div class="rank-tier-row${isActive ? ' active' : ''}">
           <div class="rank-tier-icon">${tier.icon}</div>
           <div class="rank-tier-info">
-            <div class="rank-tier-name">${tier.name}</div>
-            <div class="rank-tier-desc">${RANK_TIER_DESCS[i]}</div>
+            <div class="rank-tier-name">${T(tier.nameKey)}</div>
+            <div class="rank-tier-desc">${RANK_TIER_DESCS[i]()}</div>
           </div>
           <div class="rank-tier-range">${range}</div>
         </div>`;
@@ -5553,7 +5588,7 @@
         const ri = getClassicRankInfo();
         if (ri) {
           const g = Math.min(ri.total, 10);
-          rankRow.innerHTML = `${ri.tier.icon} <strong>${ri.tier.name}</strong><span class="rank-avg">Son ${g} ort: ${ri.avg}</span>`;
+          rankRow.innerHTML = `${ri.tier.icon} <strong>${T(ri.tier.nameKey)}</strong><span class="rank-avg">${T('rank.modal.avg', { n: g })} ${ri.avg}</span>`;
           rankRow.style.display = '';
         } else {
           rankRow.style.display = 'none';
@@ -6162,7 +6197,7 @@
 
       onlineSocket.onopen = () => {
         const myRankInfo = getClassicRankInfo();
-        const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: myRankInfo.tier.name } : null;
+        const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
         onlineSocket.send(JSON.stringify({ type: 'join', nickname, rank: myRank }));
       };
       onlineSocket.onmessage = (evt) => {
@@ -6537,7 +6572,7 @@
 
     function _openOnlineSocket(msgOnOpen) {
       const myRankInfo  = getClassicRankInfo();
-      const rankPayload = myRankInfo ? { icon: myRankInfo.tier.icon, name: myRankInfo.tier.name } : null;
+      const rankPayload = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
       const WS_URL = location.hostname === 'localhost'
         ? 'ws://localhost:3001'
         : 'wss://100oyunu-server-production.up.railway.app';
@@ -6606,7 +6641,7 @@
       btn.disabled = true; btn.textContent = '⏳ Bağlanıyor...';
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: myRankInfo.tier.name } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'createPrivate', nickname: nick, rank: myRank, mode: 'coop' }));
@@ -6638,7 +6673,7 @@
       jb.disabled = true; jb.textContent = '⏳';
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: myRankInfo.tier.name } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'joinPrivate', code, nickname: nick, rank: myRank }));
@@ -6706,7 +6741,7 @@
     function connectCoopMode(nick) {
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo  = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: myRankInfo.tier.name } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
 
       const titleEl = document.getElementById('online-waiting-title');
       const subEl   = document.getElementById('online-waiting-sub');
