@@ -4185,6 +4185,10 @@
     document.getElementById('btn-ach-close').addEventListener('click', () => {
       document.getElementById('ach-modal').classList.remove('show');
     });
+    document.getElementById('ach-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('ach-modal'))
+        document.getElementById('ach-modal').classList.remove('show');
+    });
 
     // ════════════════════════════════════════════════════════════
     //  GÜNLÜK MEYDAN OKUMA
