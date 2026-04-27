@@ -204,11 +204,12 @@
       max-width: 580px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       margin-bottom: 8px;
       gap: 6px;
       flex-wrap: nowrap;
     }
+    #meta-bar-left  { flex: 1; display: flex; align-items: center; }
+    #meta-bar-right { flex: 1; display: flex; align-items: center; justify-content: flex-end; }
 
     #menu-wrap {
       position: relative;
@@ -2419,21 +2420,7 @@
   <div id="top-bar">
     <div id="top-bar-left"><button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button></div>
     <h1 id="game-title">CENTIUM</h1>
-    <div id="top-bar-right">
-      <div id="mode-select-wrap">
-        <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label">Klasik</span></button>
-        <div id="mode-dropdown">
-          <button class="mode-opt active" data-mode="serbest">🎮 <span data-i18n="mode.klasik">Klasik</span></button>
-          <button class="mode-opt"        data-mode="gunluk">📅 <span data-i18n="mode.gunluk">Günlük</span></button>
-          <button class="mode-opt"        data-mode="bulmaca">🧩 <span data-i18n="mode.bulmaca">Bulmaca</span></button>
-          <button class="mode-opt"        data-mode="zaman">⏱️ <span data-i18n="mode.zaman">Zaman</span></button>
-          <button class="mode-opt"        data-mode="surpriz">⚡ <span data-i18n="mode.surpriz">Sürpriz</span></button>
-          <button class="mode-opt"        data-mode="yaris">🏁 <span data-i18n="mode.yaris">Yarış</span></button>
-          <button class="mode-opt"        data-mode="coop">🤝 <span data-i18n="mode.coop">Eşli Mod</span></button>
-        </div>
-      </div>
-      <button id="btn-sound">🔊 Ses</button><button id="btn-lang">🇬🇧 EN</button>
-    </div>
+    <div id="top-bar-right"><button id="btn-sound">🔊 Ses</button><button id="btn-lang">🇬🇧 EN</button></div>
   </div>
 
   <!-- XP şeridi -->
@@ -2445,14 +2432,26 @@
 
   <!-- Meta bar -->
   <div id="meta-bar">
-    <div id="rank-badge"></div>
-    <div id="menu-wrap">
+    <div id="meta-bar-left"><div id="rank-badge"></div></div>
+    <div id="mode-select-wrap">
+      <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label">Klasik</span></button>
+      <div id="mode-dropdown">
+        <button class="mode-opt active" data-mode="serbest">🎮 <span data-i18n="mode.klasik">Klasik</span></button>
+        <button class="mode-opt"        data-mode="gunluk">📅 <span data-i18n="mode.gunluk">Günlük</span></button>
+        <button class="mode-opt"        data-mode="bulmaca">🧩 <span data-i18n="mode.bulmaca">Bulmaca</span></button>
+        <button class="mode-opt"        data-mode="zaman">⏱️ <span data-i18n="mode.zaman">Zaman</span></button>
+        <button class="mode-opt"        data-mode="surpriz">⚡ <span data-i18n="mode.surpriz">Sürpriz</span></button>
+        <button class="mode-opt"        data-mode="yaris">🏁 <span data-i18n="mode.yaris">Yarış</span></button>
+        <button class="mode-opt"        data-mode="coop">🤝 <span data-i18n="mode.coop">Eşli Mod</span></button>
+      </div>
+    </div>
+    <div id="meta-bar-right"><div id="menu-wrap">
       <button id="btn-menu">⋯</button>
       <div id="menu-dropdown">
         <button id="btn-achievements" data-i18n="btn.achievements">🏅 Başarılar</button>
         <button id="btn-stats" data-i18n="btn.stats">📊 İstatistik</button>
       </div>
-    </div>
+    </div></div>
   </div>
 
   <!-- Günlük meydan okuma başlığı -->
