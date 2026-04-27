@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>100 Oyunu</title>
+  <title>Centium: Path to 100</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -11,12 +11,13 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="100 Oyunu" />
+  <meta name="apple-mobile-web-app-title" content="Centium" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <style>
     /* ── Tema değişkenleri ─────────────────────────────────────── */
 
     :root {
+      /* ── Mevcut Renkler ──────────────────────────────────────────── */
       --bg:            #1a0a1e;
       --surface:       #2d1538;
       --surface2:      #3d1f50;
@@ -42,8 +43,59 @@
       --overlay-bg:    #00000099;
       --btn-secondary: #3d1f50;
       --btn-secondary-text: #fde8ff;
-      --win-color:     #fbbf24;
-      --lose-color:    #f87171;
+
+      /* ── Renk Semantiği ─────────────────────────────────────────── */
+      --color-win:     #fbbf24;
+      --color-warning: #f59e0b;
+      --color-error:   #f87171;
+      --color-success: #34d399;
+      --win-color:     var(--color-win);
+      --lose-color:    var(--color-error);
+
+      /* ── Spacing Skalası (8px tabanlı) ──────────────────────────── */
+      --space-1:  4px;
+      --space-2:  8px;
+      --space-3:  12px;
+      --space-4:  16px;
+      --space-6:  24px;
+      --space-8:  32px;
+      --space-10: 40px;
+      --space-12: 48px;
+
+      /* ── Tipografi Skalası ───────────────────────────────────────── */
+      --text-xs:   0.72rem;
+      --text-sm:   0.85rem;
+      --text-base: 0.95rem;
+      --text-lg:   1.1rem;
+      --text-xl:   1.4rem;
+      --text-2xl:  1.8rem;
+
+      /* ── Border Radius ───────────────────────────────────────────── */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+
+      /* ── Animasyon Süreleri ──────────────────────────────────────── */
+      --duration-fast: 150ms;
+      --duration-base: 300ms;
+      --duration-slow: 600ms;
+
+      /* ── Z-Index Katmanları ──────────────────────────────────────── */
+      --z-base:      0;
+      --z-dropdown:  100;
+      --z-sticky:    200;
+      --z-modal:     300;
+      --z-overlay:   400;
+      --z-toast:     500;
+      --z-tutorial:  600;
+
+      /* ── Buton Boyutları ─────────────────────────────────────────── */
+      --btn-pad-sm:  8px 16px;
+      --btn-pad-md:  12px 24px;
+      --btn-pad-lg:  16px 32px;
+      --btn-h-sm:    36px;
+      --btn-h-md:    44px;
+      --btn-h-lg:    52px;
     }
 
     /* ── Base ───────────────────────────────────────────────────── */
@@ -73,13 +125,20 @@
     }
 
     #top-bar button {
-      background: var(--btn-secondary);
-      color: var(--btn-secondary-text);
-      padding: 8px 14px;
-      font-size: 0.82rem;
-      min-width: 90px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: var(--btn-pad-sm);
+      min-height: var(--btn-h-sm);
+      font-size: var(--text-sm);
+      min-width: 80px;
     }
-
+    #top-bar button:hover {
+      background: var(--surface2);
+      border-color: var(--border);
+      color: var(--text);
+      opacity: 1;
+    }
     #top-bar #btn-sound.muted { opacity: 0.45; }
 
     h1 {
@@ -509,21 +568,73 @@
     }
 
     button {
-      padding: 10px 20px;
+      padding: var(--btn-pad-md);
+      min-height: var(--btn-h-md);
       border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border-radius: var(--radius-sm);
+      font-size: var(--text-base);
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
+      transition: opacity var(--duration-fast), transform var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-    button:hover { opacity: 0.85; transform: translateY(-1px); }
+    button:hover  { opacity: 0.88; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
 
-    #btn-restart { background: var(--accent-dim); color: #fff; }
-    #btn-hints, #btn-sound { background: var(--btn-secondary); color: var(--btn-secondary-text); }
-    #btn-hints.active { background: var(--cell-valid-hover); color: var(--cell-valid-border); }
-    #btn-undo, #btn-tutorial, #btn-scores, #btn-achievements, #btn-stats, #btn-lang { background: var(--btn-secondary); color: var(--btn-secondary-text); }
+    /* Birincil eylem — Yeniden Başla */
+    #btn-restart {
+      background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(244,114,182,0.35);
+      font-weight: 700;
+    }
+    #btn-restart:hover {
+      box-shadow: 0 6px 20px rgba(244,114,182,0.5);
+      opacity: 1;
+    }
+
+    /* İkincil eylem — Geri Al, Olası Hamleler */
+    #btn-undo {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    #btn-hints {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    #btn-hints.active {
+      background: rgba(245,158,11,0.12);
+      color: var(--color-warning);
+      border-color: var(--color-warning);
+    }
+
+    /* Yardımcı butonlar — küçük, ghost */
+    #btn-tutorial, #btn-scores, #btn-achievements, #btn-stats, #btn-lang, #btn-sound {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: var(--btn-pad-sm);
+      min-height: var(--btn-h-sm);
+      font-size: var(--text-sm);
+    }
+    #btn-tutorial:hover, #btn-scores:hover, #btn-achievements:hover,
+    #btn-stats:hover, #btn-lang:hover, #btn-sound:hover {
+      background: var(--surface2);
+      border-color: var(--border);
+      color: var(--text);
+      opacity: 1;
+    }
+    #btn-sound.muted { opacity: 0.45; }
+
     #btn-undo:disabled { opacity: 0.3; cursor: default; transform: none; }
 
     /* ── Tema seçici ─────────────────────────────────────────────── */
@@ -1924,11 +2035,11 @@
       margin-bottom: 36px;
     }
     .ss-big-num {
-      font-size: 6rem;
+      font-size: 4.5rem;
       font-weight: 900;
       color: var(--accent);
       line-height: 1;
-      letter-spacing: -4px;
+      letter-spacing: 6px;
       text-shadow: 0 0 30px var(--accent-dim), 0 0 70px var(--accent-dim);
       animation: ssNumPulse 3s ease-in-out infinite;
     }
@@ -1944,7 +2055,7 @@
       margin-top: 4px;
     }
     .ss-tagline {
-      font-size: 0.78rem;
+      font-size: 1.1rem;
       color: var(--text-muted);
       opacity: 0.6;
       margin-top: 8px;
@@ -2075,6 +2186,84 @@
     }
     #game-title:hover { opacity: 0.75; }
 
+    /* ── Mobil / Android Dokunma Optimizasyonu ───────────────────── */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, .ss-card, .cell, .mode-opt, [role="button"],
+    .stats-tab, .rls-btn, .emoji-btn {
+      touch-action: manipulation;
+    }
+    .grid, #controls, .ss-modes {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* Minimum dokunma alanı — Android 48px standart */
+    .ss-card {
+      min-height: 90px;
+    }
+
+    /* ── Modal Z-Index Sistemi ───────────────────────────────────── */
+    #scores-modal      { z-index: var(--z-modal); }
+    #rank-modal        { z-index: var(--z-modal); }
+    #stats-modal       { z-index: var(--z-modal); }
+    #ach-modal         { z-index: var(--z-modal); }
+    #global-scores-modal { z-index: var(--z-modal); }
+    #global-submit-modal { z-index: var(--z-overlay); }
+    #ad-modal          { z-index: var(--z-overlay); }
+    #overlay           { z-index: var(--z-overlay); }
+    #start-screen      { z-index: var(--z-tutorial); }
+    #it-overlay        { z-index: calc(var(--z-tutorial) - 10); }
+    #mode-dropdown     { z-index: var(--z-dropdown); }
+
+    /* ── Modal Padding Standardizasyonu ─────────────────────────── */
+    #scores-box,
+    #ad-modal-box,
+    #rank-modal-box,
+    #global-scores-box {
+      padding: var(--space-6);
+    }
+    #global-submit-box {
+      padding: var(--space-6);
+    }
+    #stats-box {
+      padding: var(--space-6) var(--space-4);
+    }
+    /* Modallerde mobil safe-area */
+    #scores-modal, #global-submit-modal, #global-scores-modal,
+    #rank-modal, #stats-modal, #ach-modal, #ad-modal, #overlay {
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+               max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+    /* Modal max-height mobil uyumlu */
+    #scores-box, #global-submit-box, #global-scores-box,
+    #rank-modal-box, #stats-box {
+      max-height: 90dvh;
+      overflow-y: auto;
+    }
+
+    /* ── Mod Seçim Kartları Düzeltme ─────────────────────────────── */
+    .ss-card {
+      padding: 20px 16px;
+    }
+    .ss-card-icon { font-size: 2rem; }
+
+    /* ── Focus / Erişilebilirlik ─────────────────────────────────── */
+    *:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Reduced Motion ──────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2084,9 +2273,8 @@
   <!-- ── Start Screen ──────────────────────────────────────────── -->
   <div id="start-screen">
     <div class="ss-logo">
-      <div class="ss-big-num">100</div>
-      <div class="ss-subtitle">O Y U N U</div>
-      <div class="ss-tagline" data-i18n="tagline">1'den 100'e, sırayla, kurala göre</div>
+      <div class="ss-big-num">CENTIUM</div>
+      <div class="ss-tagline" data-i18n="tagline">Path to 100</div>
     </div>
 
     <div class="ss-modes">
@@ -2136,7 +2324,7 @@
 
   <div id="top-bar">
     <button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button>
-    <h1 id="game-title">100 OYUNU</h1>
+    <h1 id="game-title">CENTIUM</h1>
     <button id="btn-sound">🔊 Ses</button>
     <button id="btn-lang">🇬🇧 EN</button>
   </div>
@@ -2238,14 +2426,17 @@
   </div>
 
   <div id="controls">
+    <!-- Birincil eylemler (satır 1) -->
     <button id="btn-restart" data-i18n="btn.restart">Yeniden Başla</button>
-    <button id="btn-tutorial" data-i18n="btn.tutorial">Nasıl Oynanır?</button>
     <button id="btn-undo" disabled data-i18n="btn.undo">↩ Geri Al</button>
     <button id="btn-hints" data-i18n="btn.hints">Olası Hamleler</button>
-    <button id="btn-hint-best" style="display:none">💡 İpucu Al</button>
-    <button id="btn-time-boost" style="display:none">⏱️ +30s (1)</button>
+    <!-- Yardımcı butonlar (satır 2) -->
+    <button id="btn-tutorial" data-i18n="btn.tutorial">Nasıl Oynanır?</button>
     <button id="btn-achievements" data-i18n="btn.achievements">🏅 Başarılar</button>
     <button id="btn-stats" data-i18n="btn.stats">📊 İstatistik</button>
+    <!-- Koşullu / mod'a özel (gizli) -->
+    <button id="btn-hint-best" style="display:none">💡 İpucu Al</button>
+    <button id="btn-time-boost" style="display:none">⏱️ +30s (1)</button>
     <button id="btn-focus" style="display:none" data-i18n="btn.focus">🔍</button>
     <button id="btn-online-leave" style="display:none" data-i18n="online.leave">🚪 Terk Et</button>
   </div>
@@ -2537,7 +2728,7 @@
     // ════════════════════════════════════════════════════════════
     const STRINGS = {
       tr: {
-        'tagline':              "1'den 100'e, sırayla, kurala göre",
+        'tagline':              'Path to 100',
         'mode.klasik':          'Klasik',
         'mode.klasik.desc':     'Tüm kareleri doldur, tahtayı fethet',
         'mode.gunluk':          'Günlük',
@@ -2738,7 +2929,7 @@
         'ach.race_hard_win.desc':       'Zor modda botu yendin.',
         'ach.race_close.name':          'Kıl Payı',
         'ach.race_close.desc':          '1 puan farkla yarışı kazandın.',
-        'tut.s.t1': '100 Oyununa Hoş Geldin!',
+        'tut.s.t1': 'Centium\'a Hoş Geldin!',
         'tut.s.d1': `Amaç basit: <strong>10×10 grid</strong>i <strong>1'den 100'e</strong> kadar sayılarla doldurmak.<br><br>Her tıklamada sıradaki sayı seçtiğin hücreye yerleşir. Ama her hücreye gidemezsin, <strong>hareket kuralları</strong> var!`,
         'tut.s.t2': 'Yatay & Dikey Hareket',
         'tut.s.d2': `Yatay veya dikey giderken, iki sayı arasında <strong>tam 2 boş kare</strong> olmalı.<br><br>Yani bir sonraki sayıyı <strong>tam 3 kare</strong> uzağa koymalısın.`,
@@ -2897,7 +3088,7 @@
         'stats.mode.coop':         'Eşli Mod',
       },
       en: {
-        'tagline':              'Place 1 to 100, in order, by the rules',
+        'tagline':              'Path to 100',
         'mode.klasik':          'Classic',
         'mode.klasik.desc':     'Fill all cells, conquer the board',
         'mode.gunluk':          'Daily',
@@ -3405,6 +3596,7 @@
     document.getElementById('btn-tls-close').addEventListener('click', () => {
       document.getElementById('time-level-select').classList.remove('show');
       updateModeUI(currentMode);
+      updateHintBtnVisibility();
       if (!gameHasStarted) {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
@@ -4080,6 +4272,9 @@
       comboCount = 0;
       hintCell = null;
       showHints = false;
+      const _hBtn = document.getElementById('btn-hints');
+      _hBtn.textContent = T('btn.hints');
+      _hBtn.classList.remove('active');
       if (_hintToastTimer) { clearTimeout(_hintToastTimer); _hintToastTimer = null; document.getElementById('hint-toast').classList.remove('show'); }
       maxComboThisGame = 0;
       noUndoPlaced     = 0;
@@ -5428,9 +5623,9 @@
       const blocks = Math.floor(score / 10);
       const bar    = '🟩'.repeat(blocks) + '⬜'.repeat(10 - blocks);
       const mode   = currentMode === 'gunluk' ? T('share.mode.daily') : T('share.mode.classic');
-      const text   = `100 Oyunu ${mode}\n${won ? '🏆' : '💀'} ${score}/100\n${bar}\n#100Oyunu`;
+      const text   = `Centium: Path to 100 ${mode}\n${won ? '🏆' : '💀'} ${score}/100\n${bar}\n#Centium100`;
       if (navigator.share) {
-        navigator.share({ title: '100 Oyunu', text }).catch(() => {});
+        navigator.share({ title: 'Centium: Path to 100', text }).catch(() => {});
       } else {
         navigator.clipboard.writeText(text).then(() => alert(T('copied'))).catch(() => alert(text));
       }
@@ -5590,6 +5785,7 @@
     document.getElementById('btn-pls-close').addEventListener('click', () => {
       document.getElementById('puzzle-level-select').classList.remove('show');
       updateModeUI(currentMode);
+      updateHintBtnVisibility();
       if (!gameHasStarted) {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
@@ -5599,6 +5795,7 @@
     document.getElementById('btn-rls-close').addEventListener('click', () => {
       document.getElementById('race-level-select').classList.remove('show');
       updateModeUI(currentMode);
+      updateHintBtnVisibility();
       if (!gameHasStarted) {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
