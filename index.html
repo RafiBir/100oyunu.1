@@ -118,11 +118,16 @@
     #top-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       width: 100%;
       max-width: 580px;
       margin-bottom: 8px;
     }
+    #top-bar-left, #top-bar-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    #top-bar-right { justify-content: flex-end; }
 
     #top-bar button {
       background: transparent;
@@ -2412,10 +2417,9 @@
   </div>
 
   <div id="top-bar">
-    <button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button>
+    <div id="top-bar-left"><button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button></div>
     <h1 id="game-title">CENTIUM</h1>
-    <button id="btn-sound">🔊 Ses</button>
-    <button id="btn-lang">🇬🇧 EN</button>
+    <div id="top-bar-right"><button id="btn-sound">🔊 Ses</button><button id="btn-lang">🇬🇧 EN</button></div>
   </div>
 
   <!-- XP şeridi -->
