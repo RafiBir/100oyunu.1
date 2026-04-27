@@ -3646,6 +3646,7 @@
       if (itMode && itStep > 0 && itPhase === 'read') showITStep(itStep);
       const modeLabel = document.getElementById('mode-select-label');
       if (modeLabel) modeLabel.textContent = T('mode.' + (currentMode === 'serbest' ? 'klasik' : currentMode));
+      updateRankBadge();
     }
 
     // ════════════════════════════════════════════════════════════
