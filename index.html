@@ -205,6 +205,25 @@
       flex-wrap: nowrap;
     }
 
+    #rank-area {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #rank-area #btn-achievements,
+    #rank-area #btn-stats {
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #rank-area #btn-achievements:hover,
+    #rank-area #btn-stats:hover { opacity: 0.8; }
+
     #streak-badge {
       display: flex;
       align-items: center;
@@ -2339,7 +2358,11 @@
   <!-- Streak + Mod seçici -->
   <div id="meta-bar">
     <div id="streak-badge"><span class="flame">🔥</span> <span id="streak-num">0</span> <span data-i18n="label.streak">gün serisi</span></div>
-    <div id="rank-badge"></div>
+    <div id="rank-area">
+      <button id="btn-achievements" data-i18n="btn.achievements">🏅 Başarılar</button>
+      <div id="rank-badge"></div>
+      <button id="btn-stats" data-i18n="btn.stats">📊 İstatistik</button>
+    </div>
     <div id="mode-select-wrap">
       <button id="btn-mode-select"><span id="mode-select-icon">🎮</span> <span id="mode-select-label">Klasik</span></button>
       <div id="mode-dropdown">
@@ -2432,8 +2455,6 @@
     <button id="btn-hints" data-i18n="btn.hints">Olası Hamleler</button>
     <!-- Yardımcı butonlar (satır 2) -->
     <button id="btn-tutorial" data-i18n="btn.tutorial">Nasıl Oynanır?</button>
-    <button id="btn-achievements" data-i18n="btn.achievements">🏅 Başarılar</button>
-    <button id="btn-stats" data-i18n="btn.stats">📊 İstatistik</button>
     <!-- Koşullu / mod'a özel (gizli) -->
     <button id="btn-hint-best" style="display:none">💡 İpucu Al</button>
     <button id="btn-time-boost" style="display:none">⏱️ +30s (1)</button>
