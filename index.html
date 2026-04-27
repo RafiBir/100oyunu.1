@@ -556,7 +556,7 @@
       cursor: default;
     }
 
-    .cell.mandatory-next, .cell.last.start-blink {
+    .cell.mandatory-next {
       background: #2d1a00;
       border-color: #f59e0b;
       color: #fcd34d;
@@ -5148,7 +5148,6 @@
             }
             if (!isCoopMode && r === lastR && c === lastC) {
               cell.classList.add('last');
-              if (currentMode === 'gunluk' && currentNumber === 2) cell.classList.add('start-blink');
             }
           } else if ((currentMode === 'bulmaca' || currentMode === 'gunluk') && puzzleStops.length) {
             const stop = puzzleStops.find(s => s.r === r && s.c === c);
