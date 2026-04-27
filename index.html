@@ -5885,6 +5885,7 @@
         if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
         if (isOnlineRace) { isOnlineRace = false; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        if (isCoopMode) { isCoopMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
         currentMode = opt.dataset.mode;
         updateModeUI(currentMode);
         if (currentMode === 'bulmaca') openPuzzleLevelSelect();
@@ -7573,6 +7574,7 @@
         if (currentMode === 'zaman') clearInterval(timerInterval);
         if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
+        if (isCoopMode) { isCoopMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
       }
 
       function launchMode(mode) {
