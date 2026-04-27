@@ -4480,7 +4480,7 @@
       document.getElementById('btn-time-boost').style.display = currentMode === 'zaman' ? '' : 'none';
       document.getElementById('btn-scores').style.display     = (currentMode === 'serbest' || currentMode === 'surpriz') ? '' : 'none';
       document.getElementById('btn-hints').style.display      = isYaris ? 'none' : '';
-      document.getElementById('btn-undo').style.display       = isYaris ? 'none' : '';
+      document.getElementById('btn-undo').style.display       = (isYaris || currentMode === 'coop') ? 'none' : '';
       document.getElementById('btn-tutorial').style.display   = isYaris ? 'none' : '';
       document.getElementById('btn-restart').style.display     = (isYaris && isOnlineRace) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = (isYaris && isOnlineRace) ? '' : 'none';
