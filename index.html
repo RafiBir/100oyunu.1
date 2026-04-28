@@ -7470,6 +7470,7 @@
       document.getElementById('global-submit-msg').className = 'global-submit-msg';
       document.getElementById('btn-global-send').disabled = false;
       document.getElementById('btn-global-send').textContent = T('modal.submit.send');
+      document.getElementById('overlay').classList.remove('show');
       document.getElementById('global-submit-modal').classList.add('show');
       document.getElementById('global-nickname-input').focus();
     }
