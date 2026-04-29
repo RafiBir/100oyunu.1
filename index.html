@@ -4663,7 +4663,7 @@
       document.getElementById('btn-tutorial').style.display   = isYaris ? 'none' : '';
       document.getElementById('btn-restart').style.display     = (isYaris && isOnlineRace) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = (isYaris && isOnlineRace) ? '' : 'none';
-      const focusAllowed = ['serbest','surpriz','gunluk','zaman'].includes(currentMode);
+      const focusAllowed = ['serbest','surpriz','gunluk','zaman','bulmaca'].includes(currentMode);
       document.getElementById('btn-focus').style.display        = focusAllowed ? '' : 'none';
       if (!focusAllowed && focusMode) exitFocusMode();
       updateHintBtnLabel();
