@@ -4663,8 +4663,8 @@
       document.getElementById('btn-tutorial').style.display   = isYaris ? 'none' : '';
       document.getElementById('btn-restart').style.display     = (isYaris && isOnlineRace) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = (isYaris && isOnlineRace) ? '' : 'none';
-      document.getElementById('btn-focus').style.display        = currentMode === 'serbest' ? '' : 'none';
-      if (currentMode !== 'serbest' && focusMode) exitFocusMode();
+      document.getElementById('btn-focus').style.display        = (currentMode === 'serbest' || currentMode === 'surpriz') ? '' : 'none';
+      if (currentMode !== 'serbest' && currentMode !== 'surpriz' && focusMode) exitFocusMode();
       updateHintBtnLabel();
       updateTimeBoostBtn();
     }
