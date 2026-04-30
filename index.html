@@ -8053,6 +8053,7 @@
         updateTimerDisplay();
         updateTimeBoostBtn();
       } else if (adRewardTarget === 'undo') {
+        gameActive = true;
         undosUsedThisGame = Math.max(0, undosUsedThisGame - 1);
         updateUndoBtn();
         undoMove();
