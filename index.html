@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
@@ -5320,14 +5320,9 @@
         if ((Date.now() - speed10Start) < 15000) speed10Done = true;
       }
 
-      soundPlace(currentNumber);
-      grid[r][c] = currentNumber;
-      if (isOnlineRace && onlineSocket?.readyState === WebSocket.OPEN)
-        onlineSocket.send(JSON.stringify({ type: 'move', r, c, n: currentNumber }));
-      if (isCoopMode && onlineSocket?.readyState === WebSocket.OPEN)
-        onlineSocket.send(JSON.stringify({ type: 'coopMove', r, c, n: currentNumber }));
       if (isBlockMode) {
         if (blockVsBot) {
+          soundPlace((blockPlayers[blockMyIndex]?.score || 0) + 1);
           if (applyLocalBlockMove(blockMyIndex, r, c)) advanceLocalBlockTurn();
           return;
         }
@@ -5336,6 +5331,13 @@
           return;
         }
       }
+
+      soundPlace(currentNumber);
+      grid[r][c] = currentNumber;
+      if (isOnlineRace && onlineSocket?.readyState === WebSocket.OPEN)
+        onlineSocket.send(JSON.stringify({ type: 'move', r, c, n: currentNumber }));
+      if (isCoopMode && onlineSocket?.readyState === WebSocket.OPEN)
+        onlineSocket.send(JSON.stringify({ type: 'coopMove', r, c, n: currentNumber }));
       lastR = r; lastC = c;
       if (isCoopMode) { coopMyLastR = r; coopMyLastC = c; }
       currentNumber++;
@@ -8533,6 +8535,7 @@
   </script>
 </body>
 </html>
+
 
 
 
