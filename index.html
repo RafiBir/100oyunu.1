@@ -6432,7 +6432,7 @@
       }
     });
 
-    document.getElementById('btn-rls-close').addEventListener('click', () => {
+    function closeRaceSelect() {
       document.getElementById('race-level-select').classList.remove('show');
       updateModeUI(currentMode);
       updateHintBtnVisibility();
@@ -6440,6 +6440,10 @@
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
       }
+    }
+    document.getElementById('btn-rls-close').addEventListener('click', closeRaceSelect);
+    document.getElementById('race-level-select').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('race-level-select')) closeRaceSelect();
     });
 
     document.querySelectorAll('.rls-btn').forEach(btn => {
