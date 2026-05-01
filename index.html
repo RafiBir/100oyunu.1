@@ -4934,7 +4934,8 @@
     function activateRescue() {
       if (!rescueCell) return;
       const { r, c } = rescueCell;
-      _isRescueMove = true; // isValidMove bypass
+      if (!isValidMove(r, c)) { flashCell(r, c); return; }
+      _isRescueMove = true;
       placeNumber(r, c);
     }
 
@@ -5173,6 +5174,7 @@
               cell.textContent = '✕';
             } else if (isRescue) {
               cell.classList.add('rescue-cell');
+              if (isValidMove(r, c)) cell.classList.add('valid');
               cell.textContent = '🔓';
             } else if (sc) {
               cell.classList.add('surprise-cell');
