@@ -3089,12 +3089,23 @@
         'ach.race_close.name':          'Kıl Payı',
         'ach.race_close.desc':          '1 puan farkla yarışı kazandın.',
         'ach.cat.coop':                 '🤝 Eşli Mod',
+        'ach.cat.bloke':                '🧱 Bloke Mod',
         'ach.coop_50.name':             'Takım Ruhu',
         'ach.coop_50.desc':             'Eşli modda birlikte 50 sayı yerleştirdiniz.',
         'ach.coop_first_win.name':      'İlk Birliktelik',
         'ach.coop_first_win.desc':      'Eşli modda ilk kez tüm 100 sayıyı birlikte tamamladınız.',
         'ach.coop_fast_win.name':       'Rüzgar Gibi',
         'ach.coop_fast_win.desc':       'Eşli modu 3 dakika içinde tamamladınız.',
+        'ach.block_first_move.name':    'İlk Blok',
+        'ach.block_first_move.desc':    'Bloke modda ilk hamleni yaptın.',
+        'ach.block_first_win.name':     'Son Kalan',
+        'ach.block_first_win.desc':     'Bloke modda ilk galibiyetini aldın.',
+        'ach.block_bot_win.name':       'Botları Bloke Et',
+        'ach.block_bot_win.desc':       'Bota karşı Bloke modda kazandın.',
+        'ach.block_four_win.name':      'Dörtlü Hakimiyet',
+        'ach.block_four_win.desc':      '4 kişilik Bloke modda kazandın.',
+        'ach.block_ten_wins.name':      'Bloke Ustası',
+        'ach.block_ten_wins.desc':      'Bloke modda toplam 10 galibiyet aldın.',
         'tut.s.t1': 'Centium\'a Hoş Geldin!',
         'tut.s.d1': `Amaç basit: <strong>10×10 grid</strong>i <strong>1'den 100'e</strong> kadar sayılarla doldurmak.<br><br>Her tıklamada sıradaki sayı seçtiğin hücreye yerleşir. Ama her hücreye gidemezsin, <strong>hareket kuralları</strong> var!`,
         'tut.s.t2': 'Yatay & Dikey Hareket',
@@ -3504,12 +3515,23 @@
         'ach.race_close.name':          'By a Thread',
         'ach.race_close.desc':          'Won a race by just 1 point.',
         'ach.cat.coop':                 '🤝 Co-op Mode',
+        'ach.cat.bloke':                '🧱 Block Mode',
         'ach.coop_50.name':             'Team Spirit',
         'ach.coop_50.desc':             'Placed 50 numbers together in Co-op mode.',
         'ach.coop_first_win.name':      'Together Strong',
         'ach.coop_first_win.desc':      'Completed all 100 numbers together for the first time.',
         'ach.coop_fast_win.name':       'Like the Wind',
         'ach.coop_fast_win.desc':       'Finished Co-op mode in under 3 minutes.',
+        'ach.block_first_move.name':    'First Block',
+        'ach.block_first_move.desc':    'Made your first move in Block mode.',
+        'ach.block_first_win.name':     'Last Standing',
+        'ach.block_first_win.desc':     'Won your first Block mode game.',
+        'ach.block_bot_win.name':       'Bot Blocker',
+        'ach.block_bot_win.desc':       'Won Block mode against bots.',
+        'ach.block_four_win.name':      'Four-Player Control',
+        'ach.block_four_win.desc':      'Won a 4-player Block mode game.',
+        'ach.block_ten_wins.name':      'Block Master',
+        'ach.block_ten_wins.desc':      'Won 10 total Block mode games.',
         'tut.s.t1': 'Welcome to 100 Game!',
         'tut.s.d1': `The goal is simple: fill the <strong>10×10 grid</strong> with numbers <strong>1 to 100</strong>.<br><br>Each tap places the next number in the selected cell. But you can't go anywhere, there are <strong>movement rules</strong>!`,
         'tut.s.t2': 'Horizontal & Vertical',
@@ -4238,6 +4260,11 @@
         { id: 'coop_50',         icon: '🤝', name: T('ach.coop_50.name'),          desc: T('ach.coop_50.desc'),         xp: 30,  check: (s) => s.coopScore >= 50 },
         { id: 'coop_first_win',  icon: '🎉', name: T('ach.coop_first_win.name'),   desc: T('ach.coop_first_win.desc'),  xp: 80,  check: (s) => s.coopWon },
         { id: 'coop_fast_win',   icon: '⚡', name: T('ach.coop_fast_win.name'),    desc: T('ach.coop_fast_win.desc'),   xp: 120, check: (s) => s.coopWon && s.coopTime <= 180 },
+        { id: 'block_first_move', icon: '🧱', name: T('ach.block_first_move.name'), desc: T('ach.block_first_move.desc'), xp: 20,  check: (s) => s.blockMove },
+        { id: 'block_first_win',  icon: '🏆', name: T('ach.block_first_win.name'),  desc: T('ach.block_first_win.desc'),  xp: 70,  check: (s) => s.blockWon },
+        { id: 'block_bot_win',    icon: '🤖', name: T('ach.block_bot_win.name'),    desc: T('ach.block_bot_win.desc'),    xp: 80,  check: (s) => s.blockWon && s.blockVsBot },
+        { id: 'block_four_win',   icon: '👥', name: T('ach.block_four_win.name'),   desc: T('ach.block_four_win.desc'),   xp: 110, check: (s) => s.blockWon && s.blockPlayerCount >= 4 },
+        { id: 'block_ten_wins',   icon: '🎖️', name: T('ach.block_ten_wins.name'),   desc: T('ach.block_ten_wins.desc'),   xp: 150, check: (s) => s.blockWins >= 10 },
       ];
     }
 
@@ -4291,6 +4318,7 @@
         { label: T('ach.cat.surpriz'), ids: ['surpriz_first','surpriz_bomb','surpriz_rescue','surpriz_jump','surpriz_score50','surpriz_score75','surpriz_winner'] },
         { label: T('ach.cat.yaris'),   ids: ['race_first_win','race_perfect','race_hard_win','race_close'] },
         { label: T('ach.cat.coop'),    ids: ['coop_50','coop_first_win','coop_fast_win'] },
+        { label: T('ach.cat.bloke'),   ids: ['block_first_move','block_first_win','block_bot_win','block_four_win','block_ten_wins'] },
       ];
     }
 
@@ -4672,7 +4700,7 @@
         document.getElementById('race-player-label').style.display = '';
         document.getElementById('race-player-label').textContent = blockPlayers[blockMyIndex]?.nickname || 'SEN';
         document.getElementById('race-undo-bar').style.display = 'none';
-        document.getElementById('emoji-panel').style.display = '';
+        document.getElementById('emoji-panel').style.display = 'none';
         document.getElementById('race-player-score').textContent = blockPlayers[blockMyIndex]?.score || 0;
         document.getElementById('race-bot-score').textContent = blockPlayers.filter(p => p.alive).length || blockPlayerCount;
         document.getElementById('race-timer').textContent = blockTurnIndex === blockMyIndex ? T('block.turn.yours') : T('block.turn.opp');
@@ -5057,6 +5085,14 @@
       const won = data.winner === 'you';
       if (won) { soundWin(); launchConfetti(); } else soundLose();
       saveGameStat(blockVsBot ? 'bloke_bot' : 'bloke_online', { won: won ? 'win' : 'lose' });
+      const stats = loadStats();
+      const blockWins = (stats.bloke_online?.wins || 0) + (stats.bloke_bot?.wins || 0);
+      checkAchievements({
+        blockWon: won,
+        blockVsBot,
+        blockPlayerCount: data.playerCount || blockPlayers.length || blockPlayerCount,
+        blockWins,
+      });
       const box = document.getElementById('overlay-box');
       box.className = won ? 'win' : 'lose';
       document.getElementById('overlay-title').textContent = data.reason === 'disconnect' && won ? T('block.left.win') : (won ? T('block.win') : T('block.lose'));
@@ -5330,6 +5366,7 @@
       }
 
       if (isBlockMode) {
+        checkAchievements({ blockMove: true });
         if (blockVsBot) {
           soundPlace((blockPlayers[blockMyIndex]?.score || 0) + 1);
           if (applyLocalBlockMove(blockMyIndex, r, c)) advanceLocalBlockTurn();
