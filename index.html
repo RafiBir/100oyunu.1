@@ -1912,9 +1912,10 @@
     .cell.block-p2 { background:#16a34a; color:#f0fdf4; }
     .cell.block-p3 { background:#ca8a04; color:#fefce8; }
     .cell.block-last { outline: 2px solid #facc15; box-shadow: 0 0 12px rgba(250,204,21,.55); }
-    #block-player-count, #block-match-type { display:none; gap:6px; width:100%; }
-    #block-player-count button, #block-match-type button { flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text-muted); font-weight:800; cursor:pointer; }
+    #block-player-count, #block-match-type, #coop-player-count, #coop-match-type { display:none; gap:6px; width:100%; }
+    #block-player-count button, #block-match-type button, #coop-player-count button, #coop-match-type button { flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text-muted); font-weight:800; cursor:pointer; }
     #block-player-count button.active, #block-match-type button.active { background:#ea580c; color:#fff; border-color:#fb923c; }
+    #coop-player-count button.active, #coop-match-type button.active { background:#0891b2; color:#fff; border-color:#22d3ee; }
     #block-score-list { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:8px 0 0; }
     .block-score-chip { border:1px solid var(--border); border-radius:8px; padding:4px 7px; font-size:.72rem; font-weight:800; color:var(--text); background:var(--surface2); }
     .block-score-chip.turn { border-color:#facc15; box-shadow:0 0 0 1px rgba(250,204,21,.35); }
@@ -1978,6 +1979,13 @@
       border: 1px solid var(--border); background: var(--surface2);
       color: var(--text); font-size: 0.95rem; text-align: center;
     }
+    #btn-cs-start {
+      background: linear-gradient(135deg, #164e63 0%, #0e7490 100%);
+      border: 2px solid #22d3ee; color: #cffafe;
+      padding: 14px 16px; border-radius: 12px; font-size: 0.95rem; font-weight: 800;
+      cursor: pointer; width: 100%; transition: all .2s;
+    }
+    #btn-cs-start:hover { background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%); }
     #btn-cs-quick {
       background: linear-gradient(135deg, #164e63 0%, #0e7490 100%);
       border: 2px solid #22d3ee; color: #cffafe;
@@ -2886,13 +2894,16 @@
         <button id="btn-cs-close">✕</button>
       </div>
       <p id="cs-subtitle">10×10 grid'de partner ile oyna — sen tek, o çift sayıları yerleştir!</p>
-      <button id="btn-cs-bot" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;padding:12px 0;font-size:1rem;font-weight:700;cursor:pointer;width:100%">🤖 Bot ile Oyna (2 Kişi)</button>
-      <button id="btn-cs-bot4" style="background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:12px;padding:12px 0;font-size:1rem;font-weight:700;cursor:pointer;width:100%">🤖 4 Kişilik Bot</button>
-      <hr class="rls-sep">
-      <div style="font-size:0.78rem;color:var(--text-muted);text-align:center;margin:-6px 0 4px">— veya online —</div>
+      <div id="coop-player-count">
+        <button type="button" data-count="2">2 Kişi</button>
+        <button type="button" data-count="4">4 Kişi</button>
+      </div>
+      <div id="coop-match-type">
+        <button type="button" data-type="online">Online</button>
+        <button type="button" data-type="bot">Bota Karşı</button>
+      </div>
       <input id="coop-nick-inp" type="text" maxlength="20" autocomplete="off" placeholder="Kullanıcı adı">
-      <button id="btn-cs-quick">🔍 Hızlı Eşleş (2 Kişi)</button>
-      <button id="btn-cs-quick4" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border:none;border-radius:12px;padding:10px 0;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%">👥 4 Kişilik Online</button>
+      <button id="btn-cs-start">🔍 Hızlı Eşleş</button>
       <hr class="rls-sep">
       <div id="cs-private-section">
         <div id="cs-private-label">🔑 Özel Oda</div>
@@ -4013,6 +4024,8 @@
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
     let isCoopBotMode = false;
+    let coopPlayerCount = 2;
+    let coopMatchType = 'online';
     let isCoop4Mode = false;
     let isCoop4BotMode = false;
     let coop4BotTimer = null;
@@ -7536,13 +7549,33 @@
       if (cb) { cb.disabled = false; cb.textContent = '🏠 Oda Oluştur'; }
       const jb = document.getElementById('btn-cs-join');
       if (jb) { jb.disabled = false; jb.textContent = 'Katıl'; }
-      const bot2 = document.getElementById('btn-cs-bot');
-      if (bot2) bot2.textContent = T('coop.btn.bot2');
-      const bot4 = document.getElementById('btn-cs-bot4');
-      if (bot4) bot4.textContent = T('coop.btn.bot4');
       document.getElementById('coop-code-inp').value = '';
+      updateCoopMenuUI();
       document.getElementById('coop-select').classList.add('show');
       if (!inp.value) inp.focus();
+    }
+
+    function updateCoopMenuUI() {
+      const countPicker = document.getElementById('coop-player-count');
+      const typePicker = document.getElementById('coop-match-type');
+      countPicker.style.display = 'flex';
+      typePicker.style.display = 'flex';
+      countPicker.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.count) === coopPlayerCount);
+      });
+      typePicker.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === coopMatchType);
+      });
+
+      const isOnline = coopMatchType === 'online';
+      const nick = document.getElementById('coop-nick-inp');
+      const privateSection = document.getElementById('cs-private-section');
+      const startBtn = document.getElementById('btn-cs-start');
+      nick.style.display = isOnline ? '' : 'none';
+      privateSection.style.display = isOnline && coopPlayerCount === 2 ? 'flex' : 'none';
+      startBtn.textContent = isOnline
+        ? (coopPlayerCount === 4 ? '👥 4 Kişilik Online' : '🔍 Hızlı Eşleş')
+        : (coopPlayerCount === 4 ? T('coop.btn.bot4') : T('coop.btn.bot2'));
     }
 
     function closeCoopSelect() {
@@ -8084,10 +8117,29 @@
       connectCoop4Mode(nick);
     }
 
-    document.getElementById('btn-cs-bot').addEventListener('click', startCoopBot);
-    document.getElementById('btn-cs-bot4').addEventListener('click', startCoop4Bot);
-    document.getElementById('btn-cs-quick').addEventListener('click', startCoopQuick);
-    document.getElementById('btn-cs-quick4').addEventListener('click', startCoop4Quick);
+    function startCoopFromMenu() {
+      if (coopMatchType === 'bot') {
+        if (coopPlayerCount === 4) startCoop4Bot();
+        else startCoopBot();
+        return;
+      }
+      if (coopPlayerCount === 4) startCoop4Quick();
+      else startCoopQuick();
+    }
+
+    document.getElementById('coop-player-count').querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        coopPlayerCount = Number(btn.dataset.count) === 4 ? 4 : 2;
+        updateCoopMenuUI();
+      });
+    });
+    document.getElementById('coop-match-type').querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        coopMatchType = btn.dataset.type === 'bot' ? 'bot' : 'online';
+        updateCoopMenuUI();
+      });
+    });
+    document.getElementById('btn-cs-start').addEventListener('click', startCoopFromMenu);
     document.getElementById('btn-cs-create').addEventListener('click', createCoopPrivate);
     document.getElementById('btn-cs-join').addEventListener('click', joinCoopPrivate);
     document.getElementById('btn-cs-close').addEventListener('click', cancelCoopSelect);
@@ -8106,7 +8158,7 @@
       if (e.key === 'Enter') joinCoopPrivate();
     });
     document.getElementById('coop-nick-inp').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') startCoopQuick();
+      if (e.key === 'Enter') startCoopFromMenu();
     });
 
     function updateCoopTurnUI() {
