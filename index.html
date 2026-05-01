@@ -2443,6 +2443,53 @@
       #top-bar button { min-width: unset; padding: 6px 10px; }
     }
 
+    @media (min-width: 768px) and (orientation: landscape) {
+      body {
+        min-height: 100dvh;
+        overflow-y: auto;
+        padding: 16px 24px 28px;
+      }
+
+      #top-bar,
+      #xp-bar-wrap,
+      #meta-bar,
+      #info,
+      #special-bar,
+      #surprise-bar,
+      #race-top,
+      #race-undo-bar,
+      #coop4-panel,
+      #controls {
+        max-width: min(760px, 92vw);
+      }
+
+      #grid {
+        gap: 4px;
+        padding: 10px;
+        max-width: calc(100vw - 48px);
+      }
+
+      .cell {
+        width: clamp(42px, min(7vw, 7vh), 64px);
+        height: clamp(42px, min(7vw, 7vh), 64px);
+        font-size: clamp(12px, min(1.5vw, 2.4vh), 16px);
+      }
+
+      #scores-box,
+      #global-submit-box,
+      #global-scores-box,
+      #rank-modal-box,
+      #stats-box,
+      #ach-modal-box,
+      #ad-modal-box,
+      #overlay-content,
+      #online-waiting-box,
+      #cs-box {
+        max-height: min(90dvh, 720px);
+        overflow-y: auto;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after {
         animation-duration: 0.01ms !important;

@@ -4,7 +4,6 @@
   "description": "Place numbers 1 to 100 on the grid — strategy meets simplicity.",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "lang": "tr",
