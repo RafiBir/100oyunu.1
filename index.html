@@ -1787,6 +1787,10 @@
       font-weight: 700;
     }
     .coop4-card.you { border-style: dashed; }
+    .coop4-card.p0 { border-color: #60a5fa; color: #bfdbfe; }
+    .coop4-card.p1 { border-color: #fb7185; color: #fecdd3; }
+    .coop4-card.p2 { border-color: #4ade80; color: #bbf7d0; }
+    .coop4-card.p3 { border-color: #facc15; color: #fef08a; }
     .coop4-card.left { opacity: 0.15; text-decoration: line-through; }
     #coop4-turn-label { font-size: 0.82rem; color: var(--text-muted); }
     #coop4-turn-label.my-turn { color: #4ade80; font-weight: 700; }
@@ -1801,6 +1805,17 @@
       color: #fff !important;
       box-shadow: 0 0 10px 3px #3b82f6aa !important;
       font-weight: 800 !important;
+    }
+    .cell.coop4-p0 { background:#1d4ed8 !important; border-color:#60a5fa !important; color:#eff6ff !important; }
+    .cell.coop4-p1 { background:#be123c !important; border-color:#fb7185 !important; color:#fff1f2 !important; }
+    .cell.coop4-p2 { background:#15803d !important; border-color:#4ade80 !important; color:#f0fdf4 !important; }
+    .cell.coop4-p3 { background:#a16207 !important; border-color:#facc15 !important; color:#fefce8 !important; }
+    .cell.coop4-last {
+      outline: 3px solid #fff !important;
+      box-shadow: 0 0 0 2px #111827, 0 0 16px 5px rgba(255,255,255,.55) !important;
+      font-weight: 900 !important;
+      transform: scale(1.04);
+      z-index: 2;
     }
 
     #btn-online-leave { background: #450a0a; color: #fca5a5; border: 1px solid #dc2626; }
@@ -4006,6 +4021,8 @@
     let coop4TurnIdx = 0;
     let coop4IsMyTurn = false;
     let coop4ActivePlayers = new Set();
+    let coop4CellOwners = new Map(); // "r,c" -> player index
+    let coop4LastByPlayer = [];
     let coop4StartTime = 0;
     let coopPartnerName = '';
     let coopPartnerRank = null;
@@ -5451,6 +5468,10 @@
 
       soundPlace(currentNumber);
       grid[r][c] = currentNumber;
+      if (isCoop4Mode) {
+        coop4CellOwners.set(`${r},${c}`, coop4TurnIdx);
+        coop4LastByPlayer[coop4TurnIdx] = { r, c };
+      }
       if (isOnlineRace && onlineSocket?.readyState === WebSocket.OPEN)
         onlineSocket.send(JSON.stringify({ type: 'move', r, c, n: currentNumber }));
       if (isCoopMode && !isCoop4Mode && !isCoopBotMode && onlineSocket?.readyState === WebSocket.OPEN)
@@ -5496,7 +5517,7 @@
         gameActive = false;
         if (isCoop4Mode) {
           if (isCoop4BotMode) {
-            if (currentNumber > activeRows * activeCols) {
+          if (currentNumber > activeRows * activeCols) {
               showCoop4Result(currentNumber - 1, 'complete', true);
               return;
             }
@@ -5631,11 +5652,18 @@
           } else if (val !== 0) {
             cell.textContent = val;
             cell.classList.add('filled');
-            if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) {
+            if (isCoop4Mode) {
+              const owner = coop4CellOwners.has(`${r},${c}`)
+                ? coop4CellOwners.get(`${r},${c}`)
+                : ((Number(val) - 1) % Math.max(1, coop4Players.length || 4));
+              cell.classList.add(`coop4-p${owner}`);
+              const last = coop4LastByPlayer[owner];
+              if (last && last.r === r && last.c === c) cell.classList.add('coop4-last');
+            } else if (isCoopMode && coopPartnerCells.has(`${r},${c}`)) {
               cell.classList.add('coop-partner');
               if (r === coopPartnerLastR && c === coopPartnerLastC) cell.classList.add('coop-partner-last');
             }
-            if (r === coopMyLastR && c === coopMyLastC && isCoopMode) {
+            if (!isCoop4Mode && r === coopMyLastR && c === coopMyLastC && isCoopMode) {
               cell.classList.add('last');
             }
             if (!isCoopMode && r === lastR && c === lastC) {
@@ -7202,6 +7230,8 @@
           currentMode = 'coop'; gameHasStarted = true;
           coop4StartTime = Date.now();
           coopPartnerCells = new Set();
+          coop4CellOwners = new Map();
+          coop4LastByPlayer = Array(4).fill(null);
           coopMyLastR = -1; coopMyLastC = -1;
           coopPartnerLastR = -1; coopPartnerLastC = -1;
           updateModeUI('coop');
@@ -7229,6 +7259,8 @@
         case 'coop4Move':
           if (!isCoop4Mode) break;
           grid[data.r][data.c] = data.n;
+          coop4CellOwners.set(`${data.r},${data.c}`, data.playerIdx);
+          coop4LastByPlayer[data.playerIdx] = { r: data.r, c: data.c };
           lastR = data.r; lastC = data.c;
           renderGrid();
           break;
@@ -7724,6 +7756,8 @@
       isCoop4BotMode = true;
       coop4MyIdx = 0;
       coop4TurnIdx = 0;
+      coop4CellOwners = new Map();
+      coop4LastByPlayer = Array(4).fill(null);
       coop4IsMyTurn = true;
       coopIsMyTurn = true;
       coop4StartTime = Date.now();
@@ -7899,6 +7933,8 @@
       soundPlace(n);
       grid[move.r][move.c] = n;
       coopPartnerCells.add(`${move.r},${move.c}`);
+      coop4CellOwners.set(`${move.r},${move.c}`, botIdx);
+      coop4LastByPlayer[botIdx] = { r: move.r, c: move.c };
       lastR = move.r;
       lastC = move.c;
       currentNumber++;
@@ -7942,6 +7978,7 @@
         const card = document.createElement('div');
         card.className = 'coop4-card'
           + (i === coop4MyIdx ? ' you' : '')
+          + ` p${i}`
           + (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? ' active' : '')
           + (!coop4ActivePlayers.has(i) ? ' left' : '');
         card.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
