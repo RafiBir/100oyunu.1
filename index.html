@@ -2843,6 +2843,9 @@
         <button id="btn-cs-close">✕</button>
       </div>
       <p id="cs-subtitle">10×10 grid'de partner ile oyna — sen tek, o çift sayıları yerleştir!</p>
+      <button id="btn-cs-bot" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;padding:12px 0;font-size:1rem;font-weight:700;cursor:pointer;width:100%">🤖 Bota Karşı Oyna</button>
+      <hr class="rls-sep">
+      <div style="font-size:0.78rem;color:var(--text-muted);text-align:center;margin:-6px 0 4px">— veya online —</div>
       <input id="coop-nick-inp" type="text" maxlength="20" autocomplete="off" placeholder="Kullanıcı adı">
       <button id="btn-cs-quick">🔍 Hızlı Eşleş</button>
       <hr class="rls-sep">
@@ -3250,6 +3253,9 @@
         'mode.coop':               'Eşli Mod',
         'mode.coop.desc':          '2 oyuncu, 1 grid: tek-çift sayıları sıraya diz!',
         'coop.btn.connect':        '🤝 Partner Bul',
+        'coop.btn.bot':            '🤖 Bota Karşı Oyna',
+        'coop.bot.partner':        '🤖 Bot',
+        'coop.new.bot.game':       '🤖 Tekrar Oyna',
         'coop.waiting.title':      'Partner Aranıyor...',
         'coop.waiting.sub':        'Eşli mod için partner aranıyor',
         'coop.matched.odd':        ' ile eşleşildi – Sen: Tek Sayılar (1,3,5...)',
@@ -3676,6 +3682,9 @@
         'mode.coop':               'Paired Mode',
         'mode.coop.desc':          '2 players, 1 grid: place odd & even numbers in order!',
         'coop.btn.connect':        '🤝 Find Partner',
+        'coop.btn.bot':            '🤖 Play vs Bot',
+        'coop.bot.partner':        '🤖 Bot',
+        'coop.new.bot.game':       '🤖 Play Again',
         'coop.waiting.title':      'Finding Partner...',
         'coop.waiting.sub':        'Looking for a cooperative partner',
         'coop.matched.odd':        ' matched – You place: Odd Numbers (1,3,5...)',
@@ -3948,6 +3957,7 @@
     let blockBotTimer = null;
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
+    let isCoopBotMode = false;
     let coopPartnerName = '';
     let coopPartnerRank = null;
     let coopStartTime = 0;
@@ -5426,6 +5436,14 @@
         coopIsMyTurn = false;
         gameActive = false;
         updateCoopTurnUI();
+        if (isCoopBotMode) {
+          if (currentNumber > activeRows * activeCols) {
+            isCoopMode = false; isCoopBotMode = false;
+            showCoopResult(currentNumber - 1, 'complete', true);
+            return;
+          }
+          setTimeout(botCoopTick, 400 + Math.random() * 300);
+        }
         return;
       }
 
@@ -6548,7 +6566,7 @@
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
         if (isOnlineRace) { isOnlineRace = false; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
         if (isBlockMode) closeBlockSocket();
-        if (isCoopMode) { isCoopMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
         currentMode = opt.dataset.mode;
         updateModeUI(currentMode);
         if (currentMode === 'bulmaca') openPuzzleLevelSelect();
@@ -7528,6 +7546,89 @@
       };
     }
 
+    function startCoopBot() {
+      isCoopMode = true;
+      isCoopBotMode = true;
+      coopMyRole = 'odd';
+      coopPartnerName = T('coop.bot.partner');
+      coopPartnerRank = null;
+      coopPartnerCells = new Set();
+      coopPartnerLastR = -1; coopPartnerLastC = -1;
+      coopMyLastR = -1; coopMyLastC = -1;
+      coopIsMyTurn = true;
+      coopStartTime = Date.now();
+      closeCoopSelect();
+      currentMode = 'coop';
+      gameHasStarted = true;
+      updateModeUI('coop');
+      initGame();
+    }
+
+    function botCoopTick() {
+      if (!isCoopMode || !isCoopBotMode) return;
+      // Collect valid moves for current number
+      const validMoves = [];
+      for (let r = 0; r < activeRows; r++) {
+        for (let c = 0; c < activeCols; c++) {
+          if (grid[r][c] !== 0) continue;
+          if (currentNumber === 1) { validMoves.push({r, c}); continue; }
+          const dr = Math.abs(r - lastR), dc = Math.abs(c - lastC);
+          const isHV = (dr === 0 && dc === 3) || (dc === 0 && dr === 3);
+          const isDiag = dr === dc && dr === 2;
+          if (isHV || isDiag) validMoves.push({r, c});
+        }
+      }
+      if (!validMoves.length) {
+        isCoopMode = false; isCoopBotMode = false;
+        showCoopResult(currentNumber - 1, 'stuck', true);
+        return;
+      }
+      // 1-step lookahead: pick cell that opens most future moves
+      let best = validMoves[0], bestScore = -1;
+      for (const mv of validMoves) {
+        grid[mv.r][mv.c] = currentNumber;
+        const nR = mv.r, nC = mv.c, nNum = currentNumber + 1;
+        let score = 0;
+        for (let r = 0; r < activeRows; r++) {
+          for (let c = 0; c < activeCols; c++) {
+            if (grid[r][c] !== 0) continue;
+            const dr = Math.abs(r - nR), dc = Math.abs(c - nC);
+            if ((dr === 0 && dc === 3) || (dc === 0 && dr === 3) || (dr === dc && dr === 2)) score++;
+          }
+        }
+        grid[mv.r][mv.c] = 0;
+        if (score > bestScore) { bestScore = score; best = mv; }
+      }
+      const {r, c} = best;
+      soundPlace(currentNumber);
+      grid[r][c] = currentNumber;
+      coopPartnerCells.add(`${r},${c}`);
+      coopPartnerLastR = r; coopPartnerLastC = c;
+      lastR = r; lastC = c;
+      currentNumber++;
+      renderGrid();
+      const allCells = document.querySelectorAll('.cell');
+      const placedCell = allCells[r * activeCols + c];
+      if (placedCell) { placedCell.classList.add('pop-anim'); placedCell.addEventListener('animationend', () => placedCell.classList.remove('pop-anim'), { once: true }); }
+      if (currentNumber > activeRows * activeCols) {
+        isCoopMode = false; isCoopBotMode = false;
+        showCoopResult(currentNumber - 1, 'complete', true);
+        return;
+      }
+      // Hand turn to player
+      coopIsMyTurn = true;
+      gameActive = true;
+      document.getElementById('num-display').textContent = currentNumber;
+      updateCoopTurnUI();
+      renderGrid();
+      if (!hasAnyValidMove()) {
+        gameActive = false; coopIsMyTurn = false;
+        isCoopMode = false; isCoopBotMode = false;
+        showCoopResult(currentNumber - 1, 'stuck', true);
+      }
+    }
+
+    document.getElementById('btn-cs-bot').addEventListener('click', startCoopBot);
     document.getElementById('btn-cs-quick').addEventListener('click', startCoopQuick);
     document.getElementById('btn-cs-create').addEventListener('click', createCoopPrivate);
     document.getElementById('btn-cs-join').addEventListener('click', joinCoopPrivate);
@@ -7616,7 +7717,7 @@
       document.getElementById('overlay').classList.add('show');
     }
 
-    function showCoopResult(score, outcome) {
+    function showCoopResult(score, outcome, isBotMode = false) {
       const won = outcome === 'complete';
       if (won) { soundWin(); launchConfetti(); } else soundLose();
 
@@ -7642,14 +7743,16 @@
       const closeSocket = () => {
         if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
         isCoopMode = false;
+        isCoopBotMode = false;
       };
 
       const newBtn = document.createElement('button');
-      newBtn.textContent = T('coop.new.game');
+      newBtn.textContent = isBotMode ? T('coop.new.bot.game') : T('coop.new.game');
       newBtn.addEventListener('click', () => {
         document.getElementById('overlay').classList.remove('show');
         closeSocket();
-        openCoopSelect();
+        if (isBotMode) startCoopBot();
+        else openCoopSelect();
       });
       btns.appendChild(newBtn);
 
@@ -8387,7 +8490,7 @@
         if (currentMode === 'zaman') clearInterval(timerInterval);
         if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
-        if (isCoopMode) { isCoopMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
       }
 
       function launchMode(mode) {
