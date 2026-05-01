@@ -1,4 +1,4 @@
-﻿const CACHE = 'centium-v22';
+﻿const CACHE = 'centium-v23';
 const FILES = [
   './',
   './index.html',
@@ -29,5 +29,6 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
+
 
 

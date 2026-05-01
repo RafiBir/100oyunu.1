@@ -4937,24 +4937,33 @@
       return true;
     }
 
-    function advanceLocalBlockTurn() {
+    function announceLocalBlockEliminations(eliminated) {
+      eliminated.forEach(idx => showToast({ icon: '🧱', name: T('block.eliminated', { name: blockPlayers[idx]?.nickname || '-' }), xp: 0 }));
+    }
+
+    function advanceLocalBlockTurn(eliminatedNow = []) {
       if (!blockVsBot) return;
+      const eliminated = [...eliminatedNow];
+
       for (let step = 1; step <= blockPlayers.length; step++) {
         const idx = (blockTurnIndex + step) % blockPlayers.length;
         if (!blockPlayers[idx]?.alive) continue;
+
         const moves = getBlockMoves(idx);
         if (moves.length) {
           blockTurnIndex = idx;
           gameActive = idx === blockMyIndex;
           document.getElementById('race-timer').textContent = gameActive ? T('block.turn.yours') : T('block.turn.opp');
           document.getElementById('hint').textContent = gameActive ? T('block.turn.yours') : T('block.turn.opp');
+          announceLocalBlockEliminations(eliminated);
           updateBlockScorePanel();
           renderGrid();
           if (idx !== blockMyIndex) scheduleBlockBotMove();
           return;
         }
+
         blockPlayers[idx].alive = false;
-        showToast({ icon: '🧱', name: T('block.eliminated', { name: blockPlayers[idx].nickname }), xp: 0 });
+        eliminated.push(idx);
         const winner = blockWinnerIndex();
         if (winner !== -1) { showLocalBlockResult(winner); return; }
       }
@@ -4985,10 +4994,9 @@
         const move = chooseBlockBotMove(idx);
         if (!move) {
           blockPlayers[idx].alive = false;
-          showToast({ icon: '🧱', name: T('block.eliminated', { name: blockPlayers[idx].nickname }), xp: 0 });
           const winner = blockWinnerIndex();
           if (winner !== -1) showLocalBlockResult(winner);
-          else advanceLocalBlockTurn();
+          else advanceLocalBlockTurn([idx]);
           return;
         }
         applyLocalBlockMove(idx, move.r, move.c);
