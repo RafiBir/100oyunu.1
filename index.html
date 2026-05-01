@@ -3880,7 +3880,7 @@
       initGame();
     }
 
-    document.getElementById('btn-tls-close').addEventListener('click', () => {
+    function closeTimeSelect() {
       document.getElementById('time-level-select').classList.remove('show');
       updateModeUI(currentMode);
       updateHintBtnVisibility();
@@ -3888,6 +3888,10 @@
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
       }
+    }
+    document.getElementById('btn-tls-close').addEventListener('click', closeTimeSelect);
+    document.getElementById('time-level-select').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('time-level-select')) closeTimeSelect();
     });
 
     function startTimer(seconds) {
@@ -6422,7 +6426,7 @@
       initGame();
     }
 
-    document.getElementById('btn-pls-close').addEventListener('click', () => {
+    function closePuzzleSelect() {
       document.getElementById('puzzle-level-select').classList.remove('show');
       updateModeUI(currentMode);
       updateHintBtnVisibility();
@@ -6430,6 +6434,10 @@
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-screen').style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
       }
+    }
+    document.getElementById('btn-pls-close').addEventListener('click', closePuzzleSelect);
+    document.getElementById('puzzle-level-select').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('puzzle-level-select')) closePuzzleSelect();
     });
 
     function closeRaceSelect() {
