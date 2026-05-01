@@ -1767,6 +1767,29 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
+    #coop4-bar {
+      width: 100%; max-width: 480px;
+      display: none; flex-direction: column; align-items: center;
+      padding: 8px 12px 6px; gap: 6px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 12px; margin-top: 8px;
+    }
+    #coop4-players-row {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    }
+    .coop4-card {
+      padding: 3px 10px; border-radius: 8px; font-size: 0.72rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      opacity: 0.45; transition: opacity .2s, border-color .2s, background .2s;
+    }
+    .coop4-card.active {
+      opacity: 1; border-color: #4ade80; background: rgba(74,222,128,0.08);
+      font-weight: 700;
+    }
+    .coop4-card.you { border-style: dashed; }
+    .coop4-card.left { opacity: 0.15; text-decoration: line-through; }
+    #coop4-turn-label { font-size: 0.82rem; color: var(--text-muted); }
+    #coop4-turn-label.my-turn { color: #4ade80; font-weight: 700; }
     .cell.coop-partner {
       background: #1e3a5f !important;
       border-color: #3b82f6 !important;
@@ -2568,6 +2591,11 @@
     <div id="coop-role-label">Rolün: Tek Sayılar</div>
   </div>
 
+  <div id="coop4-bar">
+    <div id="coop4-players-row"></div>
+    <div id="coop4-turn-label"></div>
+  </div>
+
   <!-- ── İnteraktif Tutorial Overlay ──────────────────────────── -->
   <div id="it-overlay" style="display:none">
     <div id="it-bubble">
@@ -2847,7 +2875,8 @@
       <hr class="rls-sep">
       <div style="font-size:0.78rem;color:var(--text-muted);text-align:center;margin:-6px 0 4px">— veya online —</div>
       <input id="coop-nick-inp" type="text" maxlength="20" autocomplete="off" placeholder="Kullanıcı adı">
-      <button id="btn-cs-quick">🔍 Hızlı Eşleş</button>
+      <button id="btn-cs-quick">🔍 Hızlı Eşleş (2 Kişi)</button>
+      <button id="btn-cs-quick4" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border:none;border-radius:12px;padding:10px 0;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%">👥 4 Kişilik Online</button>
       <hr class="rls-sep">
       <div id="cs-private-section">
         <div id="cs-private-label">🔑 Özel Oda</div>
@@ -3256,6 +3285,9 @@
         'coop.btn.bot':            '🤖 Bot ile Oyna',
         'coop.bot.partner':        '🤖 Bot',
         'coop.new.bot.game':       '🤖 Tekrar Oyna',
+        'coop4.waiting.title':     '4 Kişilik Eşli Mod...',
+        'coop4.waiting.sub':       '{n}/4 oyuncu hazır',
+        'coop4.playing':           ' oynuyor...',
         'coop.waiting.title':      'Partner Aranıyor...',
         'coop.waiting.sub':        'Eşli mod için partner aranıyor',
         'coop.matched.odd':        ' ile eşleşildi – Sen: Tek Sayılar (1,3,5...)',
@@ -3685,6 +3717,9 @@
         'coop.btn.bot':            '🤖 Play with Bot',
         'coop.bot.partner':        '🤖 Bot',
         'coop.new.bot.game':       '🤖 Play Again',
+        'coop4.waiting.title':     '4-Player Co-op...',
+        'coop4.waiting.sub':       '{n}/4 players ready',
+        'coop4.playing':           ' is playing...',
         'coop.waiting.title':      'Finding Partner...',
         'coop.waiting.sub':        'Looking for a cooperative partner',
         'coop.matched.odd':        ' matched – You place: Odd Numbers (1,3,5...)',
@@ -3958,6 +3993,13 @@
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
     let isCoopBotMode = false;
+    let isCoop4Mode = false;
+    let coop4MyIdx = -1;
+    let coop4Players = [];      // [{nickname, rank}, ...]
+    let coop4TurnIdx = 0;
+    let coop4IsMyTurn = false;
+    let coop4ActivePlayers = new Set();
+    let coop4StartTime = 0;
     let coopPartnerName = '';
     let coopPartnerRank = null;
     let coopStartTime = 0;
@@ -4784,9 +4826,17 @@
       }
 
       if (currentMode === 'coop') {
-        document.getElementById('coop-turn-bar').style.display = '';
-        if (!coopIsMyTurn) gameActive = false;
-        updateCoopTurnUI();
+        if (isCoop4Mode) {
+          document.getElementById('coop-turn-bar').style.display = 'none';
+          document.getElementById('coop4-bar').style.display = '';
+          gameActive = false; // server sends coop4Turn to activate
+          updateCoop4UI();
+        } else {
+          document.getElementById('coop4-bar').style.display = 'none';
+          document.getElementById('coop-turn-bar').style.display = '';
+          if (!coopIsMyTurn) gameActive = false;
+          updateCoopTurnUI();
+        }
       }
 
       updateXPBar(loadXP().total, false);
@@ -5396,8 +5446,10 @@
       grid[r][c] = currentNumber;
       if (isOnlineRace && onlineSocket?.readyState === WebSocket.OPEN)
         onlineSocket.send(JSON.stringify({ type: 'move', r, c, n: currentNumber }));
-      if (isCoopMode && onlineSocket?.readyState === WebSocket.OPEN)
+      if (isCoopMode && !isCoop4Mode && !isCoopBotMode && onlineSocket?.readyState === WebSocket.OPEN)
         onlineSocket.send(JSON.stringify({ type: 'coopMove', r, c, n: currentNumber }));
+      if (isCoop4Mode && onlineSocket?.readyState === WebSocket.OPEN)
+        onlineSocket.send(JSON.stringify({ type: 'coop4Move', r, c, n: currentNumber }));
       lastR = r; lastC = c;
       if (isCoopMode) { coopMyLastR = r; coopMyLastC = c; }
       currentNumber++;
@@ -5435,14 +5487,19 @@
         document.getElementById('num-display').textContent = currentNumber;
         coopIsMyTurn = false;
         gameActive = false;
-        updateCoopTurnUI();
-        if (isCoopBotMode) {
+        if (isCoop4Mode) {
+          coop4IsMyTurn = false;
+          updateCoop4UI();
+          // Server will send coop4Turn to next player
+        } else if (isCoopBotMode) {
           if (currentNumber > activeRows * activeCols) {
             isCoopMode = false; isCoopBotMode = false;
             showCoopResult(currentNumber - 1, 'complete', true);
             return;
           }
           setTimeout(botCoopTick, 400 + Math.random() * 300);
+        } else {
+          updateCoopTurnUI();
         }
         return;
       }
@@ -6566,7 +6623,7 @@
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
         if (isOnlineRace) { isOnlineRace = false; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
         if (isBlockMode) closeBlockSocket();
-        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; isCoop4Mode = false; coop4IsMyTurn = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; document.getElementById('coop4-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
         currentMode = opt.dataset.mode;
         updateModeUI(currentMode);
         if (currentMode === 'bulmaca') openPuzzleLevelSelect();
@@ -7103,6 +7160,71 @@
           coopIsMyTurn = false;
           isCoopMode = false;
           showCoopResult(data.score, data.outcome);
+          break;
+
+        case 'coop4Waiting':
+          document.getElementById('online-waiting-sub').textContent = T('coop4.waiting.sub', { n: data.position });
+          break;
+
+        case 'coop4Matched':
+          isCoop4Mode = true; isCoopMode = true;
+          coop4MyIdx = data.playerIdx;
+          coop4Players = data.players;
+          coop4ActivePlayers = new Set([0, 1, 2, 3]);
+          document.getElementById('online-waiting-title').textContent = T('coop4.waiting.title');
+          document.getElementById('online-waiting-sub').textContent   = '4/4 ' + (currentLang === 'tr' ? 'oyuncu hazır!' : 'players ready!');
+          document.getElementById('online-waiting-anim').textContent  = '👥';
+          break;
+
+        case 'coop4Start': {
+          closeOnlineWaiting();
+          document.getElementById('overlay').classList.remove('show');
+          currentMode = 'coop'; gameHasStarted = true;
+          coop4StartTime = Date.now();
+          coopPartnerCells = new Set();
+          coopMyLastR = -1; coopMyLastC = -1;
+          coopPartnerLastR = -1; coopPartnerLastC = -1;
+          updateModeUI('coop');
+          initGame();
+          break;
+        }
+
+        case 'coop4Turn':
+          if (!isCoop4Mode) break;
+          coop4TurnIdx = data.turnIdx;
+          currentNumber = data.n;
+          coop4IsMyTurn = (data.turnIdx === coop4MyIdx);
+          coopIsMyTurn = coop4IsMyTurn;
+          gameActive = coop4IsMyTurn;
+          document.getElementById('num-display').textContent = currentNumber;
+          updateCoop4UI();
+          renderGrid();
+          if (coop4IsMyTurn && !hasAnyValidMove()) {
+            gameActive = false; coop4IsMyTurn = false; coopIsMyTurn = false;
+            if (onlineSocket?.readyState === WebSocket.OPEN)
+              onlineSocket.send(JSON.stringify({ type: 'coop4Stuck' }));
+          }
+          break;
+
+        case 'coop4Move':
+          if (!isCoop4Mode) break;
+          grid[data.r][data.c] = data.n;
+          lastR = data.r; lastC = data.c;
+          renderGrid();
+          break;
+
+        case 'coop4PlayerLeft':
+          if (!isCoop4Mode) break;
+          coop4ActivePlayers.delete(data.playerIdx);
+          updateCoop4UI();
+          showToast({ icon: '⚠️', name: (coop4Players[data.playerIdx]?.nickname || 'Oyuncu') + ' ayrıldı', xp: 0 });
+          break;
+
+        case 'coop4Result':
+          if (!isCoop4Mode) break;
+          gameActive = false; coop4IsMyTurn = false; coopIsMyTurn = false;
+          isCoop4Mode = false; isCoopMode = false;
+          showCoop4Result(data.score, data.outcome);
           break;
       }
     }
@@ -7651,8 +7773,114 @@
       }
     }
 
+    function updateCoop4UI() {
+      const bar = document.getElementById('coop4-bar');
+      if (!bar) return;
+      const row = document.getElementById('coop4-players-row');
+      row.innerHTML = '';
+      coop4Players.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'coop4-card'
+          + (i === coop4MyIdx ? ' you' : '')
+          + (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? ' active' : '')
+          + (!coop4ActivePlayers.has(i) ? ' left' : '');
+        card.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
+          + (p?.nickname || `P${i + 1}`);
+        row.appendChild(card);
+      });
+      const lbl = document.getElementById('coop4-turn-label');
+      if (lbl) {
+        lbl.textContent = coop4IsMyTurn
+          ? T('coop.turn.yours')
+          : (coop4Players[coop4TurnIdx]?.nickname || `Oyuncu ${coop4TurnIdx + 1}`) + T('coop4.playing');
+        lbl.className = coop4IsMyTurn ? 'my-turn' : '';
+      }
+    }
+
+    function showCoop4Result(score, outcome) {
+      const won = outcome === 'complete';
+      if (won) { soundWin(); launchConfetti(); } else soundLose();
+      saveGameStat('coop_online', { won: won ? 'win' : 'lose', score });
+      const elapsed = coop4StartTime ? Math.round((Date.now() - coop4StartTime) / 1000) : 9999;
+      checkAchievements({ coopWon: won, coopScore: score, coopTime: elapsed });
+
+      document.getElementById('coop4-bar').style.display = 'none';
+      const box = document.getElementById('overlay-box');
+      box.className = won ? 'win' : 'lose';
+      document.getElementById('overlay-title').textContent = won ? T('coop.win') : T('coop.lose');
+      document.getElementById('overlay-msg').textContent   = won ? T('coop.win.msg') : T('coop.lose.msg', { score });
+      document.getElementById('overlay-xp-gain').textContent      = '';
+      document.getElementById('overlay-score-highlight').innerHTML = '';
+      document.getElementById('overlay-scores').innerHTML          = '';
+
+      const btns = document.getElementById('overlay-btns');
+      btns.innerHTML = '';
+      const cleanup = () => {
+        if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
+        isCoop4Mode = false; isCoopMode = false;
+      };
+      const newBtn = document.createElement('button');
+      newBtn.textContent = T('coop.new.game');
+      newBtn.addEventListener('click', () => {
+        document.getElementById('overlay').classList.remove('show');
+        cleanup(); openCoopSelect();
+      });
+      btns.appendChild(newBtn);
+      const homeBtn = document.createElement('button');
+      homeBtn.textContent = T('online.home');
+      homeBtn.addEventListener('click', () => {
+        document.getElementById('overlay').classList.remove('show');
+        cleanup();
+        gameHasStarted = false; currentMode = 'serbest';
+        updateModeUI('serbest');
+        const ss = document.getElementById('start-screen');
+        ss.classList.remove('hidden');
+        ss.style.animation = 'ssIn 0.45s cubic-bezier(0.22,1,0.36,1)';
+      });
+      btns.appendChild(homeBtn);
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function connectCoop4Mode(nick) {
+      const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
+      const myRankInfo = getClassicRankInfo();
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      document.getElementById('online-waiting-title').textContent = T('coop4.waiting.title');
+      document.getElementById('online-waiting-sub').textContent   = T('coop4.waiting.sub', { n: 1 });
+      document.getElementById('online-nick-section').style.display = 'none';
+      document.getElementById('online-waiting-anim').textContent  = '👥';
+      openOnlineWaiting();
+      try { onlineSocket = new WebSocket(WS_URL); } catch(e) {
+        closeOnlineWaiting();
+        showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' }); return;
+      }
+      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'coop4Join', nickname: nick, rank: myRank }));
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onerror = () => {
+        closeOnlineWaiting(); isCoop4Mode = false; isCoopMode = false; onlineSocket = null;
+        showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
+      };
+      onlineSocket.onclose = () => {
+        if (isCoop4Mode) {
+          gameActive = false; closeOnlineWaiting();
+          isCoop4Mode = false; isCoopMode = false;
+          document.getElementById('coop4-bar').style.display = 'none';
+          if (!document.getElementById('overlay').classList.contains('show'))
+            showToast({ icon: '⚠️', name: T('coop.partner.left'), xp: 0 });
+        }
+      };
+    }
+
+    function startCoop4Quick() {
+      const nick = getCoopNick();
+      if (!nick) return;
+      closeCoopSelect();
+      connectCoop4Mode(nick);
+    }
+
     document.getElementById('btn-cs-bot').addEventListener('click', startCoopBot);
     document.getElementById('btn-cs-quick').addEventListener('click', startCoopQuick);
+    document.getElementById('btn-cs-quick4').addEventListener('click', startCoop4Quick);
     document.getElementById('btn-cs-create').addEventListener('click', createCoopPrivate);
     document.getElementById('btn-cs-join').addEventListener('click', joinCoopPrivate);
     document.getElementById('btn-cs-close').addEventListener('click', cancelCoopSelect);
@@ -8513,7 +8741,7 @@
         if (currentMode === 'zaman') clearInterval(timerInterval);
         if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
         if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
-        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; isCoop4Mode = false; coop4IsMyTurn = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; document.getElementById('coop4-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
       }
 
       function launchMode(mode) {
