@@ -2947,7 +2947,7 @@
       </div>
       <div id="coop-match-type">
         <button type="button" data-type="online" data-i18n="block.match.online">Online</button>
-        <button type="button" data-type="bot" data-i18n="block.match.bot">Bota Karşı</button>
+        <button type="button" data-type="bot" data-i18n="coop.match.bot">🤖 Bot ile</button>
       </div>
       <input id="coop-nick-inp" type="text" maxlength="20" autocomplete="off" placeholder="Kullanıcı adı" data-i18n="online.nick.label" data-i18n-attr="placeholder">
       <button id="btn-cs-start" data-i18n="online.quick">🔍 Hızlı Eşleş</button>
@@ -3375,6 +3375,7 @@
         'coop.menu.title':         '🤝 Eşli Mod',
         'coop.menu.subtitle':      "10×10 grid'de partner ile oyna — sen tek, o çift sayıları yerleştir!",
         'coop.btn.connect':        '🤝 Partner Bul',
+        'coop.match.bot':          '🤖 Bot ile',
         'coop.btn.bot':            '🤖 Bot ile Oyna',
         'coop.btn.bot2':           '🤖 Bot ile Oyna (2 Kişi)',
         'coop.btn.bot4':           '🤖 4 Kişilik Bot',
@@ -3403,6 +3404,8 @@
         'stats.mode.coop':         'Eşli Mod',
         'stats.mode.bloke':        'Bloke',
         'stats.mode.bloke_bot':    'Bloke-Bot',
+        'block.menu.title':        '🧱 Bloke Modu',
+        'block.menu.sub':          'Kullanıcı adını gir ve rakip bul',
         'block.waiting.title':     'Bloke Rakibi Aranıyor...',
         'block.waiting.sub':       'Aynı tahtada oynayacak rakip bekleniyor',
         'block.waiting.count':     '{joined}/{total} oyuncu bekleniyor',
@@ -3828,6 +3831,7 @@
         'coop.menu.title':         '🤝 Paired Mode',
         'coop.menu.subtitle':      'Play on a 10×10 grid with a partner — place odd and even numbers in order!',
         'coop.btn.connect':        '🤝 Find Partner',
+        'coop.match.bot':          '🤖 With Bot',
         'coop.btn.bot':            '🤖 Play with Bot',
         'coop.btn.bot2':           '🤖 Play with Bot (2 Players)',
         'coop.btn.bot4':           '🤖 4-Player Bots',
@@ -3856,6 +3860,8 @@
         'stats.mode.coop':         'Paired Mode',
         'stats.mode.bloke':        'Block',
         'stats.mode.bloke_bot':    'Block-Bot',
+        'block.menu.title':        '🧱 Block Mode',
+        'block.menu.sub':          'Enter your name and find an opponent',
         'block.waiting.title':     'Looking for Block Opponent...',
         'block.waiting.sub':       'Waiting for someone to share the board',
         'block.waiting.count':     'Waiting for players: {joined}/{total}',
@@ -4108,6 +4114,8 @@
     let blockMatchType = 'online';
     let blockVsBot = false;
     let blockBotTimer = null;
+    let blockCountdownTimer = null;
+    let blockCountdownLeft = 0;
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
     let isCoopBotMode = false;
@@ -5113,18 +5121,57 @@
       if (Array.isArray(data.players)) blockPlayers = data.players.map((p, i) => ({ nickname: p.nickname || `P${i + 1}`, rank: p.rank || null, alive: p.alive !== false, score: p.score || 0, last: { r: -1, c: -1 } }));
       if (Number.isInteger(data.turnIndex)) blockTurnIndex = data.turnIndex;
       blockPlayers = blockPlayers.map((p, i) => ({ ...p, last: findBlockLast(i) }));
-      const mine = blockPlayers[blockMyIndex], opp = blockPlayers[1 - blockMyIndex];
+      const mine = blockPlayers[blockMyIndex];
       document.getElementById('race-player-score').textContent = mine?.score || 0;
       document.getElementById('race-bot-score').textContent = blockPlayers.filter(p => p.alive).length;
       updateBlockScorePanel();
-      document.getElementById('race-timer').textContent = blockTurnIndex === blockMyIndex ? T('block.turn.yours') : T('block.turn.opp');
-      document.getElementById('hint').textContent = blockTurnIndex === blockMyIndex ? T('block.turn.yours') : T('block.turn.opp');
       gameActive = blockTurnIndex === blockMyIndex;
+      if (blockTurnIndex === blockMyIndex) startBlockCountdown();
+      else stopBlockCountdown();
       renderGrid();
       if (isBlockMode && blockTurnIndex === blockMyIndex && !hasAnyValidMove() && onlineSocket?.readyState === WebSocket.OPEN) {
         gameActive = false;
         onlineSocket.send(JSON.stringify({ type: 'blockNoMoves' }));
       }
+    }
+
+    function startBlockCountdown() {
+      if (blockCountdownTimer) clearInterval(blockCountdownTimer);
+      blockCountdownLeft = 20;
+      updateBlockCountdownDisplay();
+      blockCountdownTimer = setInterval(() => {
+        blockCountdownLeft--;
+        updateBlockCountdownDisplay();
+        if (blockCountdownLeft <= 0) {
+          clearInterval(blockCountdownTimer);
+          blockCountdownTimer = null;
+          if (!isBlockMode || blockTurnIndex !== blockMyIndex) return;
+          gameActive = false;
+          blockPlayers[blockMyIndex].alive = false;
+          const aliveIdxs = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
+          const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
+          showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
+          if (!blockVsBot && onlineSocket?.readyState === WebSocket.OPEN)
+            onlineSocket.send(JSON.stringify({ type: 'blockTimeout' }));
+        }
+      }, 1000);
+    }
+
+    function stopBlockCountdown() {
+      if (blockCountdownTimer) { clearInterval(blockCountdownTimer); blockCountdownTimer = null; }
+      blockCountdownLeft = 0;
+    }
+
+    function updateBlockCountdownDisplay() {
+      if (!isBlockMode) return;
+      const timerEl = document.getElementById('race-timer');
+      const hintEl  = document.getElementById('hint');
+      const isMyTurn = blockTurnIndex === blockMyIndex;
+      const label = isMyTurn ? T('block.turn.yours') : T('block.turn.opp');
+      const timeStr = blockCountdownLeft > 0 ? ` · ${blockCountdownLeft}s` : '';
+      const text = label + timeStr;
+      if (timerEl) { timerEl.textContent = text; timerEl.style.color = (isMyTurn && blockCountdownLeft <= 5 && blockCountdownLeft > 0) ? 'var(--color-error)' : ''; }
+      if (hintEl)  { hintEl.textContent  = text; }
     }
     function blockWinnerIndex() {
       const alive = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
@@ -5174,6 +5221,8 @@
           announceLocalBlockEliminations(eliminated);
           updateBlockScorePanel();
           renderGrid();
+          if (idx === blockMyIndex) startBlockCountdown();
+          else stopBlockCountdown();
           if (idx !== blockMyIndex) scheduleBlockBotMove();
           return;
         }
@@ -5268,7 +5317,8 @@
       if (list) list.style.display = 'none';
     }
     function showBlockResult(data) {
-      if (data.board) syncBlockState(data);
+      stopBlockCountdown();
+      if (data.board) { const _saved = isBlockMode; isBlockMode = false; syncBlockState(data); isBlockMode = _saved; stopBlockCountdown(); }
       gameActive = false;
       const won = data.winner === 'you';
       if (won) { soundWin(); launchConfetti(); } else soundLose();
@@ -5473,7 +5523,7 @@
           if (type === 'diag_only') diagOnly = false;
           if (type === 'bonus_xp')  bonusXpActive = false;
         });
-        showHintToast(T('surprise.expired'));
+        showEffectExpiredToast();
         updateEffectBar();
         renderGrid(); // kural değişikliği yansıtsın
       } else if (activeEffects.length) {
@@ -5498,6 +5548,7 @@
 
     let _hintToastTimer = null;
     let _surpriseToastOpen = false;
+    let _effectExpiredDismiss = null;
     function showHintToast(msg) {
       const el  = document.getElementById('hint-toast');
       const btn = document.getElementById('hint-toast-btn');
@@ -5506,6 +5557,25 @@
       el.classList.add('show');
       if (_hintToastTimer) clearTimeout(_hintToastTimer);
       _hintToastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+    }
+    function showEffectExpiredToast() {
+      const el  = document.getElementById('hint-toast');
+      const btn = document.getElementById('hint-toast-btn');
+      document.getElementById('hint-toast-msg').textContent = T('surprise.expired');
+      btn.textContent = T('surprise.toast.ok');
+      btn.style.display = '';
+      const dismiss = () => {
+        el.classList.remove('show');
+        if (_hintToastTimer) { clearTimeout(_hintToastTimer); _hintToastTimer = null; }
+        if (_effectExpiredDismiss) { document.removeEventListener('click', _effectExpiredDismiss); _effectExpiredDismiss = null; }
+      };
+      btn.onclick = (e) => { e.stopPropagation(); dismiss(); };
+      if (_hintToastTimer) clearTimeout(_hintToastTimer);
+      _hintToastTimer = setTimeout(dismiss, 4000);
+      el.classList.add('show');
+      if (_effectExpiredDismiss) document.removeEventListener('click', _effectExpiredDismiss);
+      _effectExpiredDismiss = dismiss;
+      setTimeout(() => document.addEventListener('click', _effectExpiredDismiss, { once: true }), 150);
     }
 
     function showSurpriseToast(msg) {
@@ -6765,6 +6835,7 @@
         if (opt.dataset.mode === 'zaman' && currentMode === 'zaman') { openTimeLevelSelect(); return; }
         if (opt.dataset.mode === 'yaris' && currentMode === 'yaris') { openRaceLevelSelect(); return; }
         if (opt.dataset.mode === 'bloke' && currentMode === 'bloke') { showBlockNickSection(); return; }
+        if (opt.dataset.mode === 'coop' && currentMode === 'coop') { openCoopSelect(); return; }
         if (opt.dataset.mode === currentMode) return;
         if (currentMode === 'zaman') clearInterval(timerInterval);
         if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
@@ -7575,7 +7646,7 @@
       const subEl = document.getElementById('online-waiting-sub');
       const nickSec = document.getElementById('online-nick-section');
       const inp = document.getElementById('online-nick-inp');
-      titleEl.textContent = T('block.waiting.title'); subEl.textContent = T('block.waiting.sub');
+      titleEl.textContent = T('block.menu.title'); subEl.textContent = T('block.menu.sub');
       inp.placeholder = T('modal.submit.ph'); inp.value = localStorage.getItem('nickname_100oyunu') || '';
       document.getElementById('online-waiting-anim').textContent = '🧱';
       ensureBlockPlayerCountPicker();
@@ -7872,6 +7943,7 @@
       onlineSocket.onerror = () => {
         closeOnlineWaiting();
         isCoopMode = false;
+        isBlockMode = false;
         onlineSocket = null;
         showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
       };
@@ -8361,6 +8433,7 @@
 
       coopPartnerCells = new Set();
       coopPartnerLastR = -1; coopPartnerLastC = -1; coopMyLastR = -1; coopMyLastC = -1;
+      coopIsMyTurn = false;
       document.getElementById('coop-turn-bar').style.display = 'none';
 
       const box = document.getElementById('overlay-box');

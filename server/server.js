@@ -84,6 +84,7 @@ const wss    = new WebSocket.Server({ server });
 
 const queue        = [];        // { ws, nickname }
 const coopQueue    = [];        // { ws, nickname, rank }
+const coopQueue4   = [];        // { ws, nickname, rank }
 const sabotajQueue = [];        // { ws, nickname, rank }
 const blockQueues  = new Map(); // playerCount -> [{ ws, nickname, rank }]
 const rooms        = new Map(); // id → room
@@ -150,6 +151,30 @@ function createCoopRoom(p1, p2) {
     wsSend(p2.ws, { type: 'coopStart' });
     wsSend(p1.ws, { type: 'coopYourTurn', n: 1 });
   }, 2000);
+}
+
+function createCoop4Room(players) {
+  const id = nextRoomId++;
+  const room = {
+    id, type: 'coop4', players,
+    currentNumber: 1, lastR: -1, lastC: -1,
+    turnIdx: 0,
+    activePlayers: players.map((_, i) => i),
+    gameOver: false,
+  };
+  players.forEach((p, i) => { p.ws._roomId = id; p.ws._playerIdx = i; });
+  rooms.set(id, room);
+
+  players.forEach((p, i) => wsSend(p.ws, {
+    type: 'coop4Matched', playerIdx: i,
+    players: players.map(pl => ({ nickname: pl.nickname, rank: pl.rank || null })),
+  }));
+
+  setTimeout(() => {
+    if (!rooms.has(id)) return;
+    players.forEach(p => wsSend(p.ws, { type: 'coop4Start' }));
+    players.forEach(p => wsSend(p.ws, { type: 'coop4Turn', turnIdx: 0, n: 1 }));
+  }, 1500);
 }
 
 function createRoom(p1, p2) {
@@ -228,6 +253,23 @@ function getBlockQueue(playerCount) {
   return blockQueues.get(count);
 }
 
+function notifyBlockQueue(blockQueue, playerCount) {
+  blockQueue.forEach(p => wsSend(p.ws, {
+    type: 'blockWaiting',
+    joined: blockQueue.length,
+    playerCount,
+  }));
+}
+
+function notifyCoop4Queue() {
+  coopQueue4.forEach(p => wsSend(p.ws, {
+    type: 'coop4Waiting',
+    position: coopQueue4.length,
+    joined: coopQueue4.length,
+    playerCount: 4,
+  }));
+}
+
 function blockPayload(room) {
   return {
     players: room.players.map((p, i) => ({ nickname: p.nickname, rank: p.rank || null, alive: room.alive[i], score: room.scores[i] })),
@@ -240,9 +282,24 @@ function blockBroadcast(room, data) {
   room.players.forEach(p => { if (p) wsSend(p.ws, data); });
 }
 
+function startBlockTurnTimer(room) {
+  if (room.turnTimer) clearTimeout(room.turnTimer);
+  room.turnTimer = setTimeout(() => {
+    if (room.ended) return;
+    const idx = room.turnIndex;
+    if (!room.alive[idx]) return;
+    room.alive[idx] = false;
+    room.turnTimer = null;
+    const alive = blockAliveIndexes(room);
+    if (alive.length <= 1) endBlockRoom(room, alive[0] ?? idx, 'timeout');
+    else advanceBlockTurn(room, [idx]);
+  }, 20000);
+}
+
 function endBlockRoom(room, winnerIdx, reason = 'lastStanding') {
   if (room.ended) return;
   room.ended = true;
+  if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
   room.players.forEach((p, i) => {
     if (!p) return;
     wsSend(p.ws, { type: 'blockResult', winner: i === winnerIdx ? 'you' : 'opponent', winnerIndex: winnerIdx, winnerName: room.players[winnerIdx]?.nickname || 'Player', reason, players: blockPayload(room).players, board: room.board });
@@ -265,6 +322,7 @@ function advanceBlockTurn(room, eliminatedNow = []) {
       room.turnIndex = idx;
       eliminated.forEach(playerIndex => blockBroadcast(room, { type: 'blockEliminated', playerIndex, ...blockPayload(room) }));
       blockBroadcast(room, { type: 'blockTurn', ...blockPayload(room) });
+      startBlockTurnTimer(room);
       return;
     }
 
@@ -289,6 +347,7 @@ function createBlockRoom(players) {
     turnIndex: 0,
     ended: false,
     playerCount: count,
+    turnTimer: null,
   };
 
   players.forEach((p, i) => {
@@ -309,6 +368,7 @@ function createBlockRoom(players) {
   setTimeout(() => {
     if (!rooms.has(id)) return;
     players.forEach((p, i) => wsSend(p.ws, { type: 'blockStart', yourIndex: i, playerCount: count, ...blockPayload(room) }));
+    startBlockTurnTimer(room);
   }, 1200);
 }
 
@@ -333,10 +393,13 @@ wss.on('connection', (ws) => {
       if (mode === 'block') {
         const playerCount = getBlockPlayerCount(data.playerCount);
         privateRooms.set(code, { ws, nickname, rank, timeout, mode, playerCount, players: [{ ws, nickname, rank }] });
+      } else if (mode === 'coop') {
+        const playerCount = Number(data.playerCount) === 4 ? 4 : 2;
+        privateRooms.set(code, { ws, nickname, rank, timeout, mode, playerCount, players: [{ ws, nickname, rank }] });
       } else {
         privateRooms.set(code, { ws, nickname, rank, timeout, mode });
       }
-      wsSend(ws, { type: 'privateCreated', code });
+      wsSend(ws, { type: 'privateCreated', code, playerCount: privateRooms.get(code)?.playerCount || 2, joined: 1 });
     }
 
     // ── joinPrivate: join a private room by code ─────────────────
@@ -360,6 +423,16 @@ wss.on('connection', (ws) => {
           clearTimeout(host.timeout);
           privateRooms.delete(code);
           createBlockRoom(host.players.slice(0, host.playerCount));
+        }
+      } else if (host.mode === 'coop' && host.playerCount === 4) {
+        host.players = (host.players || [{ ws: host.ws, nickname: host.nickname, rank: host.rank }]).filter(p => p.ws.readyState === WebSocket.OPEN);
+        if (host.players.some(p => p.ws === ws)) return;
+        host.players.push({ ws, nickname, rank });
+        host.players.forEach((p, i) => wsSend(p.ws, { type: 'coopPrivateWaiting', code, joined: host.players.length, playerCount: host.playerCount, playerIdx: i }));
+        if (host.players.length >= host.playerCount) {
+          clearTimeout(host.timeout);
+          privateRooms.delete(code);
+          createCoop4Room(host.players.slice(0, host.playerCount));
         }
       } else {
         clearTimeout(host.timeout);
@@ -480,11 +553,17 @@ wss.on('connection', (ws) => {
       const playerCount = getBlockPlayerCount(data.playerCount);
       const blockQueue = getBlockQueue(playerCount);
       for (let i = blockQueue.length - 1; i >= 0; i--) if (blockQueue[i].ws.readyState !== WebSocket.OPEN) blockQueue.splice(i, 1);
+      const alreadyQueued = blockQueue.find(p => p.ws === ws);
+      if (alreadyQueued) {
+        notifyBlockQueue(blockQueue, playerCount);
+        return;
+      }
       blockQueue.push({ ws, nickname, rank });
-      wsSend(ws, { type: 'blockWaiting', joined: blockQueue.length, playerCount });
+      notifyBlockQueue(blockQueue, playerCount);
       if (blockQueue.length >= playerCount) {
         const players = blockQueue.splice(0, playerCount);
         createBlockRoom(players);
+        notifyBlockQueue(blockQueue, playerCount);
       }
     }
 
@@ -503,6 +582,7 @@ wss.on('connection', (ws) => {
       room.last[idx] = { r, c };
       room.scores[idx]++;
       room.numbers[idx]++;
+      if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
       blockBroadcast(room, { type: 'blockMove', playerIndex: idx, r, c, n, ...blockPayload(room) });
       advanceBlockTurn(room);
     }
@@ -515,9 +595,25 @@ wss.on('connection', (ws) => {
       if (!room || room.type !== 'block' || room.ended) return;
       const idx = ws._playerIdx;
       if (!room.alive[idx] || blockHasMove(room, idx)) return;
+      if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
       room.alive[idx] = false;
       const alive = blockAliveIndexes(room);
       if (alive.length <= 1) endBlockRoom(room, alive[0] ?? idx);
+      else advanceBlockTurn(room, [idx]);
+    }
+
+    // -- blockTimeout: client's 20s countdown hit 0, they forfeit --
+    else if (data.type === 'blockTimeout') {
+      const roomId = ws._roomId;
+      if (roomId === null) return;
+      const room = rooms.get(roomId);
+      if (!room || room.type !== 'block' || room.ended) return;
+      const idx = ws._playerIdx;
+      if (!room.alive[idx]) return;
+      if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
+      room.alive[idx] = false;
+      const alive = blockAliveIndexes(room);
+      if (alive.length <= 1) endBlockRoom(room, alive[0] ?? idx, 'timeout');
       else advanceBlockTurn(room, [idx]);
     }
 
@@ -593,6 +689,62 @@ wss.on('connection', (ws) => {
       rooms.delete(room.id);
     }
 
+    // ── coop4Join: 4-player coop matchmaking ────────────────────
+    else if (data.type === 'coop4Join') {
+      const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      ws._nickname = nickname; ws._rank = rank;
+      for (let i = coopQueue4.length - 1; i >= 0; i--) if (coopQueue4[i].ws.readyState !== WebSocket.OPEN) coopQueue4.splice(i, 1);
+      if (coopQueue4.some(p => p.ws === ws)) {
+        notifyCoop4Queue();
+        return;
+      }
+      coopQueue4.push({ ws, nickname, rank });
+      notifyCoop4Queue();
+      if (coopQueue4.length >= 4) {
+        const players = coopQueue4.splice(0, 4);
+        createCoop4Room(players);
+        notifyCoop4Queue();
+      }
+    }
+
+    // ── coop4Move: player placed a number ───────────────────────
+    else if (data.type === 'coop4Move') {
+      const roomId = ws._roomId;
+      if (roomId === null) return;
+      const room = rooms.get(roomId);
+      if (!room || room.type !== 'coop4' || room.gameOver) return;
+      const idx = ws._playerIdx;
+      if (idx !== room.turnIdx || !room.activePlayers.includes(idx)) return;
+      const r = parseInt(data.r), c = parseInt(data.c), n = parseInt(data.n);
+      if (isNaN(r) || isNaN(c) || isNaN(n) || r < 0 || r > 9 || c < 0 || c > 9) return;
+      if (n !== room.currentNumber) return;
+      room.currentNumber++;
+      room.lastR = r; room.lastC = c;
+      room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4Move', playerIdx: idx, r, c, n }); });
+      if (n === 100) {
+        room.gameOver = true;
+        room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4Result', outcome: 'complete', score: 100 }); });
+        rooms.delete(room.id); return;
+      }
+      const pos = room.activePlayers.indexOf(room.turnIdx);
+      room.turnIdx = room.activePlayers[(pos + 1) % room.activePlayers.length];
+      room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4Turn', turnIdx: room.turnIdx, n: room.currentNumber }); });
+    }
+
+    // ── coop4Stuck: current player has no valid moves ────────────
+    else if (data.type === 'coop4Stuck') {
+      const roomId = ws._roomId;
+      if (roomId === null) return;
+      const room = rooms.get(roomId);
+      if (!room || room.type !== 'coop4' || room.gameOver) return;
+      if (ws._playerIdx !== room.turnIdx) return;
+      room.gameOver = true;
+      const score = room.currentNumber - 1;
+      room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4Result', outcome: 'stuck', score }); });
+      rooms.delete(room.id);
+    }
+
     // ── ping ─────────────────────────────────────────────────────
     else if (data.type === 'ping') {
       wsSend(ws, { type: 'pong' });
@@ -603,13 +755,14 @@ wss.on('connection', (ws) => {
     // Remove from private room if waiting for a joiner
     for (const [code, entry] of privateRooms) {
       if (entry.ws === ws || entry.players?.some(p => p.ws === ws)) {
-        if (entry.mode === 'block' && entry.players) {
+        if ((entry.mode === 'block' || entry.mode === 'coop') && entry.players) {
           entry.players = entry.players.filter(p => p.ws !== ws && p.ws.readyState === WebSocket.OPEN);
           if (entry.players.length) {
             entry.ws = entry.players[0].ws;
             entry.nickname = entry.players[0].nickname;
             entry.rank = entry.players[0].rank;
-            entry.players.forEach((p, i) => wsSend(p.ws, { type: 'blockPrivateWaiting', code, joined: entry.players.length, playerCount: entry.playerCount, yourIndex: i }));
+            const type = entry.mode === 'block' ? 'blockPrivateWaiting' : 'coopPrivateWaiting';
+            entry.players.forEach((p, i) => wsSend(p.ws, { type, code, joined: entry.players.length, playerCount: entry.playerCount, yourIndex: i, playerIdx: i }));
             continue;
           }
         }
@@ -627,9 +780,13 @@ wss.on('connection', (ws) => {
     const cqi = coopQueue.findIndex(p => p.ws === ws);
     if (cqi !== -1) { coopQueue.splice(cqi, 1); return; }
 
-    for (const blockQueue of blockQueues.values()) {
+    // Remove from coop4 queue if waiting
+    const c4qi = coopQueue4.findIndex(p => p.ws === ws);
+    if (c4qi !== -1) { coopQueue4.splice(c4qi, 1); notifyCoop4Queue(); return; }
+
+    for (const [playerCount, blockQueue] of blockQueues) {
       const bqi = blockQueue.findIndex(p => p.ws === ws);
-      if (bqi !== -1) { blockQueue.splice(bqi, 1); return; }
+      if (bqi !== -1) { blockQueue.splice(bqi, 1); notifyBlockQueue(blockQueue, playerCount); return; }
     }
 
     // Notify opponent if mid-game
@@ -639,9 +796,44 @@ wss.on('connection', (ws) => {
       if (room) {
         if (room.type === 'block') {
           const idx = ws._playerIdx;
-          const alive = blockAliveIndexes(room).filter(i => i !== idx);
-          if (alive.length === 1) endBlockRoom(room, alive[0], 'disconnect');
-          else rooms.delete(roomId);
+          if (idx === null || idx === undefined || !room.alive[idx]) return;
+          room.alive[idx] = false;
+          room.players[idx].ws._roomId = null;
+          room.players[idx].ws._playerIdx = null;
+          const alive = blockAliveIndexes(room);
+          if (alive.length <= 1) {
+            endBlockRoom(room, alive[0] ?? idx, 'disconnect');
+            return;
+          }
+          if (room.turnIndex === idx) {
+            advanceBlockTurn(room, [idx]);
+          } else {
+            blockBroadcast(room, { type: 'blockEliminated', playerIndex: idx, ...blockPayload(room) });
+            blockBroadcast(room, { type: 'blockTurn', ...blockPayload(room) });
+          }
+        } else if (room.type === 'coop4') {
+          const idx = ws._playerIdx;
+          const wasCurrentTurn = room.turnIdx === idx;
+          const oldPos = room.activePlayers.indexOf(idx);
+          room.players[idx] = null;
+          room.activePlayers = room.activePlayers.filter(i => i !== idx);
+          room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4PlayerLeft', playerIdx: idx }); });
+          if (room.activePlayers.length <= 1) {
+            room.gameOver = true;
+            room.activePlayers.forEach(i => {
+              if (room.players[i]) {
+                wsSend(room.players[i].ws, { type: 'coop4Result', outcome: 'disconnect', score: room.currentNumber - 1 });
+                room.players[i].ws._roomId = null;
+              }
+            });
+            rooms.delete(room.id); return;
+          }
+          if (wasCurrentTurn) {
+            const nextPos = room.activePlayers.length > 0 ? (oldPos % room.activePlayers.length) : 0;
+            room.turnIdx = room.activePlayers[nextPos];
+            room.players.forEach(p => { if (p) wsSend(p.ws, { type: 'coop4Turn', turnIdx: room.turnIdx, n: room.currentNumber }); });
+          }
+          return;
         } else {
           clearInterval(room.timerInterval);
           room.players.forEach(p => {
