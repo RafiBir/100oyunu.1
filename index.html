@@ -1784,6 +1784,44 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
+    .coop-player-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .coop-player-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      max-width: 46%;
+      padding: 5px 9px;
+      border-radius: 9px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .coop-player-chip.active { border-color: #4ade80; box-shadow: 0 0 0 1px rgba(74,222,128,.25); }
+    .coop-player-chip .coop-color-dot {
+      width: 12px;
+      height: 12px;
+      flex: 0 0 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.16);
+    }
+    .coop-player-chip .coop-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .coop-color-me { background:#7e22ce; border-color:#c084fc; }
+    .coop-color-partner { background:#1d4ed8; border-color:#60a5fa; }
     #coop4-bar {
       width: 100%; max-width: 480px;
       display: none; flex-direction: column; align-items: center;
@@ -1795,10 +1833,14 @@
       display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
     }
     .coop4-card {
-      padding: 3px 10px; border-radius: 8px; font-size: 0.72rem;
+      display: inline-flex; align-items: center; gap: 6px;
+      min-width: 0; max-width: 46%;
+      padding: 4px 10px; border-radius: 8px; font-size: 0.72rem;
       background: var(--surface2); border: 1px solid var(--border);
       opacity: 0.45; transition: opacity .2s, border-color .2s, background .2s;
+      font-weight: 800;
     }
+    .coop4-card .coop-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .coop4-card.active {
       opacity: 1; border-color: #4ade80; background: rgba(74,222,128,0.08);
       font-weight: 700;
@@ -2676,6 +2718,7 @@
   <div id="coop-turn-bar" style="display:none">
     <div id="coop-turn-label">🟢 Sıra Sende!</div>
     <div id="coop-role-label">Rolün: Tek Sayılar</div>
+    <div id="coop-players-row" class="coop-player-row"></div>
   </div>
 
   <div id="coop4-bar">
@@ -8254,8 +8297,16 @@
           + ` p${i}`
           + (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? ' active' : '')
           + (!coop4ActivePlayers.has(i) ? ' left' : '');
-        card.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
+        const dot = document.createElement('span');
+        dot.className = 'coop-color-dot';
+        const colors = ['#1d4ed8', '#be123c', '#15803d', '#a16207'];
+        dot.style.background = colors[i] || colors[0];
+        dot.style.borderColor = ['#60a5fa', '#fb7185', '#4ade80', '#facc15'][i] || '#60a5fa';
+        const name = document.createElement('span');
+        name.className = 'coop-name';
+        name.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
           + (p?.nickname || `P${i + 1}`);
+        card.append(dot, name);
         row.appendChild(card);
       });
       const lbl = document.getElementById('coop4-turn-label');
@@ -8408,6 +8459,27 @@
       if (!bar) return;
       if (lbl)  lbl.textContent  = coopIsMyTurn ? T('coop.turn.yours') : T('coop.turn.partner');
       if (role) role.textContent = coopMyRole === 'odd' ? T('coop.role.odd') : T('coop.role.even');
+      const row = document.getElementById('coop-players-row');
+      if (row) {
+        const myName = localStorage.getItem(NICK_KEY) || T('race.player.you');
+        const partnerName = coopPartnerName || T('coop.bot.partner');
+        const players = [
+          { name: myName, className: 'coop-color-me', active: coopIsMyTurn },
+          { name: partnerName, className: 'coop-color-partner', active: !coopIsMyTurn },
+        ];
+        row.innerHTML = '';
+        players.forEach(p => {
+          const chip = document.createElement('div');
+          chip.className = 'coop-player-chip' + (p.active ? ' active' : '');
+          const dot = document.createElement('span');
+          dot.className = `coop-color-dot ${p.className}`;
+          const name = document.createElement('span');
+          name.className = 'coop-name';
+          name.textContent = p.name;
+          chip.append(dot, name);
+          row.appendChild(chip);
+        });
+      }
       bar.classList.toggle('my-turn', coopIsMyTurn);
     }
 
