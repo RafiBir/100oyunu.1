@@ -1971,6 +1971,15 @@
     .cell.block-p2 { background:#16a34a; color:#f0fdf4; }
     .cell.block-p3 { background:#ca8a04; color:#fefce8; }
     .cell.block-last { outline: 2px solid #facc15; box-shadow: 0 0 12px rgba(250,204,21,.55); }
+    .cell.block-latest {
+      animation: blockLatestPulse 0.9s ease-in-out infinite;
+      outline: 3px solid #fff;
+      z-index: 2;
+    }
+    @keyframes blockLatestPulse {
+      0%, 100% { box-shadow: 0 0 0 2px #111827, 0 0 12px rgba(255,255,255,.55); transform: scale(1); }
+      50% { box-shadow: 0 0 0 3px #fff, 0 0 24px rgba(255,255,255,.9); transform: scale(1.05); }
+    }
     #block-player-count, #block-match-type, #coop-player-count, #coop-match-type { display:none; gap:6px; width:100%; }
     #block-player-count button, #block-match-type button, #coop-player-count button, #coop-match-type button { flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text-muted); font-weight:800; cursor:pointer; }
     #block-player-count button.active, #block-match-type button.active { background:#ea580c; color:#fff; border-color:#fb923c; }
@@ -4178,6 +4187,7 @@
     let blockBotTimer = null;
     let blockCountdownTimer = null;
     let blockCountdownLeft = 0;
+    let blockLatestMove = null;
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
     let isCoopBotMode = false;
@@ -5180,8 +5190,23 @@
       }
       return { r: best.r, c: best.c };
     }
+    function findNewBlockMove(nextBoard) {
+      if (!Array.isArray(nextBoard) || !Array.isArray(grid)) return null;
+      for (let r = 0; r < nextBoard.length; r++) {
+        for (let c = 0; c < (nextBoard[r] || []).length; c++) {
+          const prev = grid[r]?.[c];
+          const next = nextBoard[r][c];
+          if (!prev && next && typeof next === 'object') return { r, c, player: next.player };
+        }
+      }
+      return null;
+    }
     function syncBlockState(data) {
-      if (Array.isArray(data.board)) grid = data.board.map(row => row.map(cell => cell || 0));
+      if (Array.isArray(data.board)) {
+        const latest = findNewBlockMove(data.board);
+        grid = data.board.map(row => row.map(cell => cell || 0));
+        if (latest) blockLatestMove = latest;
+      }
       if (Array.isArray(data.players)) blockPlayers = data.players.map((p, i) => ({ nickname: p.nickname || `P${i + 1}`, rank: p.rank || null, alive: p.alive !== false, score: p.score || 0, last: { r: -1, c: -1 } }));
       if (Number.isInteger(data.turnIndex)) blockTurnIndex = data.turnIndex;
       blockPlayers = blockPlayers.map((p, i) => ({ ...p, last: findBlockLast(i) }));
@@ -5259,6 +5284,7 @@
       grid[r][c] = { player: playerIndex, n };
       player.score = n;
       player.last = { r, c };
+      blockLatestMove = { r, c, player: playerIndex };
       renderGrid();
       updateBlockScorePanel();
       return true;
@@ -5342,6 +5368,7 @@
       gameHasStarted = true;
       blockMyIndex = 0;
       blockTurnIndex = 0;
+      blockLatestMove = null;
       activeRows = BLOCK_SIZE; activeCols = BLOCK_SIZE;
       grid = Array.from({ length: BLOCK_SIZE }, () => Array(BLOCK_SIZE).fill(0));
       blockPlayers = Array.from({ length: blockPlayerCount }, (_, i) => ({
@@ -5383,7 +5410,7 @@
     function closeBlockSocket() {
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
       if (blockBotTimer) { clearTimeout(blockBotTimer); blockBotTimer = null; }
-      isBlockMode = false; blockVsBot = false; blockPlayers = []; blockMyIndex = -1; blockTurnIndex = -1;
+      isBlockMode = false; blockVsBot = false; blockPlayers = []; blockMyIndex = -1; blockTurnIndex = -1; blockLatestMove = null;
       const list = document.getElementById('block-score-list');
       if (list) list.style.display = 'none';
     }
@@ -5881,6 +5908,7 @@
             cell.classList.add('filled', BLOCK_COLORS[val.player] || 'block-p0');
             const last = blockPlayers[val.player]?.last;
             if (last && last.r === r && last.c === c) cell.classList.add('block-last');
+            if (blockLatestMove && blockLatestMove.r === r && blockLatestMove.c === c) cell.classList.add('block-latest');
           }
 
           // Sürpriz mod görseli
@@ -7400,6 +7428,7 @@
         case 'blockStart':
           closeOnlineWaiting(); document.getElementById('overlay').classList.remove('show');
           currentMode = 'bloke'; isBlockMode = true; gameHasStarted = true; blockMyIndex = data.yourIndex; blockPlayerCount = data.playerCount || blockPlayerCount;
+          blockLatestMove = null;
           activeRows = BLOCK_SIZE; activeCols = BLOCK_SIZE; updateModeUI('bloke'); syncBlockState(data); initGame(); syncBlockState(data);
           break;
         case 'blockMove':
