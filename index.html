@@ -1630,11 +1630,11 @@
     #race-boards {
       display: flex;
       flex-direction: row;
-      flex-wrap: wrap;
       gap: 8px;
       justify-content: center;
+      align-items: center;
       width: 100%;
-      max-width: 580px;
+      max-width: min(96vw, 780px);
     }
     .race-side {
       display: flex;
@@ -1643,7 +1643,7 @@
       gap: 4px;
     }
     #race-player-side { order: 1; }
-    #race-bot-side { order: 2; }
+    #race-bot-side { order: 3; }
     .race-label {
       font-size: 0.75rem;
       font-weight: 800;
@@ -1666,16 +1666,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      margin-top: 8px;
-      padding: 8px 20px;
+      flex-direction: column;
+      gap: 8px;
+      margin: 0;
+      padding: 10px 12px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      width: 100%;
-      max-width: 580px;
-      order: 3;
-      flex: 0 0 100%;
+      width: auto;
+      min-width: 86px;
+      max-width: 120px;
+      order: 2;
+      flex: 0 0 auto;
     }
     #race-undo-bar {
       display: flex;
@@ -1711,6 +1713,8 @@
       #race-score-bar { order: 2; flex: none; }
       #race-bot-side { order: 3; }
       #race-score-bar {
+        flex-direction: row;
+        width: 100%;
         max-width: 100%;
         gap: 16px;
         padding: 8px 12px;
