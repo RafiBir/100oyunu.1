@@ -1699,6 +1699,7 @@
     @media (max-width: 700px) {
       #race-boards {
         flex-direction: column;
+        flex-wrap: nowrap;
         align-items: center;
         gap: 10px;
         max-width: 100%;
@@ -1707,7 +1708,7 @@
         width: 100%;
       }
       #race-player-side { order: 1; }
-      #race-score-bar { order: 2; }
+      #race-score-bar { order: 2; flex: none; }
       #race-bot-side { order: 3; }
       #race-score-bar {
         max-width: 100%;
