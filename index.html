@@ -5259,13 +5259,11 @@
           if (blockTurnIndex === blockMyIndex) {
             gameActive = false;
             blockPlayers[blockMyIndex].alive = false;
+            showBlockEliminated();
             const aliveIdxs = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
-            if (aliveIdxs.length <= 1) {
-              const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
-              showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
-            } else {
-              showBlockEliminated();
-              if (blockVsBot) advanceLocalBlockTurn([blockMyIndex]);
+            if (blockVsBot) {
+              if (aliveIdxs.length >= 2) advanceLocalBlockTurn([blockMyIndex]);
+              // 2-player bot: game over, blockResult shown via showBlockResult when bot wins
             }
             if (!blockVsBot && onlineSocket?.readyState === WebSocket.OPEN)
               onlineSocket.send(JSON.stringify({ type: 'blockTimeout' }));
@@ -5473,8 +5471,8 @@
       if (data.board) { const _saved = isBlockMode; isBlockMode = false; syncBlockState(data); isBlockMode = _saved; stopBlockCountdown(); }
       gameActive = false;
       const won = data.winner === 'you';
-      if (won) { soundWin(); launchConfetti(); } else soundLose();
-      saveGameStat(blockVsBot ? 'bloke_bot' : 'bloke_online', { won: won ? 'win' : 'lose' });
+      if (won) { soundWin(); launchConfetti(); } else if (!blockElimShown) soundLose();
+      if (!blockElimShown) saveGameStat(blockVsBot ? 'bloke_bot' : 'bloke_online', { won: won ? 'win' : 'lose' });
       const stats = loadStats();
       const blockWins = (stats.bloke_online?.wins || 0) + (stats.bloke_bot?.wins || 0);
       checkAchievements({
