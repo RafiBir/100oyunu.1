@@ -1628,8 +1628,8 @@
     /* ── Zaman seviye seçimi ────────────────────────────────────── */
     /* ── Yarış Modu Layout ───────────────────────────────────── */
     #race-boards {
-      display: flex;
-      flex-direction: column;
+      display: flex !important;
+      flex-direction: column !important;
       align-items: center;
       gap: 10px;
       width: 100%;
@@ -1640,8 +1640,6 @@
       align-items: center;
       gap: 4px;
     }
-    #race-player-side { order: 1; }
-    #race-bot-side { order: 3; }
     .race-label {
       font-size: 0.75rem;
       font-weight: 800;
@@ -1672,7 +1670,6 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       width: fit-content;
-      order: 2;
       flex: none;
     }
     #race-undo-bar {
