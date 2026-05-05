@@ -751,6 +751,8 @@ wss.on('connection', (ws) => {
     }
   });
 
+  ws.on('error', () => {});
+
   ws.on('close', () => {
     // Remove from private room if waiting for a joiner
     for (const [code, entry] of privateRooms) {
