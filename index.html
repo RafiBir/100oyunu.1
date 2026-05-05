@@ -5000,6 +5000,17 @@
         document.getElementById('race-bot-side').style.display = '';
         document.getElementById('race-score-bar').style.display = '';
         document.getElementById('race-player-label').style.display = '';
+        // Ensure correct DOM order: player → score-bar → bot
+        const _rb = document.getElementById('race-boards');
+        const _ps = document.getElementById('race-player-side');
+        const _sb = document.getElementById('race-score-bar');
+        const _bs = document.getElementById('race-bot-side');
+        if (_rb && _ps && _sb && _bs) {
+          _rb.style.flexDirection = 'column';
+          _rb.appendChild(_ps);
+          _rb.appendChild(_sb);
+          _rb.appendChild(_bs);
+        }
         if (!isOnlineRace) {
           const _pl2 = document.getElementById('race-player-label');
           if (_pl2) { _pl2.setAttribute('data-i18n', 'race.player.you'); _pl2.textContent = T('race.player.you'); }
