@@ -13,7 +13,11 @@ const app  = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
-  origin: ['https://rafibir.github.io', 'http://localhost:3001']
+  origin: function(origin, cb) {
+    const allowed = ['https://rafibir.github.io', 'http://localhost:3001', 'http://localhost:5500', 'http://127.0.0.1:5500'];
+    if (!origin || allowed.includes(origin)) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
+  }
 }));
 app.use(express.json());
 
