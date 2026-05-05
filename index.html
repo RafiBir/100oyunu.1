@@ -1629,12 +1629,10 @@
     /* ── Yarış Modu Layout ───────────────────────────────────── */
     #race-boards {
       display: flex;
-      flex-direction: row;
-      gap: 8px;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      gap: 10px;
       width: 100%;
-      max-width: min(96vw, 780px);
     }
     .race-side {
       display: flex;
@@ -1666,18 +1664,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      gap: 8px;
+      flex-direction: row;
+      gap: 16px;
       margin: 0;
-      padding: 10px 12px;
+      padding: 8px 20px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      width: auto;
-      min-width: 86px;
-      max-width: 120px;
+      width: fit-content;
       order: 2;
-      flex: 0 0 auto;
+      flex: none;
     }
     #race-undo-bar {
       display: flex;
@@ -1699,30 +1695,12 @@
     #btn-race-undo:disabled { opacity: 0.35; cursor: not-allowed; }
 
     @media (max-width: 700px) {
-      #race-boards {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        align-items: center;
-        gap: 10px;
-        max-width: 100%;
-      }
       .race-side {
         width: 100%;
       }
-      #race-player-side { order: 1; }
-      #race-score-bar { order: 2; flex: none; }
-      #race-bot-side { order: 3; }
       #race-score-bar {
-        flex-direction: row;
-        width: fit-content;
-        min-width: 0;
-        max-width: 100%;
         gap: 14px;
         padding: 7px 14px;
-        margin: 0;
-        border-radius: 14px;
-        border-color: var(--accent);
-        background: #2a0d31;
       }
       #race-score-bar .race-score-side {
         display: flex;
