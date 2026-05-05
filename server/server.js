@@ -4,7 +4,7 @@ const cors       = require('cors');
 const WebSocket  = require('ws');
 const { insertScore, getTopScores, getRank, clearScores } = require('./db');
 
-const ADMIN_KEY   = process.env.ADMIN_KEY || 'gizli123';
+const ADMIN_KEY   = process.env.ADMIN_KEY || 'gizli123'; // v2
 const VALID_MODES = ['serbest', 'surpriz'];
 
 const scoreRateLimit = new Map(); // ip -> lastSubmitMs
