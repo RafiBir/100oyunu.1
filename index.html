@@ -5241,6 +5241,8 @@
       renderGrid();
       if (isBlockMode && blockTurnIndex === blockMyIndex && !hasAnyValidMove() && onlineSocket?.readyState === WebSocket.OPEN) {
         gameActive = false;
+        blockPlayers[blockMyIndex].alive = false;
+        showBlockEliminated();
         onlineSocket.send(JSON.stringify({ type: 'blockNoMoves' }));
       }
     }
@@ -5350,6 +5352,7 @@
 
         blockPlayers[idx].alive = false;
         eliminated.push(idx);
+        if (idx === blockMyIndex) showBlockEliminated();
         const winner = blockWinnerIndex();
         if (winner !== -1) { showLocalBlockResult(winner); return; }
       }
