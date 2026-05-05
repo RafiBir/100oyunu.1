@@ -3505,6 +3505,9 @@
         'block.win':               '🏆 Son Kalan Sensin!',
         'block.lose':              '💀 Rakip Kazandı',
         'block.result.msg':        'Kazanan: {name}',
+        'block.you.eliminated':    '💀 Elendin!',
+        'block.game.continues':    'Oyun devam ediyor...',
+        'block.watch':             '👁 İzle',
         'block.left.win':          'Rakip ayrıldı, kazandın!',
         'rank.tier.grandmaster':   'Grandmaster',
         'rank.tier.legend':        'Efsane',
@@ -3961,6 +3964,9 @@
         'block.win':               '🏆 Last Player Standing!',
         'block.lose':              '💀 Opponent Won',
         'block.result.msg':        'Winner: {name}',
+        'block.you.eliminated':    '💀 You\'re Eliminated!',
+        'block.game.continues':    'Game continues...',
+        'block.watch':             '👁 Watch',
         'block.left.win':          'Opponent left, you win!',
         'rank.tier.grandmaster':   'Grandmaster',
         'rank.tier.legend':        'Legend',
@@ -4202,6 +4208,7 @@
     let blockBotTimer = null;
     let blockCountdownTimer = null;
     let blockCountdownLeft = 0;
+    let blockElimShown = false;
     let blockLatestMove = null;
     let coopMyRole = null;       // 'odd' | 'even'
     let coopIsMyTurn = false;
@@ -5229,7 +5236,7 @@
       document.getElementById('race-player-score').textContent = mine?.score || 0;
       document.getElementById('race-bot-score').textContent = blockPlayers.filter(p => p.alive).length;
       updateBlockScorePanel();
-      gameActive = blockTurnIndex === blockMyIndex;
+      gameActive = blockTurnIndex === blockMyIndex && blockPlayers[blockMyIndex]?.alive !== false;
       startBlockCountdown();
       renderGrid();
       if (isBlockMode && blockTurnIndex === blockMyIndex && !hasAnyValidMove() && onlineSocket?.readyState === WebSocket.OPEN) {
@@ -5253,8 +5260,13 @@
             gameActive = false;
             blockPlayers[blockMyIndex].alive = false;
             const aliveIdxs = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
-            const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
-            showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
+            if (aliveIdxs.length <= 1) {
+              const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
+              showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
+            } else {
+              showBlockEliminated();
+              if (blockVsBot) advanceLocalBlockTurn([blockMyIndex]);
+            }
             if (!blockVsBot && onlineSocket?.readyState === WebSocket.OPEN)
               onlineSocket.send(JSON.stringify({ type: 'blockTimeout' }));
           } else if (blockVsBot) {
@@ -5431,10 +5443,31 @@
     function closeBlockSocket() {
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
       if (blockBotTimer) { clearTimeout(blockBotTimer); blockBotTimer = null; }
-      isBlockMode = false; blockVsBot = false; blockPlayers = []; blockMyIndex = -1; blockTurnIndex = -1; blockLatestMove = null;
+      isBlockMode = false; blockVsBot = false; blockPlayers = []; blockMyIndex = -1; blockTurnIndex = -1; blockLatestMove = null; blockElimShown = false;
       const list = document.getElementById('block-score-list');
       if (list) list.style.display = 'none';
     }
+    function showBlockEliminated() {
+      if (blockElimShown) return;
+      blockElimShown = true;
+      stopBlockCountdown();
+      gameActive = false;
+      soundLose();
+      saveGameStat(blockVsBot ? 'bloke_bot' : 'bloke_online', { won: 'lose' });
+      const box = document.getElementById('overlay-box');
+      box.className = 'lose';
+      document.getElementById('overlay-title').textContent = T('block.you.eliminated');
+      document.getElementById('overlay-msg').textContent = T('block.game.continues');
+      document.getElementById('overlay-xp-gain').textContent = '';
+      document.getElementById('overlay-score-highlight').innerHTML = '';
+      document.getElementById('overlay-scores').innerHTML = '';
+      const btns = document.getElementById('overlay-btns'); btns.innerHTML = '';
+      const watch = document.createElement('button'); watch.textContent = T('block.watch'); watch.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); }); btns.appendChild(watch);
+      const again = document.createElement('button'); again.textContent = T('online.rematch'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
+      const home = document.createElement('button'); home.textContent = T('online.home'); home.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); gameHasStarted = false; currentMode = 'serbest'; updateModeUI('serbest'); document.getElementById('start-screen').classList.remove('hidden'); }); btns.appendChild(home);
+      document.getElementById('overlay').classList.add('show');
+    }
+
     function showBlockResult(data) {
       stopBlockCountdown();
       if (data.board) { const _saved = isBlockMode; isBlockMode = false; syncBlockState(data); isBlockMode = _saved; stopBlockCountdown(); }
@@ -7460,7 +7493,11 @@
         case 'blockEliminated':
           if (!isBlockMode) break;
           syncBlockState(data);
-          showToast({ icon: '🧱', name: T('block.eliminated', { name: blockPlayers[data.playerIndex]?.nickname || '-' }), xp: 0 });
+          if (data.playerIndex === blockMyIndex) {
+            showBlockEliminated();
+          } else {
+            showToast({ icon: '🧱', name: T('block.eliminated', { name: blockPlayers[data.playerIndex]?.nickname || '-' }), xp: 0 });
+          }
           break;
         case 'blockResult':
           if (!isBlockMode) break;
