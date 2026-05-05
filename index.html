@@ -5230,8 +5230,7 @@
       document.getElementById('race-bot-score').textContent = blockPlayers.filter(p => p.alive).length;
       updateBlockScorePanel();
       gameActive = blockTurnIndex === blockMyIndex;
-      if (blockTurnIndex === blockMyIndex) startBlockCountdown();
-      else stopBlockCountdown();
+      startBlockCountdown();
       renderGrid();
       if (isBlockMode && blockTurnIndex === blockMyIndex && !hasAnyValidMove() && onlineSocket?.readyState === WebSocket.OPEN) {
         gameActive = false;
@@ -5249,14 +5248,22 @@
         if (blockCountdownLeft <= 0) {
           clearInterval(blockCountdownTimer);
           blockCountdownTimer = null;
-          if (!isBlockMode || blockTurnIndex !== blockMyIndex) return;
-          gameActive = false;
-          blockPlayers[blockMyIndex].alive = false;
-          const aliveIdxs = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
-          const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
-          showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
-          if (!blockVsBot && onlineSocket?.readyState === WebSocket.OPEN)
-            onlineSocket.send(JSON.stringify({ type: 'blockTimeout' }));
+          if (!isBlockMode) return;
+          if (blockTurnIndex === blockMyIndex) {
+            gameActive = false;
+            blockPlayers[blockMyIndex].alive = false;
+            const aliveIdxs = blockPlayers.map((p, i) => p.alive ? i : -1).filter(i => i !== -1);
+            const winnerIdx = aliveIdxs[0] ?? (blockMyIndex === 0 ? 1 : 0);
+            showBlockResult({ winner: 'opponent', winnerIndex: winnerIdx, winnerName: blockPlayers[winnerIdx]?.nickname || 'Rakip', reason: 'timeout', players: blockPlayers, board: grid });
+            if (!blockVsBot && onlineSocket?.readyState === WebSocket.OPEN)
+              onlineSocket.send(JSON.stringify({ type: 'blockTimeout' }));
+          } else if (blockVsBot) {
+            const ti = blockTurnIndex;
+            blockPlayers[ti].alive = false;
+            const winner = blockWinnerIndex();
+            if (winner !== -1) showLocalBlockResult(winner);
+            else advanceLocalBlockTurn([ti]);
+          }
         }
       }, 1000);
     }
@@ -5326,8 +5333,7 @@
           announceLocalBlockEliminations(eliminated);
           updateBlockScorePanel();
           renderGrid();
-          if (idx === blockMyIndex) startBlockCountdown();
-          else stopBlockCountdown();
+          startBlockCountdown();
           if (idx !== blockMyIndex) scheduleBlockBotMove();
           return;
         }
