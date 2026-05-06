@@ -1,4 +1,4 @@
-const CACHE = 'centium-v35';
+const CACHE = 'centium-v36';
 const FILES = [
   './',
   './index.html',
@@ -25,6 +25,15 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  // API requests: network-first (always fresh leaderboard), fallback to cache if offline
+  if (url.pathname.startsWith('/api/')) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Static assets: cache-first (works offline, fast load)
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
