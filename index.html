@@ -5991,14 +5991,17 @@
       const gridEl = document.getElementById('grid');
       gridEl.style.gridTemplateColumns = `repeat(${activeCols}, 1fr)`;
       const maxDim = Math.max(activeRows, activeCols);
-      const isMobileTenByTenBoard = activeRows === 10 && activeCols === 10 && currentMode !== 'yaris' && window.innerWidth <= 560;
+      const usesClassicMobileCellSize = window.innerWidth <= 560
+        && currentMode !== 'yaris'
+        && (currentMode === 'bulmaca' || (activeRows === 10 && activeCols === 10));
       let cellPx, fontPx;
-      if (isMobileTenByTenBoard) {
+      if (usesClassicMobileCellSize) {
         const gap = 2;
         const pad = 3;
         const border = 4;
-        const avail = window.innerWidth - border - 2 * pad - (activeCols - 1) * gap;
-        const ideal = Math.floor(avail / activeCols);
+        const sizingCols = currentMode === 'bulmaca' ? 10 : activeCols;
+        const avail = window.innerWidth - border - 2 * pad - (sizingCols - 1) * gap;
+        const ideal = Math.floor(avail / sizingCols);
         const minCell = window.innerWidth <= 340 ? 28 : 30;
         cellPx = `${Math.max(minCell, Math.min(ideal, 44))}px`;
         fontPx = 'clamp(11px, 3.1vw, 15px)';
