@@ -32,11 +32,13 @@ if (process.env.DATABASE_URL) {
   }
 
   async function getTopScores(limit = 20, mode = 'serbest') {
+    // RANK() = competition ranking (1,2,2,4) — tied scores share a rank, next rank skips
     const r = await pool.query(
-      'SELECT nickname, score, date FROM scores WHERE mode = $1 ORDER BY score DESC LIMIT $2',
+      `SELECT nickname, score, date, RANK() OVER (ORDER BY score DESC) AS rank
+       FROM scores WHERE mode = $1 ORDER BY score DESC LIMIT $2`,
       [mode, limit]
     );
-    return r.rows.map((row, i) => ({ rank: i + 1, nickname: row.nickname, score: row.score, date: row.date }));
+    return r.rows.map(row => ({ rank: parseInt(row.rank), nickname: row.nickname, score: row.score, date: row.date }));
   }
 
   async function getRank(score, mode = 'serbest') {
@@ -80,10 +82,14 @@ if (process.env.DATABASE_URL) {
   }
 
   function getTopScores(limit = 20, mode = 'serbest') {
-    return load(mode)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map((r, i) => ({ rank: i + 1, nickname: r.nickname, score: r.score, date: r.date }));
+    // Competition ranking (1,2,2,4) — compute rank over full sorted list, then slice
+    const sorted = load(mode).sort((a, b) => b.score - a.score);
+    let prevScore = null, prevRank = 0;
+    const ranked = sorted.map((r, i) => {
+      if (r.score !== prevScore) { prevRank = i + 1; prevScore = r.score; }
+      return { rank: prevRank, nickname: r.nickname, score: r.score, date: r.date };
+    });
+    return ranked.slice(0, limit);
   }
 
   function getRank(score, mode = 'serbest') {
