@@ -5553,6 +5553,19 @@
       document.getElementById('overlay-score-highlight').innerHTML = '';
       document.getElementById('overlay-scores').innerHTML = '';
       const btns = document.getElementById('overlay-btns'); btns.innerHTML = '';
+      // Rematch button (online only, not on disconnect end)
+      if (!blockVsBot && data.reason !== 'disconnect') {
+        const rematch = document.createElement('button');
+        rematch.id = 'btn-block-rematch';
+        rematch.textContent = T('online.rematch');
+        rematch.addEventListener('click', () => {
+          rematch.textContent = T('online.rematch.waiting');
+          rematch.disabled = true;
+          if (onlineSocket?.readyState === WebSocket.OPEN)
+            onlineSocket.send(JSON.stringify({ type: 'blockRematch' }));
+        });
+        btns.appendChild(rematch);
+      }
       const again = document.createElement('button'); again.textContent = T('online.replay'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
       const home = document.createElement('button'); home.textContent = T('online.home'); home.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); gameHasStarted = false; currentMode = 'serbest'; updateModeUI('serbest'); document.getElementById('start-screen').classList.remove('hidden'); }); btns.appendChild(home);
       document.getElementById('overlay').classList.add('show');
@@ -7533,8 +7546,20 @@
           closeOnlineWaiting(); document.getElementById('overlay').classList.remove('show');
           currentMode = 'bloke'; isBlockMode = true; gameHasStarted = true; blockMyIndex = data.yourIndex; blockPlayerCount = data.playerCount || blockPlayerCount;
           blockLatestMove = null;
+          blockElimShown = false; // reset for fresh start (new game or rematch)
           activeRows = BLOCK_SIZE; activeCols = BLOCK_SIZE; updateModeUI('bloke'); syncBlockState(data); initGame(); syncBlockState(data);
           break;
+
+        case 'blockRematchVote': {
+          const rb = document.getElementById('btn-block-rematch');
+          if (rb && !rb.disabled) {
+            // Someone else voted — update label to show "they want rematch too"
+            rb.textContent = T('online.rematch.opp');
+            rb.style.borderColor = '#22c55e';
+            rb.style.color = '#4ade80';
+          }
+          break;
+        }
         case 'blockMove':
         case 'blockTurn':
           if (!isBlockMode) break;

@@ -305,13 +305,22 @@ function endBlockRoom(room, winnerIdx, reason = 'lastStanding') {
   if (room.ended) return;
   room.ended = true;
   if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
+  room.rematchVotes = new Array(room.players.length).fill(false);
   room.players.forEach((p, i) => {
     if (!p) return;
     wsSend(p.ws, { type: 'blockResult', winner: i === winnerIdx ? 'you' : 'opponent', winnerIndex: winnerIdx, winnerName: room.players[winnerIdx]?.nickname || 'Player', reason, players: blockPayload(room).players, board: room.board });
-    p.ws._roomId = null;
-    p.ws._playerIdx = null;
+    // Keep _roomId/_playerIdx so client can request rematch
   });
-  rooms.delete(room.id);
+  // Hold room for 30s to allow rematch (mirrors race rematch behavior)
+  room._deleteTimeout = setTimeout(() => {
+    rooms.delete(room.id);
+    room.players.forEach(p => {
+      if (p && p.ws.readyState === WebSocket.OPEN) {
+        p.ws._roomId = null;
+        p.ws._playerIdx = null;
+      }
+    });
+  }, 30000);
 }
 
 function advanceBlockTurn(room, eliminatedNow = []) {
@@ -620,6 +629,53 @@ wss.on('connection', (ws) => {
       const alive = blockAliveIndexes(room);
       if (alive.length <= 1) endBlockRoom(room, alive[0] ?? idx, 'timeout');
       else advanceBlockTurn(room, [idx]);
+    }
+
+    // -- blockRematch: player wants to play again with same group --
+    else if (data.type === 'blockRematch') {
+      const roomId = ws._roomId;
+      if (roomId === null) return;
+      const room = rooms.get(roomId);
+      if (!room || room.type !== 'block' || !room.ended || !room.rematchVotes) return;
+      const idx = ws._playerIdx;
+      if (idx === null || idx === undefined) return;
+      if (room.rematchVotes[idx]) return; // already voted
+      room.rematchVotes[idx] = true;
+
+      // Currently-connected players (those who haven't disconnected post-game)
+      const openIdxs = room.players.map((p, i) => p && p.ws.readyState === WebSocket.OPEN ? i : -1).filter(i => i !== -1);
+      const voteCount = room.rematchVotes.filter(Boolean).length;
+
+      // Notify all open players of vote progress
+      room.players.forEach(p => {
+        if (p && p.ws.readyState === WebSocket.OPEN) {
+          wsSend(p.ws, { type: 'blockRematchVote', playerIndex: idx, voteCount, totalNeeded: openIdxs.length });
+        }
+      });
+
+      // If all open players have voted (and at least 2 players), restart
+      const allVoted = openIdxs.every(i => room.rematchVotes[i]);
+      if (allVoted && openIdxs.length >= 2) {
+        clearTimeout(room._deleteTimeout);
+        room._deleteTimeout = null;
+        // Reset state for new game
+        const size = room.size;
+        room.board = Array.from({ length: size }, () => Array(size).fill(null));
+        room.scores = new Array(room.players.length).fill(0);
+        room.numbers = new Array(room.players.length).fill(1);
+        room.last = Array.from({ length: room.players.length }, () => ({ r: -1, c: -1 }));
+        room.alive = room.players.map((p, i) => !!(p && p.ws.readyState === WebSocket.OPEN));
+        room.turnIndex = room.alive.findIndex(a => a);
+        room.ended = false;
+        room.rematchVotes = null;
+        // Notify all open players to start new round
+        room.players.forEach((p, i) => {
+          if (p && p.ws.readyState === WebSocket.OPEN) {
+            wsSend(p.ws, { type: 'blockStart', yourIndex: i, playerCount: room.playerCount, ...blockPayload(room) });
+          }
+        });
+        startBlockTurnTimer(room);
+      }
     }
 
     // ── coopJoin: enter cooperative matchmaking ─────────────────
