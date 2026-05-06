@@ -4,7 +4,7 @@ const cors       = require('cors');
 const WebSocket  = require('ws');
 const { insertScore, getTopScores, getRank, clearScores } = require('./db');
 
-const ADMIN_KEY   = process.env.ADMIN_KEY || 'gizli123'; // v2
+const ADMIN_KEY   = process.env.ADMIN_KEY;
 const VALID_MODES = ['serbest', 'surpriz'];
 
 const scoreRateLimit = new Map(); // ip -> lastSubmitMs
@@ -74,6 +74,7 @@ app.post('/api/scores', async (req, res) => {
 // DELETE /api/scores?key=ADMIN_KEY&mode=serbest
 app.delete('/api/scores', async (req, res) => {
   try {
+    if (!ADMIN_KEY) return res.status(503).json({ error: 'Admin endpoint disabled.' });
     if (req.query.key !== ADMIN_KEY) return res.status(403).json({ error: 'Yetkisiz.' });
     const mode = VALID_MODES.includes(req.query.mode) ? req.query.mode : null;
     await clearScores(mode);
