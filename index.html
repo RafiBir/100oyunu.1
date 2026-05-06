@@ -5992,7 +5992,18 @@
       gridEl.style.gridTemplateColumns = `repeat(${activeCols}, 1fr)`;
       const maxDim = Math.max(activeRows, activeCols);
       let cellPx, fontPx;
-      if (currentMode === 'bloke') {
+      if (currentMode === 'serbest' && activeRows === 10 && activeCols === 10 && window.innerWidth <= 560) {
+        const gap = 2;
+        const pad = 3;
+        const border = 4;
+        const avail = window.innerWidth - border - 2 * pad - (activeCols - 1) * gap;
+        const ideal = Math.floor(avail / activeCols);
+        const minCell = window.innerWidth <= 340 ? 28 : 30;
+        cellPx = `${Math.max(minCell, Math.min(ideal, 44))}px`;
+        fontPx = 'clamp(11px, 3.1vw, 15px)';
+        gridEl.style.gap = `${gap}px`;
+        gridEl.style.padding = `${pad}px`;
+      } else if (currentMode === 'bloke') {
         const gap = window.innerWidth <= 420 ? 3 : 4;
         const pad = window.innerWidth <= 420 ? 5 : 6;
         const safeSideSpace = window.innerWidth <= 420 ? 20 : 32;
@@ -6015,6 +6026,8 @@
         gridEl.style.gap = `${gap}px`;
         gridEl.style.padding = `${pad}px`;
       } else {
+        gridEl.style.gap = '';
+        gridEl.style.padding = '';
         cellPx = maxDim <= 5
           ? `clamp(44px, ${Math.floor(90 / maxDim)}vw, 80px)`
           : maxDim === 6
