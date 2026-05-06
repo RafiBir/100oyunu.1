@@ -5999,7 +5999,7 @@
         const gap = 2;
         const pad = 3;
         const border = 4;
-        const sizingCols = currentMode === 'bulmaca' ? 10 : activeCols;
+        const sizingCols = activeCols;
         const avail = window.innerWidth - border - 2 * pad - (sizingCols - 1) * gap;
         const ideal = Math.floor(avail / sizingCols);
         const minCell = window.innerWidth <= 340 ? 28 : 30;
@@ -6983,6 +6983,7 @@
 
     function startPuzzle(idx) {
       gameHasStarted   = true;
+      currentMode      = 'bulmaca';
       currentPuzzleIdx = idx;
       localStorage.setItem('puzzleIdx_100oyunu', idx);
       document.getElementById('puzzle-level-select').classList.remove('show');

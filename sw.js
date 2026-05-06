@@ -1,4 +1,4 @@
-const CACHE = 'centium-v55';
+const CACHE = 'centium-v56';
 const FILES = [
   './',
   './index.html',
@@ -30,6 +30,19 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/api/')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Navigations/HTML: network-first so phones do not keep an old index.html.
+  if (e.request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+          return res;
+        })
+        .catch(() => caches.match(e.request).then(cached => cached || caches.match('./index.html')))
     );
     return;
   }
