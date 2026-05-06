@@ -146,7 +146,7 @@
       color: var(--text);
       opacity: 1;
     }
-    #top-bar #btn-sound.muted { opacity: 0.45; }
+    #top-bar #btn-sound.muted, #top-bar #btn-haptic.muted { opacity: 0.45; }
 
     h1 {
       font-size: 1.8rem;
@@ -712,7 +712,7 @@
     }
 
     /* Yardımcı butonlar — küçük, ghost */
-    #btn-tutorial, #btn-scores, #btn-achievements, #btn-stats, #btn-lang, #btn-sound {
+    #btn-tutorial, #btn-scores, #btn-achievements, #btn-stats, #btn-lang, #btn-sound, #btn-haptic {
       background: transparent;
       color: var(--text-muted);
       border: 1px solid transparent;
@@ -721,13 +721,13 @@
       font-size: var(--text-sm);
     }
     #btn-tutorial:hover, #btn-scores:hover, #btn-achievements:hover,
-    #btn-stats:hover, #btn-lang:hover, #btn-sound:hover {
+    #btn-stats:hover, #btn-lang:hover, #btn-sound:hover, #btn-haptic:hover {
       background: var(--surface2);
       border-color: var(--border);
       color: var(--text);
       opacity: 1;
     }
-    #btn-sound.muted { opacity: 0.45; }
+    #btn-sound.muted, #btn-haptic.muted { opacity: 0.45; }
 
     #btn-undo:disabled { opacity: 0.3; cursor: default; transform: none; }
 
@@ -2646,7 +2646,7 @@
   <div id="top-bar">
     <div id="top-bar-left"><button id="btn-scores" data-i18n="btn.scores">🏆 Skorlar</button></div>
     <h1 id="game-title">CENTIUM</h1>
-    <div id="top-bar-right"><button id="btn-sound">🔊 Ses</button><button id="btn-lang">🇬🇧 EN</button></div>
+    <div id="top-bar-right"><button id="btn-sound">🔊 Ses</button><button id="btn-haptic">📳 Titreşim</button><button id="btn-lang">🇬🇧 EN</button></div>
   </div>
 
   <!-- XP şeridi -->
@@ -3083,6 +3083,8 @@
         'btn.scores':           '🏆 Skorlar',
         'btn.sound.on':         '🔊 Ses',
         'btn.sound.off':        '🔇 Ses',
+        'btn.haptic.on':        '📳 Titreşim',
+        'btn.haptic.off':       '📴 Titreşim',
         'label.current':        'Yerleştirilecek sayı:',
         'label.combo':          'Combo: ×',
         'label.level':          'Bölüm',
@@ -3542,6 +3544,8 @@
         'btn.scores':           '🏆 Scores',
         'btn.sound.on':         '🔊 Sound',
         'btn.sound.off':        '🔇 Sound',
+        'btn.haptic.on':        '📳 Vibration',
+        'btn.haptic.off':       '📴 Vibration',
         'label.current':        'Next number:',
         'label.combo':          'Combo: ×',
         'label.level':          'Level',
@@ -4017,6 +4021,11 @@
       updateTimeBoostBtn();
       const sndBtn = document.getElementById('btn-sound');
       if (sndBtn) sndBtn.textContent = soundEnabled ? T('btn.sound.on') : T('btn.sound.off');
+      const hapBtn = document.getElementById('btn-haptic');
+      if (hapBtn) {
+        hapBtn.textContent = hapticEnabled ? T('btn.haptic.on') : T('btn.haptic.off');
+        hapBtn.classList.toggle('muted', !hapticEnabled);
+      }
       const label = currentLang === 'tr' ? '🇬🇧 EN' : '🇹🇷 TR';
       const langBtn = document.getElementById('btn-lang');
       if (langBtn) langBtn.textContent = label;
@@ -4174,6 +4183,7 @@
 
     let grid = [], currentNumber = 1, lastR = -1, lastC = -1;
     let gameActive = true, showHints = false, soundEnabled = true;
+    let hapticEnabled = localStorage.getItem('haptic_100oyunu') !== 'false';
     let itMode = false, itStep = 0, itPhase = 'read', itHvOnly = false, itDiagOnly = false;
     let history = [];
     let comboCount = 0;          // ardışık hamle sayısı (geri al sıfırlar)
@@ -4736,16 +4746,24 @@
       } catch(e) {}
     }
 
+    function haptic(pattern) {
+      if (!hapticEnabled || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch(e) {}
+    }
+
     function soundPlace(n) {
+      haptic(10);
       const base = 300 + (n / 100) * 500;
       playTone({ type: 'triangle', freq: base, freq2: base * 1.08, duration: 0.13, gainPeak: 0.3 });
     }
 
     function soundInvalid() {
+      haptic([50, 40, 50]);
       playTone({ type: 'sawtooth', freq: 160, freq2: 120, duration: 0.18, gainPeak: 0.25, fadeOut: 0.12 });
     }
 
     function soundWin() {
+      haptic([80, 50, 80, 50, 120]);
       const notes = [523, 659, 784, 1047];
       const ctx = getAudioCtx();
       notes.forEach((freq, i) => {
@@ -4764,6 +4782,7 @@
     }
 
     function soundLose() {
+      haptic(150);
       const notes = [400, 320, 240, 180];
       const ctx = getAudioCtx();
       notes.forEach((freq, i) => {
@@ -4782,6 +4801,7 @@
     }
 
     function soundCombo() {
+      haptic(25);
       const freq = 440 + comboCount * 12;
       playTone({ type: 'sine', freq, freq2: freq * 1.15, duration: 0.09, gainPeak: 0.2 });
     }
@@ -9065,6 +9085,14 @@
       soundEnabled = !soundEnabled;
       document.getElementById('btn-sound').textContent = soundEnabled ? T('btn.sound.on') : T('btn.sound.off');
       document.getElementById('btn-sound').classList.toggle('muted', !soundEnabled);
+    });
+
+    document.getElementById('btn-haptic').addEventListener('click', () => {
+      hapticEnabled = !hapticEnabled;
+      localStorage.setItem('haptic_100oyunu', hapticEnabled);
+      document.getElementById('btn-haptic').textContent = hapticEnabled ? T('btn.haptic.on') : T('btn.haptic.off');
+      document.getElementById('btn-haptic').classList.toggle('muted', !hapticEnabled);
+      if (hapticEnabled) haptic(20);
     });
 
     function toggleLang() {
