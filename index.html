@@ -3158,6 +3158,7 @@
         'global.rank':          '🎉 #{rank}. sıradasın! ({total} oyuncu arasında)',
         'global.sent':          '✓ Gönderildi',
         'global.error':         'Sunucuya bağlanılamadı.',
+        'global.queued':        'İnternet yok — skorun kaydedildi, bağlanınca gönderilecek ✓',
         'global.empty':         'Henüz hiç skor yok.',
         'global.loading':       'Yükleniyor...',
         'global.count':         '{n} en iyi skor',
@@ -3617,6 +3618,7 @@
         'global.rank':          "🎉 You're #{rank}! ({total} players)",
         'global.sent':          '✓ Submitted',
         'global.error':         'Could not connect to server.',
+        'global.queued':        'No internet — your score is saved, will be sent when you reconnect ✓',
         'global.empty':         'No scores yet.',
         'global.loading':       'Loading...',
         'global.count':         '{n} top scores',
@@ -9147,6 +9149,54 @@
       document.getElementById('global-nickname-input').focus();
     }
 
+    // ── Pending score queue (offline-resilient submission) ─────
+    const PENDING_KEY = 'pending_scores_100oyunu';
+    const PENDING_MAX = 10;
+    const PENDING_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+    function getPendingScores() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+        const now = Date.now();
+        return arr.filter(e => e && e.t && (now - e.t) < PENDING_TTL_MS);
+      } catch { return []; }
+    }
+    function setPendingScores(arr) {
+      try { localStorage.setItem(PENDING_KEY, JSON.stringify(arr.slice(-PENDING_MAX))); } catch {}
+    }
+    function addPendingScore(nickname, score, mode) {
+      const arr = getPendingScores();
+      arr.push({ nickname, score, mode, t: Date.now() });
+      setPendingScores(arr);
+    }
+    async function flushPendingScores() {
+      const arr = getPendingScores();
+      if (!arr.length) return;
+      const remaining = [];
+      for (const entry of arr) {
+        try {
+          const res = await fetch(`${GLOBAL_API}/api/scores`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname: entry.nickname, score: entry.score, mode: entry.mode })
+          });
+          if (!res.ok) {
+            // Rate-limited (429) or server validation error — keep in queue, try later
+            if (res.status === 429) remaining.push(entry);
+            // Other 4xx errors (e.g. 400 invalid score) — drop from queue, won't succeed
+          }
+        } catch {
+          // Network failure — keep in queue
+          remaining.push(entry);
+        }
+      }
+      setPendingScores(remaining);
+    }
+
+    // Try to flush queue on page load + when network comes back
+    setTimeout(flushPendingScores, 2000);
+    window.addEventListener('online', flushPendingScores);
+
     async function submitGlobalScore() {
       const nickname = document.getElementById('global-nickname-input').value.trim();
       const scoreText = document.getElementById('global-submit-score').textContent;
@@ -9183,14 +9233,27 @@
           openGlobalScoresModal(_globalSubmitMode);
         }, 1500);
       } catch (err) {
-        msgEl.textContent = err.message === 'Failed to fetch'
-          ? T('global.error') : err.message;
-        msgEl.className = 'global-submit-msg error';
-        document.getElementById('btn-global-send').disabled = false;
+        if (err.message === 'Failed to fetch') {
+          // Network failure — queue for later, persist nickname, show success-ish message
+          addPendingScore(nickname, score, _globalSubmitMode);
+          localStorage.setItem(NICK_KEY, nickname);
+          msgEl.textContent = T('global.queued');
+          msgEl.className = 'global-submit-msg success';
+          document.getElementById('btn-global-send').textContent = T('global.sent');
+          setTimeout(() => {
+            document.getElementById('global-submit-modal').classList.remove('show');
+          }, 2500);
+        } else {
+          msgEl.textContent = err.message;
+          msgEl.className = 'global-submit-msg error';
+          document.getElementById('btn-global-send').disabled = false;
+        }
       }
     }
 
     async function openGlobalScoresModal(mode = 'serbest') {
+      // Try to flush any queued scores before showing leaderboard so user sees up-to-date ranking
+      await flushPendingScores();
       const modal  = document.getElementById('global-scores-modal');
       const list   = document.getElementById('global-scores-list');
       const status = document.getElementById('global-scores-status');
