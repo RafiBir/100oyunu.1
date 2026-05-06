@@ -9281,6 +9281,24 @@
       }
     }
 
+    function renderLeaderboardRows(rows, list, status, myNick) {
+      if (!rows.length) { status.textContent = T('global.empty'); list.innerHTML = ''; return; }
+      status.textContent = T('global.count', { n: rows.length });
+      const medals = ['🥇', '🥈', '🥉'];
+      const uniqueRanks = [...new Set(rows.map(r => r.rank))].sort((a, b) => a - b);
+      list.innerHTML = rows.map(r => {
+        const isMine = myNick && r.nickname === myNick;
+        const tierIdx = uniqueRanks.indexOf(r.rank);
+        const display = medals[tierIdx] || (tierIdx + 1) + '.';
+        return `<div class="g-score-row${isMine ? ' g-mine' : ''}">
+          <span class="g-rank">${display}</span>
+          <span class="g-name">${r.nickname}</span>
+          <span class="g-score">${r.score}/100</span>
+          <span class="g-date">${r.date}</span>
+        </div>`;
+      }).join('');
+    }
+
     async function openGlobalScoresModal(mode = 'serbest') {
       // Show modal immediately with loading state — don't block UI on flush/fetch
       const modal  = document.getElementById('global-scores-modal');
@@ -9294,35 +9312,28 @@
       modal.classList.add('show');
 
       const myNick = localStorage.getItem(NICK_KEY) || '';
+      const LB_CACHE_KEY = 'lb_cache_' + mode;
+
+      // Stale-while-revalidate: render cached data first if available (instant feel)
+      let hadCache = false;
+      try {
+        const cached = JSON.parse(localStorage.getItem(LB_CACHE_KEY));
+        if (cached && Array.isArray(cached) && cached.length) {
+          renderLeaderboardRows(cached, list, status, myNick);
+          hadCache = true;
+        }
+      } catch (e) { console.warn('[leaderboard] cache parse', e); }
 
       try {
-        // Flush queued scores in parallel with fetch — fetch will reflect any flushed scores
-        // since the server response races slightly behind. Acceptable trade-off for snappy UI.
         flushPendingScores();
         const res  = await fetch(`${GLOBAL_API}/api/scores?limit=20&mode=${mode}`);
         const rows = await res.json();
-
-        if (!rows.length) { status.textContent = T('global.empty'); return; }
-        status.textContent = T('global.count', { n: rows.length });
-
-        const medals = ['🥇', '🥈', '🥉'];
-        // Display by score tier — top 3 tiers get medals, rest get sequential numbers (4., 5., ...)
-        // Skips rank-value gaps from competition ranking ties
-        const uniqueRanks = [...new Set(rows.map(r => r.rank))].sort((a, b) => a - b);
-        list.innerHTML = rows.map(r => {
-          const isMine = myNick && r.nickname === myNick;
-          const tierIdx = uniqueRanks.indexOf(r.rank);
-          const display = medals[tierIdx] || (tierIdx + 1) + '.';
-          return `<div class="g-score-row${isMine ? ' g-mine' : ''}">
-            <span class="g-rank">${display}</span>
-            <span class="g-name">${r.nickname}</span>
-            <span class="g-score">${r.score}/100</span>
-            <span class="g-date">${r.date}</span>
-          </div>`;
-        }).join('');
+        renderLeaderboardRows(rows, list, status, myNick);
+        try { localStorage.setItem(LB_CACHE_KEY, JSON.stringify(rows)); } catch (e) { console.warn('[leaderboard] cache write', e); }
       } catch (e) {
         console.error('[leaderboard] fetch/render failed', e);
-        status.textContent = T('global.error');
+        // Only show error if we didn't have cache to fall back on
+        if (!hadCache) status.textContent = T('global.error');
       }
     }
 
