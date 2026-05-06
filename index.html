@@ -4173,6 +4173,9 @@
     }
 
     const GLOBAL_API = 'https://100oyunu-server-production.up.railway.app'; // deploy sonrası Railway URL'siyle değiştir
+    // HTML escape — defense-in-depth for any user-supplied string before innerHTML injection
+    const _ESC = {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'};
+    const escHtml = s => String(s ?? '').replace(/[<>&"']/g, c => _ESC[c]);
 
     let grid = [], currentNumber = 1, lastR = -1, lastC = -1;
     let gameActive = true, showHints = false, soundEnabled = true;
@@ -9160,8 +9163,8 @@
         list.innerHTML = scores.map((s, i) => `
           <div class="score-row">
             <span class="score-rank">${medals[i] || `${i+1}.`}</span>
-            <span class="score-val">${s.score} / 100</span>
-            <span class="score-date">${s.date}</span>
+            <span class="score-val">${parseInt(s.score) || 0} / 100</span>
+            <span class="score-date">${escHtml(s.date)}</span>
           </div>`).join('');
       }
       document.getElementById('scores-modal').classList.add('show');
@@ -9319,9 +9322,9 @@
         const display = medals[tierIdx] || (tierIdx + 1) + '.';
         return `<div class="g-score-row${isMine ? ' g-mine' : ''}">
           <span class="g-rank">${display}</span>
-          <span class="g-name">${r.nickname}</span>
-          <span class="g-score">${r.score}/100</span>
-          <span class="g-date">${r.date}</span>
+          <span class="g-name">${escHtml(r.nickname)}</span>
+          <span class="g-score">${parseInt(r.score) || 0}/100</span>
+          <span class="g-date">${escHtml(r.date)}</span>
         </div>`;
       }).join('');
     }
