@@ -5461,6 +5461,45 @@
       }).join('');
     }
 
+    // Centralized mode-flag/timer reset — call before mode changes, mid-game cancels, or returning to home
+    // Idempotent: safe to call multiple times, all state checks short-circuit if already cleared
+    function resetAllModeFlags() {
+      // Online flags
+      isOnlineRace = false;
+      isCoopMode = false;
+      isCoopBotMode = false;
+      isCoop4Mode = false;
+      isCoop4BotMode = false;
+      coopIsMyTurn = false;
+      coop4IsMyTurn = false;
+
+      // Race timers
+      if (botInterval) { clearInterval(botInterval); botInterval = null; }
+      if (raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
+
+      // Coop4 bot timer
+      if (coop4BotTimer) { clearTimeout(coop4BotTimer); coop4BotTimer = null; }
+
+      // Time mode timer (timerInterval is global from time-mode logic)
+      if (typeof timerInterval !== 'undefined' && timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+
+      // Hide coop UI bars
+      const _coopTurnBar = document.getElementById('coop-turn-bar');
+      if (_coopTurnBar) _coopTurnBar.style.display = 'none';
+      const _coop4Bar = document.getElementById('coop4-bar');
+      if (_coop4Bar) _coop4Bar.style.display = 'none';
+
+      // Block: closeBlockSocket handles full block cleanup (timers, players, socket)
+      if (isBlockMode) {
+        closeBlockSocket();
+      } else if (onlineSocket) {
+        // Close any other open socket (race/coop) cleanly
+        onlineSocket.onclose = null;
+        try { onlineSocket.close(); } catch (e) { console.warn('[reset] socket close', e); }
+        onlineSocket = null;
+      }
+    }
+
     function closeBlockSocket() {
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
       if (blockBotTimer) { clearTimeout(blockBotTimer); blockBotTimer = null; }
@@ -7034,12 +7073,7 @@
         if (opt.dataset.mode === 'bloke' && currentMode === 'bloke') { showBlockNickSection(); return; }
         if (opt.dataset.mode === 'coop' && currentMode === 'coop') { openCoopSelect(); return; }
         if (opt.dataset.mode === currentMode) return;
-        if (currentMode === 'zaman') clearInterval(timerInterval);
-        if (currentMode === 'yaris' && botInterval) { clearInterval(botInterval); botInterval = null; }
-        if (currentMode === 'yaris' && raceTimerInterval) { clearInterval(raceTimerInterval); raceTimerInterval = null; }
-        if (isOnlineRace) { isOnlineRace = false; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
-        if (isBlockMode) closeBlockSocket();
-        if (isCoopMode) { isCoopMode = false; isCoopBotMode = false; isCoop4Mode = false; isCoop4BotMode = false; if (coop4BotTimer) { clearTimeout(coop4BotTimer); coop4BotTimer = null; } coop4IsMyTurn = false; coopIsMyTurn = false; document.getElementById('coop-turn-bar').style.display = 'none'; document.getElementById('coop4-bar').style.display = 'none'; if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; } }
+        resetAllModeFlags();
         currentMode = opt.dataset.mode;
         updateModeUI(currentMode);
         if (currentMode === 'bulmaca') openPuzzleLevelSelect();
@@ -7276,14 +7310,7 @@
     }
 
     function cancelOnlineRace() {
-      if (onlineSocket) {
-        onlineSocket.onclose = null;
-        onlineSocket.close();
-        onlineSocket = null;
-      }
-      isOnlineRace = false;
-      isCoopMode = false;
-      closeBlockSocket();
+      resetAllModeFlags();
       closeOnlineWaiting();
       gameHasStarted = false;
       currentMode = 'serbest';
