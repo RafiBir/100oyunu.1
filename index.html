@@ -3120,7 +3120,7 @@
         'stats.mode.yaris_bot': 'Yarış-Bot',
         'stats.mode.yaris_online': 'Yarış-Online',
         'hint.default':         'İstediğin hücreye tıkla',
-        'hint.valid':           'Yeşil hücrelerden birine tıkla',
+        'hint.valid':           'Vurgulanan hücrelerden birine tıkla',
         'hint.next':            'Sonraki sayıyı yerleştir',
         'hint.best':            'En iyi hamle (lokal tahmin) 💡',
         'hint.go':              'Bu hücreye git! 💡',
@@ -3580,7 +3580,7 @@
         'stats.mode.yaris_bot': 'Race-Bot',
         'stats.mode.yaris_online': 'Race-Online',
         'hint.default':         'Tap any cell to place',
-        'hint.valid':           'Tap one of the green cells',
+        'hint.valid':           'Tap one of the highlighted cells',
         'hint.next':            'Place the next number',
         'hint.best':            'Best move (local estimate) 💡',
         'hint.go':              'Go to this cell! 💡',
@@ -3765,7 +3765,7 @@
         'tut.s.t4': 'Combo & XP',
         'tut.s.d4': `Consecutive moves without undoing build your <strong>Combo</strong>!<br><br>Higher combo → <strong>more XP</strong>. Earn XP to <strong>level up!</strong>`,
         'tut.s.t5': 'Win & Lose',
-        'tut.s.d5': `Reach <strong>100</strong>, you win! 🎉<br><br>If there are <strong>no valid moves</strong> left, the game ends. Use <em>"Show Moves"</em> to see green cells. Undo is always there!`,
+        'tut.s.d5': `Reach <strong>100</strong>, you win! 🎉<br><br>If there are <strong>no valid moves</strong> left, the game ends. Use <em>"Show Moves"</em> to see highlighted cells. Undo is always there!`,
         'tut.b.t1': 'Mandatory Stops',
         'tut.b.d1': `This mode has <strong>golden stop cells</strong>.<br><br>When you reach that number you <strong>must go to that cell</strong>, nowhere else!`,
         'tut.b.t2': 'Movement Rules',
@@ -5991,8 +5991,9 @@
       const gridEl = document.getElementById('grid');
       gridEl.style.gridTemplateColumns = `repeat(${activeCols}, 1fr)`;
       const maxDim = Math.max(activeRows, activeCols);
+      const isMobileTenByTenBoard = activeRows === 10 && activeCols === 10 && currentMode !== 'yaris' && window.innerWidth <= 560;
       let cellPx, fontPx;
-      if (currentMode === 'serbest' && activeRows === 10 && activeCols === 10 && window.innerWidth <= 560) {
+      if (isMobileTenByTenBoard) {
         const gap = 2;
         const pad = 3;
         const border = 4;
