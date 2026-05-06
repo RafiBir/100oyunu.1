@@ -1677,6 +1677,32 @@
       justify-content: center;
       margin-top: 6px;
     }
+    #race-player-actions {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 2px;
+    }
+    #race-player-actions.show { display: flex; }
+    #race-player-actions #controls {
+      width: auto;
+      max-width: none;
+      margin-top: 0;
+    }
+    #race-player-actions #race-undo-bar,
+    #race-player-actions #emoji-panel {
+      margin-top: 0;
+    }
+    #race-player-actions #controls button,
+    #race-player-actions #btn-race-undo {
+      min-height: 34px;
+      padding: 7px 12px;
+      font-size: 0.8rem;
+    }
     #btn-race-undo {
       padding: 7px 18px;
       border-radius: 10px;
@@ -2704,6 +2730,7 @@
 
   <div id="race-boards">
     <div class="race-side" id="race-player-side">
+      <div id="race-player-actions"></div>
       <div class="race-label" id="race-player-label" style="display:none" data-i18n="race.player.you">SEN</div>
       <div id="race-player-rank" style="display:none;font-size:0.72rem;font-weight:600;color:var(--accent);margin-bottom:2px;text-align:center"></div>
       <div id="grid-wrapper">
@@ -2722,6 +2749,7 @@
       <div id="bot-grid"></div>
     </div>
   </div>
+  <div id="race-bars-home"></div>
   <div id="race-undo-bar" style="display:none">
     <button id="btn-race-undo" disabled data-i18n="btn.race.undo">↩ Geri Al 📺</button>
   </div>
@@ -2762,6 +2790,7 @@
     </div>
   </div>
 
+  <div id="controls-home"></div>
   <div id="controls">
     <!-- Birincil eylemler (satır 1) -->
     <button id="btn-restart" data-i18n="btn.restart">Yeniden Başla</button>
@@ -5118,6 +5147,28 @@
           : T('btn.undo');
     }
 
+    function arrangeRaceActionBars() {
+      const actions = document.getElementById('race-player-actions');
+      const barsHome = document.getElementById('race-bars-home');
+      const controlsHome = document.getElementById('controls-home');
+      const controls = document.getElementById('controls');
+      const undoBar = document.getElementById('race-undo-bar');
+      const emojiPanel = document.getElementById('emoji-panel');
+      if (!actions || !barsHome || !controlsHome || !controls || !undoBar || !emojiPanel) return;
+
+      if (currentMode === 'yaris') {
+        actions.classList.add('show');
+        actions.appendChild(controls);
+        actions.appendChild(undoBar);
+        actions.appendChild(emojiPanel);
+      } else {
+        actions.classList.remove('show');
+        barsHome.after(undoBar);
+        undoBar.after(emojiPanel);
+        controlsHome.after(controls);
+      }
+    }
+
     function updateHintBtnVisibility() {
       const isYaris = currentMode === 'yaris';
       const isBlock = currentMode === 'bloke';
@@ -5132,6 +5183,7 @@
       const focusAllowed = ['serbest','surpriz','gunluk','zaman','bulmaca','coop'].includes(currentMode);
       document.getElementById('btn-focus').style.display        = focusAllowed ? '' : 'none';
       if (!focusAllowed && focusMode) exitFocusMode();
+      arrangeRaceActionBars();
       updateHintBtnLabel();
       updateTimeBoostBtn();
     }
