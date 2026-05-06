@@ -4065,7 +4065,7 @@
 
     function loadTimeCompleted() {
       try { return new Set(JSON.parse(localStorage.getItem(TIME_COMPLETED_KEY)) || []); }
-      catch { return new Set(); }
+      catch (e) { console.warn('[storage] TIME_COMPLETED_KEY parse failed', e); return new Set(); }
     }
 
     function markTimeLevelComplete(idx) {
@@ -4075,7 +4075,7 @@
     }
 
     function loadTimeScores() {
-      try { return JSON.parse(localStorage.getItem(TIME_HS_KEY)) || []; } catch { return []; }
+      try { return JSON.parse(localStorage.getItem(TIME_HS_KEY)) || []; } catch (e) { console.warn('[storage] TIME_HS_KEY parse failed', e); return []; }
     }
 
     function saveTimeScore(score, level) {
@@ -4405,7 +4405,7 @@
     // Tamamlanan bulmacaların indexleri
     function loadCompleted() {
       try { return new Set(JSON.parse(localStorage.getItem('completedPuzzles_100oyunu')) || []); }
-      catch { return new Set(); }
+      catch (e) { console.warn('[storage] completedPuzzles parse failed', e); return new Set(); }
     }
     function saveCompleted(set) {
       localStorage.setItem('completedPuzzles_100oyunu', JSON.stringify([...set]));
@@ -4426,7 +4426,7 @@
 
     function loadXP() {
       try { return JSON.parse(localStorage.getItem(XP_KEY)) || { total: 0 }; }
-      catch { return { total: 0 }; }
+      catch (e) { console.warn('[storage] XP_KEY parse failed', e); return { total: 0 }; }
     }
 
     function saveXP(data) { localStorage.setItem(XP_KEY, JSON.stringify(data)); }
@@ -4476,7 +4476,7 @@
 
     function loadStreak() {
       try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { count: 0, lastDate: null }; }
-      catch { return { count: 0, lastDate: null }; }
+      catch (e) { console.warn('[storage] STREAK_KEY parse failed', e); return { count: 0, lastDate: null }; }
     }
 
     function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -4549,7 +4549,7 @@
       ];
     }
 
-    function loadAch()       { try { return JSON.parse(localStorage.getItem(ACH_KEY)) || {}; } catch { return {}; } }
+    function loadAch()       { try { return JSON.parse(localStorage.getItem(ACH_KEY)) || {}; } catch (e) { console.warn('[storage] ACH_KEY parse failed', e); return {}; } }
     function saveAch(data)   { localStorage.setItem(ACH_KEY, JSON.stringify(data)); }
 
     let toastQueue = [];
@@ -4668,7 +4668,7 @@
     }
 
     function loadDailyState() {
-      try { return JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; } catch { return {}; }
+      try { return JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; } catch (e) { console.warn('[storage] DAILY_KEY parse failed', e); return {}; }
     }
 
     function saveDailyState(state) { localStorage.setItem(DAILY_KEY, JSON.stringify(state)); }
@@ -6077,7 +6077,7 @@
     const HS_KEY = 'highscores_100oyunu';
     const HS_MAX = 5;
 
-    function loadScores() { try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch { return []; } }
+    function loadScores() { try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch (e) { console.warn('[storage] HS_KEY parse failed', e); return []; } }
 
     // ── Rütbe Sistemi ────────────────────────────────────────────
     const RANK_SCORES_KEY = 'rank_scores_100oyunu';
@@ -6184,7 +6184,7 @@
     ];
 
     function loadStats() {
-      try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch { return {}; }
+      try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { console.warn('[storage] STATS_KEY parse failed', e); return {}; }
     }
 
     function saveGameStat(modeKey, result) {
@@ -6353,7 +6353,7 @@
     // ── Sürpriz modu skor tablosu ────────────────────────────────
     const HS_SURPRIZ_KEY = 'highscores_surpriz';
 
-    function loadSurprizScores() { try { return JSON.parse(localStorage.getItem(HS_SURPRIZ_KEY)) || []; } catch { return []; } }
+    function loadSurprizScores() { try { return JSON.parse(localStorage.getItem(HS_SURPRIZ_KEY)) || []; } catch (e) { console.warn('[storage] HS_SURPRIZ_KEY parse failed', e); return []; } }
 
     function saveSurprizScore(score) {
       const scores = loadSurprizScores();
@@ -7317,7 +7317,7 @@
         onlineSocket.send(JSON.stringify({ type: 'join', nickname, rank: myRank }));
       };
       onlineSocket.onmessage = (evt) => {
-        try { handleOnlineMessage(JSON.parse(evt.data)); } catch {}
+        try { handleOnlineMessage(JSON.parse(evt.data)); } catch (err) { console.error('[ws msg]', err, evt.data); }
       };
       onlineSocket.onerror = () => {
         closeOnlineWaiting();
@@ -7869,7 +7869,7 @@
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(_RACE_WS);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify(privateMsg ? { ...privateMsg, nickname, rank: myRank, mode: 'block', playerCount: blockPlayerCount } : { type: 'blockJoin', nickname, rank: myRank, playerCount: blockPlayerCount }));
-      onlineSocket.onmessage = (evt) => { try { handleOnlineMessage(JSON.parse(evt.data)); } catch {} };
+      onlineSocket.onmessage = (evt) => { try { handleOnlineMessage(JSON.parse(evt.data)); } catch (err) { console.error('[ws msg]', err, evt.data); } };
       onlineSocket.onerror = () => { closeBlockSocket(); closeOnlineWaiting(); showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' }); };
       onlineSocket.onclose = () => { if (isBlockMode && !blockVsBot && !document.getElementById('overlay').classList.contains('show')) showBlockResult({ winner: 'you', winnerName: localStorage.getItem('nickname_100oyunu') || 'SEN', reason: 'disconnect', players: blockPlayers, board: grid }); };
     }
@@ -7931,7 +7931,7 @@
         : 'wss://100oyunu-server-production.up.railway.app';
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen    = () => onlineSocket.send(JSON.stringify({ ...msgOnOpen, rank: rankPayload }));
-      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onclose   = () => { if (isOnlineRace) { gameActive = false; playerGameOver = true; botGameOver = true; hideOnlineWaiting(); if (!document.getElementById('overlay').classList.contains('show')) showOnlineResult(currentNumber - 1, 0, 'you', true); } };
       onlineSocket.onerror   = () => showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
     }
@@ -8022,7 +8022,7 @@
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'createPrivate', nickname: nick, rank: myRank, mode: 'coop', playerCount: coopPlayerCount }));
-      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         _coopPrivateMode = false;
         if (btn) { btn.disabled = false; btn.textContent = T('online.create.room'); }
@@ -8054,7 +8054,7 @@
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'joinPrivate', code, nickname: nick, rank: myRank }));
-      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         _coopPrivateMode = false;
         if (jb) { jb.disabled = false; jb.textContent = T('online.join'); }
@@ -8143,7 +8143,7 @@
       onlineSocket.onopen = () => {
         onlineSocket.send(JSON.stringify({ type: 'coopJoin', nickname: nick, rank: myRank }));
       };
-      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         closeOnlineWaiting();
         isCoopMode = false;
@@ -8503,7 +8503,7 @@
         showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' }); return;
       }
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'coop4Join', nickname: nick, rank: myRank }));
-      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch {} };
+      onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         closeOnlineWaiting(); isCoop4Mode = false; isCoopMode = false; onlineSocket = null;
         showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
@@ -8777,7 +8777,7 @@
     }
 
     function loadRaceBeaten() {
-      try { return JSON.parse(localStorage.getItem('race_beaten_100oyunu')) || {}; } catch { return {}; }
+      try { return JSON.parse(localStorage.getItem('race_beaten_100oyunu')) || {}; } catch (e) { console.warn('[storage] race_beaten parse failed', e); return {}; }
     }
     function saveRaceBeaten(data) { localStorage.setItem('race_beaten_100oyunu', JSON.stringify(data)); }
 
@@ -9159,10 +9159,10 @@
         const arr = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
         const now = Date.now();
         return arr.filter(e => e && e.t && (now - e.t) < PENDING_TTL_MS);
-      } catch { return []; }
+      } catch (e) { console.warn('[storage] pending_scores parse failed', e); return []; }
     }
     function setPendingScores(arr) {
-      try { localStorage.setItem(PENDING_KEY, JSON.stringify(arr.slice(-PENDING_MAX))); } catch {}
+      try { localStorage.setItem(PENDING_KEY, JSON.stringify(arr.slice(-PENDING_MAX))); } catch (e) { console.warn('[storage] pending_scores write failed (quota?)', e); }
     }
     function addPendingScore(nickname, score, mode) {
       const arr = getPendingScores();
@@ -9185,8 +9185,9 @@
             if (res.status === 429) remaining.push(entry);
             // Other 4xx errors (e.g. 400 invalid score) — drop from queue, won't succeed
           }
-        } catch {
+        } catch (e) {
           // Network failure — keep in queue
+          console.warn('[pending-scores] retry failed, will retry later', e);
           remaining.push(entry);
         }
       }
@@ -9283,7 +9284,8 @@
             <span class="g-date">${r.date}</span>
           </div>`;
         }).join('');
-      } catch {
+      } catch (e) {
+        console.error('[leaderboard] fetch/render failed', e);
         status.textContent = T('global.error');
       }
     }

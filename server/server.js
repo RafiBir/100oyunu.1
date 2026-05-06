@@ -384,7 +384,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (raw) => {
     let data;
-    try { data = JSON.parse(raw); } catch { return; }
+    try { data = JSON.parse(raw); } catch (e) { console.warn('[ws] invalid JSON from client', e.message, String(raw).slice(0, 200)); return; }
 
     // ── createPrivate: create a private room with invite code ───
     if (data.type === 'createPrivate') {
