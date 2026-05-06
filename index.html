@@ -5527,7 +5527,7 @@
       document.getElementById('overlay-scores').innerHTML = '';
       const btns = document.getElementById('overlay-btns'); btns.innerHTML = '';
       const watch = document.createElement('button'); watch.textContent = T('block.watch'); watch.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); if (blockVsBot && blockTurnIndex !== blockMyIndex) scheduleBlockBotMove(); }); btns.appendChild(watch);
-      const again = document.createElement('button'); again.textContent = T('online.replay'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
+      const again = document.createElement('button'); again.textContent = T('online.new.game'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
       const home = document.createElement('button'); home.textContent = T('online.home'); home.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); gameHasStarted = false; currentMode = 'serbest'; updateModeUI('serbest'); document.getElementById('start-screen').classList.remove('hidden'); }); btns.appendChild(home);
       document.getElementById('overlay').classList.add('show');
     }
@@ -5568,7 +5568,7 @@
         });
         btns.appendChild(rematch);
       }
-      const again = document.createElement('button'); again.textContent = T('online.replay'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
+      const again = document.createElement('button'); again.textContent = T('online.new.game'); again.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); showBlockNickSection(); }); btns.appendChild(again);
       const home = document.createElement('button'); home.textContent = T('online.home'); home.addEventListener('click', () => { document.getElementById('overlay').classList.remove('show'); closeBlockSocket(); gameHasStarted = false; currentMode = 'serbest'; updateModeUI('serbest'); document.getElementById('start-screen').classList.remove('hidden'); }); btns.appendChild(home);
       document.getElementById('overlay').classList.add('show');
     }
