@@ -5993,7 +5993,8 @@
       const maxDim = Math.max(activeRows, activeCols);
       const usesClassicMobileCellSize = window.innerWidth <= 560
         && currentMode !== 'yaris'
-        && (currentMode === 'bulmaca' || (activeRows === 10 && activeCols === 10));
+        && activeRows === 10
+        && activeCols === 10;
       let cellPx, fontPx;
       if (usesClassicMobileCellSize) {
         const gap = 2;
