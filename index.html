@@ -2713,7 +2713,7 @@
     </div>
     <div id="race-score-bar" style="display:none">
       <div class="race-score-side"><span id="race-player-score">0</span><span>/36</span></div>
-      <div class="race-vs"><span id="race-timer">45</span><span style="font-size:0.65rem;display:block;color:var(--text-muted)" data-i18n="race.sec">sn</span></div>
+      <div class="race-vs"><span id="race-timer">45</span><span id="race-sec-label" style="font-size:0.65rem;display:block;color:var(--text-muted)" data-i18n="race.sec">sn</span></div>
       <div class="race-score-side bot"><span id="race-bot-score">0</span><span> aktif</span></div>
     </div>
     <div class="race-side" id="race-bot-side" style="display:none">
@@ -4997,6 +4997,7 @@
         document.getElementById('race-player-score').textContent = blockPlayers[blockMyIndex]?.score || 0;
         document.getElementById('race-bot-score').textContent = blockPlayers.filter(p => p.alive).length || blockPlayerCount;
         document.getElementById('race-timer').textContent = blockTurnIndex === blockMyIndex ? T('block.turn.yours') : T('block.turn.opp');
+        document.getElementById('race-sec-label').style.display = 'none'; // block mode timer text already includes "s"
       } else if (currentMode === 'yaris') {
         puzzleStops = [];
         distHV = 3; distDiag = 2;
@@ -5012,6 +5013,7 @@
         document.getElementById('race-bot-side').style.display = '';
         document.getElementById('race-score-bar').style.display = '';
         document.getElementById('race-player-label').style.display = '';
+        document.getElementById('race-sec-label').style.display = ''; // restore "sn" label for race mode
         // Ensure correct DOM order: player → score-bar → bot
         const _rb = document.getElementById('race-boards');
         const _ps = document.getElementById('race-player-side');
