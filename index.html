@@ -5464,6 +5464,8 @@
     function closeBlockSocket() {
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); onlineSocket = null; }
       if (blockBotTimer) { clearTimeout(blockBotTimer); blockBotTimer = null; }
+      if (blockCountdownTimer) { clearInterval(blockCountdownTimer); blockCountdownTimer = null; }
+      blockCountdownLeft = 0;
       isBlockMode = false; blockVsBot = false; blockPlayers = []; blockMyIndex = -1; blockTurnIndex = -1; blockLatestMove = null; blockElimShown = false;
       const list = document.getElementById('block-score-list');
       if (list) list.style.display = 'none';
