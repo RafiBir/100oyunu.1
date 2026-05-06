@@ -9304,15 +9304,15 @@
         status.textContent = T('global.count', { n: rows.length });
 
         const medals = ['🥇', '🥈', '🥉'];
-        // Medal by score tier (1st-best score = gold, 2nd-best = silver, 3rd-best = bronze)
-        // — independent of rank gaps from competition ranking ties
+        // Display by score tier — top 3 tiers get medals, rest get sequential numbers (4., 5., ...)
+        // Skips rank-value gaps from competition ranking ties
         const uniqueRanks = [...new Set(rows.map(r => r.rank))].sort((a, b) => a - b);
         list.innerHTML = rows.map(r => {
           const isMine = myNick && r.nickname === myNick;
           const tierIdx = uniqueRanks.indexOf(r.rank);
-          const medal = medals[tierIdx];
+          const display = medals[tierIdx] || (tierIdx + 1) + '.';
           return `<div class="g-score-row${isMine ? ' g-mine' : ''}">
-            <span class="g-rank">${medal || r.rank + '.'}</span>
+            <span class="g-rank">${display}</span>
             <span class="g-name">${r.nickname}</span>
             <span class="g-score">${r.score}/100</span>
             <span class="g-date">${r.date}</span>
