@@ -9282,8 +9282,7 @@
     }
 
     async function openGlobalScoresModal(mode = 'serbest') {
-      // Try to flush any queued scores before showing leaderboard so user sees up-to-date ranking
-      await flushPendingScores();
+      // Show modal immediately with loading state — don't block UI on flush/fetch
       const modal  = document.getElementById('global-scores-modal');
       const list   = document.getElementById('global-scores-list');
       const status = document.getElementById('global-scores-status');
@@ -9297,6 +9296,9 @@
       const myNick = localStorage.getItem(NICK_KEY) || '';
 
       try {
+        // Flush queued scores in parallel with fetch — fetch will reflect any flushed scores
+        // since the server response races slightly behind. Acceptable trade-off for snappy UI.
+        flushPendingScores();
         const res  = await fetch(`${GLOBAL_API}/api/scores?limit=20&mode=${mode}`);
         const rows = await res.json();
 
