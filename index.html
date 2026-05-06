@@ -5066,7 +5066,7 @@
           if (_br2) _br2.style.display = 'none';
         }
         document.getElementById('race-undo-bar').style.display = isOnlineRace ? 'none' : '';
-        document.getElementById('emoji-panel').style.display = isOnlineRace ? '' : 'none';
+        document.getElementById('emoji-panel').style.display = 'none';
         updateRaceUndoBtn();
         document.getElementById('bot-grid').style.opacity = '1';
         document.getElementById('grid').style.opacity = '1';
@@ -7588,6 +7588,7 @@
         }
 
         case 'opponentEmoji':
+          if (isOnlineRace) break;
           showOpponentEmoji(data.emoji);
           break;
 
@@ -7836,6 +7837,7 @@
     }
 
     function sendEmoji(emoji) {
+      if (isOnlineRace) return;
       if (!onlineSocket || onlineSocket.readyState !== WebSocket.OPEN) return;
       onlineSocket.send(JSON.stringify({ type: 'emoji', emoji }));
       showSelfEmoji(emoji);
