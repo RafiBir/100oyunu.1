@@ -2048,6 +2048,7 @@
     .block-score-chip.dead { opacity:.45; text-decoration:line-through; }
     .block-color-dot { width:12px; height:12px; flex:0 0 12px; border-radius:999px; border:1px solid transparent; box-shadow:0 0 0 2px rgba(255,255,255,.16); }
     .block-score-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .block-score-lvl  { flex:0 0 auto; font-size:.62rem; font-weight:700; opacity:.85; padding:1px 5px; border-radius:6px; background:rgba(255,255,255,.08); white-space:nowrap; }
 
     /* ── Yarış Zorluk Seçimi ─────────────────────────────────── */
     #race-level-select {
@@ -5564,9 +5565,9 @@
       list.innerHTML = blockPlayers.map((p, i) => {
         const label = i === blockMyIndex ? 'Sen' : (p.nickname || `P${i + 1}`);
         const lvl = (i === blockMyIndex) ? getMyLevel() : (p.level || null);
-        const lvlText = lvl ? ` (Lv ${lvl})` : '';
+        const lvlBadge = lvl ? `<span class="block-score-lvl">L${lvl}</span>` : '';
         const [bg, border] = colors[i] || colors[0];
-        return `<span class="block-score-chip ${i === blockTurnIndex ? 'turn' : ''} ${p.alive ? '' : 'dead'}"><span class="block-color-dot" style="background:${bg};border-color:${border}"></span><span class="block-score-name">${i + 1}. ${label}${lvlText}: ${p.score || 0}</span></span>`;
+        return `<span class="block-score-chip ${i === blockTurnIndex ? 'turn' : ''} ${p.alive ? '' : 'dead'}"><span class="block-color-dot" style="background:${bg};border-color:${border}"></span><span class="block-score-name">${i + 1}. ${label}: ${p.score || 0}</span>${lvlBadge}</span>`;
       }).join('');
     }
 
