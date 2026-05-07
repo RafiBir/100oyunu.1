@@ -398,7 +398,7 @@ wss.on('connection', (ws) => {
     // ── createPrivate: create a private room with invite code ───
     if (data.type === 'createPrivate') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
@@ -427,7 +427,7 @@ wss.on('connection', (ws) => {
         return;
       }
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
@@ -466,7 +466,7 @@ wss.on('connection', (ws) => {
     // ── join: enter matchmaking queue ───────────────────────────
     else if (data.type === 'join') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
@@ -567,7 +567,7 @@ wss.on('connection', (ws) => {
     // -- blockJoin: 2-player shared-board block mode matchmaking --
     else if (data.type === 'blockJoin') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
@@ -689,7 +689,7 @@ wss.on('connection', (ws) => {
     // ── coopJoin: enter cooperative matchmaking ─────────────────
     else if (data.type === 'coopJoin') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
@@ -763,7 +763,7 @@ wss.on('connection', (ws) => {
     // ── coop4Join: 4-player coop matchmaking ────────────────────
     else if (data.type === 'coop4Join') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
-      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20), avg: (typeof data.rank.avg === 'number' && isFinite(data.rank.avg)) ? Math.max(0, Math.min(100, Math.round(data.rank.avg))) : null } : null;
       const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname; ws._rank = rank; ws._level = level;
       for (let i = coopQueue4.length - 1; i >= 0; i--) if (coopQueue4[i].ws.readyState !== WebSocket.OPEN) coopQueue4.splice(i, 1);

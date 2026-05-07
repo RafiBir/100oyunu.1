@@ -5096,7 +5096,7 @@
           let rank = p.rank;
           if (i === blockMyIndex && !rank) {
             const myRankInfo = getClassicRankInfo();
-            if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) };
+            if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg };
           }
           return escapeHtml(name) + makeRankTipHtml(rank, i === blockMyIndex);
         });
@@ -6348,17 +6348,13 @@
 
     function makeRankTipHtml(rank, isMe) {
       if (!rank?.icon) return '';
-      const name = rank.name || '';
-      let tooltipText = name;
-      if (isMe) {
+      let avg = (typeof rank.avg === 'number') ? rank.avg : null;
+      if (isMe && avg == null) {
         const info = getClassicRankInfo();
-        if (info) {
-          tooltipText = `${name} · ${T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg })}`;
-        }
-      } else {
-        tooltipText = `${name} · ${T('rank.tooltip.opp')}`;
+        if (info) avg = info.avg;
       }
-      const safe = escapeHtml(tooltipText);
+      if (avg == null) return ` ${rank.icon}`;
+      const safe = escapeHtml(String(avg));
       return ` <span class="rank-tip" data-tooltip="${safe}" title="${safe}">${rank.icon}</span>`;
     }
 
@@ -7544,7 +7540,7 @@
 
       onlineSocket.onopen = () => {
         const myRankInfo = getClassicRankInfo();
-        const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+        const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
         onlineSocket.send(JSON.stringify({ type: 'join', nickname, rank: myRank, level: getMyLevel() }));
       };
       onlineSocket.onmessage = (evt) => {
@@ -7647,7 +7643,7 @@
           if (_pl) {
             const myNick = localStorage.getItem('nickname_100oyunu') || 'SEN';
             const myRankInfo = getClassicRankInfo();
-            const myRankObj = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+            const myRankObj = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
             _pl.innerHTML = escapeHtml(myNick)
               + makeRankTipHtml(myRankObj, true)
               + escapeHtml(` · Lv ${getMyLevel()}`);
@@ -8111,7 +8107,7 @@
     function connectBlockMode(nickname, privateMsg = null) {
       isBlockMode = true;
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
       if (privateMsg?.type !== 'createPrivate') {
         document.getElementById('online-nick-section').style.display = 'none';
         document.getElementById('online-waiting-title').textContent = T('block.waiting.title');
@@ -8177,7 +8173,7 @@
 
     function _openOnlineSocket(msgOnOpen) {
       const myRankInfo  = getClassicRankInfo();
-      const rankPayload = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const rankPayload = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
       const WS_URL = location.hostname === 'localhost'
         ? 'ws://localhost:3001'
         : 'wss://100oyunu-server-production.up.railway.app';
@@ -8270,7 +8266,7 @@
       btn.disabled = true; btn.textContent = T('online.connecting');
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'createPrivate', nickname: nick, rank: myRank, level: getMyLevel(), mode: 'coop', playerCount: coopPlayerCount }));
@@ -8302,7 +8298,7 @@
       jb.disabled = true; jb.textContent = '⏳';
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
       onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'joinPrivate', code, nickname: nick, rank: myRank, level: getMyLevel() }));
@@ -8374,7 +8370,7 @@
       if (coop4BotTimer) { clearTimeout(coop4BotTimer); coop4BotTimer = null; }
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo  = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
 
       const titleEl = document.getElementById('online-waiting-title');
       const subEl   = document.getElementById('online-waiting-sub');
@@ -8680,7 +8676,7 @@
         let rank = p?.rank;
         if (isMe && !rank) {
           const myRankInfo = getClassicRankInfo();
-          if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) };
+          if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg };
         }
         name.innerHTML = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
           + escapeHtml(p?.nickname || `P${i + 1}`)
@@ -8754,7 +8750,7 @@
       if (coop4BotTimer) { clearTimeout(coop4BotTimer); coop4BotTimer = null; }
       const WS_URL = location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://100oyunu-server-production.up.railway.app';
       const myRankInfo = getClassicRankInfo();
-      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+      const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey), avg: myRankInfo.avg } : null;
       document.getElementById('online-waiting-title').textContent = T('coop4.waiting.title');
       document.getElementById('online-waiting-sub').textContent   = T('coop4.waiting.sub', { n: 1 });
       document.getElementById('online-nick-section').style.display = 'none';
