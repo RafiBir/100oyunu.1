@@ -5207,6 +5207,7 @@
       document.getElementById('btn-tutorial').style.display   = (isYaris || isBlock) ? 'none' : '';
       document.getElementById('btn-restart').style.display     = ((isYaris && isOnlineRace) || isBlock) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = ((isYaris && isOnlineRace) || isBlock) ? '' : 'none';
+      document.getElementById('hint').style.display             = (isBlock || currentMode === 'coop') ? 'none' : '';
       const focusAllowed = false;
       document.getElementById('btn-focus').style.display        = 'none';
       if (focusMode) exitFocusMode();
