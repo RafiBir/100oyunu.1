@@ -5207,9 +5207,9 @@
       document.getElementById('btn-tutorial').style.display   = (isYaris || isBlock) ? 'none' : '';
       document.getElementById('btn-restart').style.display     = ((isYaris && isOnlineRace) || isBlock) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = ((isYaris && isOnlineRace) || isBlock) ? '' : 'none';
-      const focusAllowed = ['serbest','surpriz','gunluk','zaman','bulmaca','coop'].includes(currentMode);
-      document.getElementById('btn-focus').style.display        = focusAllowed ? '' : 'none';
-      if (!focusAllowed && focusMode) exitFocusMode();
+      const focusAllowed = false;
+      document.getElementById('btn-focus').style.display        = 'none';
+      if (focusMode) exitFocusMode();
       arrangeRaceActionBars();
       updateHintBtnLabel();
       updateTimeBoostBtn();
