@@ -6058,7 +6058,7 @@
 
       document.getElementById('num-display').textContent = currentNumber;
       if (!hasAnyValidMove()) endGame(false);
-      else if (currentMode === 'serbest' || currentMode === 'zaman' || currentMode === 'surpriz') document.getElementById('hint').textContent = showHints ? T('hint.valid') : T('hint.next');
+      else if (currentMode === 'serbest' || currentMode === 'zaman' || currentMode === 'surpriz' || currentMode === 'yaris') document.getElementById('hint').textContent = showHints ? T('hint.valid') : T('hint.next');
 
       if (itMode) handleITProgress();
     }
