@@ -5199,7 +5199,8 @@
     function updateHintBtnVisibility() {
       const isYaris = currentMode === 'yaris';
       const isBlock = currentMode === 'bloke';
-      document.getElementById('btn-hint-best').style.display  = (currentMode === 'zaman' || currentMode === 'surpriz' || isYaris || isBlock) ? 'none' : '';
+      const isCoopOnline = currentMode === 'coop' && !isCoopBotMode && !isCoop4BotMode;
+      document.getElementById('btn-hint-best').style.display  = (currentMode === 'zaman' || currentMode === 'surpriz' || isYaris || isBlock || isCoopOnline) ? 'none' : '';
       document.getElementById('btn-time-boost').style.display = currentMode === 'zaman' ? '' : 'none';
       document.getElementById('btn-scores').style.display     = (currentMode === 'serbest' || currentMode === 'surpriz') ? '' : 'none';
       document.getElementById('btn-hints').style.display      = isYaris ? 'none' : '';
@@ -9143,8 +9144,8 @@
 
       const isFull = activePuzzle?.type === 'full';
 
-      // ── Serbest / Zaman mod: sadece Warnsdorff ──────────────────
-      if (currentMode === 'serbest' || currentMode === 'zaman') {
+      // ── Serbest / Zaman / Coop (bot): sadece Warnsdorff ─────────
+      if (currentMode === 'serbest' || currentMode === 'zaman' || currentMode === 'coop') {
         const best = getBestMove();
         if (!best) { hintsUsedThisGame--; updateHintBtnLabel(); return; }
         hintCell = best;

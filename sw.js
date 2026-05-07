@@ -1,4 +1,4 @@
-const CACHE = 'centium-v67';
+const CACHE = 'centium-v68';
 const FILES = [
   './',
   './index.html',
