@@ -917,6 +917,9 @@
     }
     #rank-badge { cursor: pointer; }
     #rank-badge:hover { opacity: 0.85; }
+    .rank-tip { cursor: pointer; display: inline-block; transition: transform 0.15s; user-select: none; }
+    .rank-tip:hover { transform: scale(1.25); }
+    .rank-tip:active { transform: scale(0.9); }
 
     /* ── İstatistik Modalı ───────────────────────────── */
     #stats-modal {
@@ -3575,6 +3578,8 @@
         'rank.tier.desc.7':        'Henüz öğrenme aşamasındasın.',
         'rank.tier.desc.8':        'Her yolculuk bir adımla başlar.',
         'rank.badge.title':        'Klasik mod, son {n} oyun ortalaması: {avg}',
+        'rank.tooltip.opp':        'rakip',
+        'rank.tooltip.norank':     'henüz rütbe yok',
         'rank.modal.avg':          'Son {n} oyun ortalaması:',
         'rank.modal.no_games':     'Henüz klasik mod oynaman gerekiyor.',
         'rank.modal.logic':        'Rütbeniz, klasik modda oynadığınız son 10 oyunun ortalamasına göre hesaplanır. Ne kadar çok oynarsanız o kadar doğru bir ölçüm elde edilir.',
@@ -4035,6 +4040,8 @@
         'rank.tier.desc.7':        'Still in the learning phase.',
         'rank.tier.desc.8':        'Every journey begins with a single step.',
         'rank.badge.title':        'Classic mode, last {n} games average: {avg}',
+        'rank.tooltip.opp':        'opponent',
+        'rank.tooltip.norank':     'no rank yet',
         'rank.modal.avg':          'Last {n} games average:',
         'rank.modal.no_games':     'You need to play classic mode first.',
         'rank.modal.logic':        'Your rank is calculated based on your last 10 classic mode games. The more you play, the more accurate your rank will be.',
@@ -5065,14 +5072,14 @@
         document.getElementById('race-player-label').style.display = '';
         const _blockLabels = blockPlayers.map((p, i) => {
           const name = p.nickname || (i === blockMyIndex ? 'SEN' : `P${i + 1}`);
-          let icon = p.rank?.icon ? ` ${p.rank.icon}` : '';
-          if (i === blockMyIndex && !icon) {
+          let rank = p.rank;
+          if (i === blockMyIndex && !rank) {
             const myRankInfo = getClassicRankInfo();
-            if (myRankInfo) icon = ` ${myRankInfo.tier.icon}`;
+            if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) };
           }
-          return name + icon;
+          return escapeHtml(name) + makeRankTipHtml(rank, i === blockMyIndex);
         });
-        document.getElementById('race-player-label').textContent = _blockLabels.join(' vs ');
+        document.getElementById('race-player-label').innerHTML = _blockLabels.join(' vs ');
         document.getElementById('race-undo-bar').style.display = 'none';
         document.getElementById('emoji-panel').style.display = 'none';
         document.getElementById('race-player-score').textContent = blockPlayers[blockMyIndex]?.score || 0;
@@ -6313,6 +6320,34 @@
       el.textContent = `${info.tier.icon} ${T(info.tier.nameKey)}`;
       el.title = T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg });
     }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[<>"&]/g, c => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' }[c]));
+    }
+
+    function makeRankTipHtml(rank, isMe) {
+      if (!rank?.icon) return '';
+      const safeName = escapeHtml(rank.name || '');
+      return ` <span class="rank-tip" data-is-me="${isMe ? '1' : '0'}" data-tier-name="${safeName}" title="${safeName}">${rank.icon}</span>`;
+    }
+
+    document.addEventListener('click', (e) => {
+      const tip = e.target?.closest?.('.rank-tip');
+      if (!tip) return;
+      e.stopPropagation();
+      const isMe = tip.dataset.isMe === '1';
+      const tierName = tip.dataset.tierName || '';
+      if (isMe) {
+        const info = getClassicRankInfo();
+        if (info) {
+          showHintToast(`${tierName} · ${T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg })}`);
+        } else {
+          showHintToast(tierName || T('rank.tooltip.norank'));
+        }
+      } else {
+        showHintToast(`${tierName} · ${T('rank.tooltip.opp')}`);
+      }
+    });
 
     const RANK_TIER_DESCS = [0,1,2,3,4,5,6,7,8].map(i => () => T(`rank.tier.desc.${i}`));
 
@@ -7587,9 +7622,10 @@
           // Rakip isim + rütbe sembolü + level
           const _bl = document.getElementById('race-bot-label');
           if (_bl) {
-            const oppIcon = onlineOpponentRank ? ` ${onlineOpponentRank.icon}` : '';
-            const oppLvl  = onlineOpponentLevel ? ` · Lv ${onlineOpponentLevel}` : '';
-            _bl.textContent = (onlineOpponentNickname || 'OPPONENT') + oppIcon + oppLvl;
+            const oppLvl = onlineOpponentLevel ? ` · Lv ${onlineOpponentLevel}` : '';
+            _bl.innerHTML = escapeHtml(onlineOpponentNickname || 'OPPONENT')
+              + makeRankTipHtml(onlineOpponentRank, false)
+              + escapeHtml(oppLvl);
           }
           const _br = document.getElementById('race-bot-rank');
           if (_br) _br.style.display = 'none';
@@ -7598,8 +7634,10 @@
           if (_pl) {
             const myNick = localStorage.getItem('nickname_100oyunu') || 'SEN';
             const myRankInfo = getClassicRankInfo();
-            const myIcon = myRankInfo ? ` ${myRankInfo.tier.icon}` : '';
-            _pl.textContent = myNick + myIcon + ` · Lv ${getMyLevel()}`;
+            const myRankObj = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
+            _pl.innerHTML = escapeHtml(myNick)
+              + makeRankTipHtml(myRankObj, true)
+              + escapeHtml(` · Lv ${getMyLevel()}`);
             _pl.removeAttribute('data-i18n');
           }
           const _pr = document.getElementById('race-player-rank');
@@ -8625,8 +8663,16 @@
         const name = document.createElement('span');
         name.className = 'coop-name';
         const lvlSuffix = p?.level ? ` · Lv ${p.level}` : '';
-        name.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
-          + (p?.nickname || `P${i + 1}`) + lvlSuffix;
+        const isMe = i === coop4MyIdx;
+        let rank = p?.rank;
+        if (isMe && !rank) {
+          const myRankInfo = getClassicRankInfo();
+          if (myRankInfo) rank = { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) };
+        }
+        name.innerHTML = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
+          + escapeHtml(p?.nickname || `P${i + 1}`)
+          + makeRankTipHtml(rank, isMe)
+          + escapeHtml(lvlSuffix);
         card.append(dot, name);
         row.appendChild(card);
       });
