@@ -4244,6 +4244,7 @@
     let onlineSocket = null;
     let onlineOpponentNickname = '';
     let onlineOpponentRank = null;
+    let onlineOpponentLevel = null;
     let focusMode = false;
     // ── Eşli mod state ────────────────────────────────────────
     let isCoopMode = false;
@@ -4279,6 +4280,7 @@
     let coop4StartTime = 0;
     let coopPartnerName = '';
     let coopPartnerRank = null;
+    let coopPartnerLevel = null;
     let coopStartTime = 0;
     let coopPartnerCells = new Set(); // "r,c" strings for partner cell coloring
     let coopPartnerLastR = -1, coopPartnerLastC = -1;
@@ -4487,6 +4489,8 @@
       let lvl = 1, acc = 0;
       while (true) { acc += xpForLevel(lvl); if (total < acc) return { lvl, prev: acc - xpForLevel(lvl), next: acc }; lvl++; }
     }
+
+    function getMyLevel() { return currentLevel(loadXP().total).lvl; }
 
     function addXP(amount) {
       const data   = loadXP();
@@ -5352,7 +5356,7 @@
         grid = data.board.map(row => row.map(cell => cell || 0));
         if (latest) blockLatestMove = latest;
       }
-      if (Array.isArray(data.players)) blockPlayers = data.players.map((p, i) => ({ nickname: p.nickname || `P${i + 1}`, rank: p.rank || null, alive: p.alive !== false, score: p.score || 0, last: { r: -1, c: -1 } }));
+      if (Array.isArray(data.players)) blockPlayers = data.players.map((p, i) => ({ nickname: p.nickname || `P${i + 1}`, rank: p.rank || null, level: p.level || null, alive: p.alive !== false, score: p.score || 0, last: { r: -1, c: -1 } }));
       if (Number.isInteger(data.turnIndex)) blockTurnIndex = data.turnIndex;
       blockPlayers = blockPlayers.map((p, i) => ({ ...p, last: findBlockLast(i) }));
       const mine = blockPlayers[blockMyIndex];
@@ -5559,8 +5563,10 @@
       ];
       list.innerHTML = blockPlayers.map((p, i) => {
         const label = i === blockMyIndex ? 'Sen' : (p.nickname || `P${i + 1}`);
+        const lvl = (i === blockMyIndex) ? getMyLevel() : (p.level || null);
+        const lvlText = lvl ? ` (Lv ${lvl})` : '';
         const [bg, border] = colors[i] || colors[0];
-        return `<span class="block-score-chip ${i === blockTurnIndex ? 'turn' : ''} ${p.alive ? '' : 'dead'}"><span class="block-color-dot" style="background:${bg};border-color:${border}"></span><span class="block-score-name">${i + 1}. ${label}: ${p.score || 0}</span></span>`;
+        return `<span class="block-score-chip ${i === blockTurnIndex ? 'turn' : ''} ${p.alive ? '' : 'dead'}"><span class="block-color-dot" style="background:${bg};border-color:${border}"></span><span class="block-score-name">${i + 1}. ${label}${lvlText}: ${p.score || 0}</span></span>`;
       }).join('');
     }
 
@@ -7482,7 +7488,7 @@
       onlineSocket.onopen = () => {
         const myRankInfo = getClassicRankInfo();
         const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
-        onlineSocket.send(JSON.stringify({ type: 'join', nickname, rank: myRank }));
+        onlineSocket.send(JSON.stringify({ type: 'join', nickname, rank: myRank, level: getMyLevel() }));
       };
       onlineSocket.onmessage = (evt) => {
         try { handleOnlineMessage(JSON.parse(evt.data)); } catch (err) { console.error('[ws msg]', err, evt.data); }
@@ -7557,6 +7563,7 @@
           isOnlineRace = true;
           onlineOpponentNickname = data.opponentNickname;
           onlineOpponentRank = data.opponentRank || null;
+          onlineOpponentLevel = data.opponentLevel || null;
           document.getElementById('online-waiting-title').textContent = T('online.matched.title');
           document.getElementById('online-waiting-sub').textContent = data.opponentNickname + T('online.matched.sub');
           document.getElementById('online-waiting-anim').textContent = '🎯';
@@ -7568,21 +7575,22 @@
           document.getElementById('race-level-select').classList.remove('show');
           currentMode = 'yaris';
           gameHasStarted = true;
-          // Rakip isim + rütbe sembolü
+          // Rakip isim + rütbe sembolü + level
           const _bl = document.getElementById('race-bot-label');
           if (_bl) {
             const oppIcon = onlineOpponentRank ? ` ${onlineOpponentRank.icon}` : '';
-            _bl.textContent = (onlineOpponentNickname || 'OPPONENT') + oppIcon;
+            const oppLvl  = onlineOpponentLevel ? ` · Lv ${onlineOpponentLevel}` : '';
+            _bl.textContent = (onlineOpponentNickname || 'OPPONENT') + oppIcon + oppLvl;
           }
           const _br = document.getElementById('race-bot-rank');
           if (_br) _br.style.display = 'none';
-          // Kendi isim + rütbe sembolü
+          // Kendi isim + rütbe sembolü + level
           const _pl = document.getElementById('race-player-label');
           if (_pl) {
             const myNick = localStorage.getItem('nickname_100oyunu') || 'SEN';
             const myRankInfo = getClassicRankInfo();
             const myIcon = myRankInfo ? ` ${myRankInfo.tier.icon}` : '';
-            _pl.textContent = myNick + myIcon;
+            _pl.textContent = myNick + myIcon + ` · Lv ${getMyLevel()}`;
             _pl.removeAttribute('data-i18n');
           }
           const _pr = document.getElementById('race-player-rank');
@@ -7664,6 +7672,7 @@
           isBlockMode = true;
           onlineOpponentNickname = data.opponentNickname || (data.players || []).filter((_, i) => i !== data.yourIndex).map(p => p.nickname).join(', ');
           onlineOpponentRank = data.opponentRank || null;
+          onlineOpponentLevel = data.opponentLevel || null;
           if (data.playerCount) blockPlayerCount = data.playerCount;
           document.getElementById('online-waiting-title').textContent = T('block.matched.title');
           document.getElementById('online-waiting-sub').textContent = onlineOpponentNickname + T('online.matched.sub');
@@ -7729,6 +7738,7 @@
           coopMyRole = data.yourRole;
           coopPartnerName = data.opponentNickname;
           coopPartnerRank = data.opponentRank || null;
+          coopPartnerLevel = data.opponentLevel || null;
           // Coop select ekranını kapat, waiting overlay'i aç
           closeCoopSelect();
           document.getElementById('online-waiting-title').textContent = data.opponentNickname + T(data.yourRole === 'odd' ? 'coop.matched.odd' : 'coop.matched.even');
@@ -8050,7 +8060,7 @@
       }
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(_RACE_WS);
-      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify(privateMsg ? { ...privateMsg, nickname, rank: myRank, mode: 'block', playerCount: blockPlayerCount } : { type: 'blockJoin', nickname, rank: myRank, playerCount: blockPlayerCount }));
+      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify(privateMsg ? { ...privateMsg, nickname, rank: myRank, level: getMyLevel(), mode: 'block', playerCount: blockPlayerCount } : { type: 'blockJoin', nickname, rank: myRank, level: getMyLevel(), playerCount: blockPlayerCount }));
       onlineSocket.onmessage = (evt) => { try { handleOnlineMessage(JSON.parse(evt.data)); } catch (err) { console.error('[ws msg]', err, evt.data); } };
       onlineSocket.onerror = () => { closeBlockSocket(); closeOnlineWaiting(); showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' }); };
       onlineSocket.onclose = () => { if (isBlockMode && !blockVsBot && !document.getElementById('overlay').classList.contains('show')) showBlockResult({ winner: 'you', winnerName: localStorage.getItem('nickname_100oyunu') || 'SEN', reason: 'disconnect', players: blockPlayers, board: grid }); };
@@ -8112,7 +8122,7 @@
         ? 'ws://localhost:3001'
         : 'wss://100oyunu-server-production.up.railway.app';
       onlineSocket = new WebSocket(WS_URL);
-      onlineSocket.onopen    = () => onlineSocket.send(JSON.stringify({ ...msgOnOpen, rank: rankPayload }));
+      onlineSocket.onopen    = () => onlineSocket.send(JSON.stringify({ ...msgOnOpen, rank: rankPayload, level: getMyLevel() }));
       onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onclose   = () => { if (isOnlineRace) { gameActive = false; playerGameOver = true; botGameOver = true; hideOnlineWaiting(); if (!document.getElementById('overlay').classList.contains('show')) showOnlineResult(currentNumber - 1, 0, 'you', true); } };
       onlineSocket.onerror   = () => showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' });
@@ -8203,7 +8213,7 @@
       const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
-      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'createPrivate', nickname: nick, rank: myRank, mode: 'coop', playerCount: coopPlayerCount }));
+      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'createPrivate', nickname: nick, rank: myRank, level: getMyLevel(), mode: 'coop', playerCount: coopPlayerCount }));
       onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         _coopPrivateMode = false;
@@ -8235,7 +8245,7 @@
       const myRank = myRankInfo ? { icon: myRankInfo.tier.icon, name: T(myRankInfo.tier.nameKey) } : null;
       if (onlineSocket) { onlineSocket.onclose = null; onlineSocket.close(); }
       onlineSocket = new WebSocket(WS_URL);
-      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'joinPrivate', code, nickname: nick, rank: myRank }));
+      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'joinPrivate', code, nickname: nick, rank: myRank, level: getMyLevel() }));
       onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         _coopPrivateMode = false;
@@ -8323,7 +8333,7 @@
       }
 
       onlineSocket.onopen = () => {
-        onlineSocket.send(JSON.stringify({ type: 'coopJoin', nickname: nick, rank: myRank }));
+        onlineSocket.send(JSON.stringify({ type: 'coopJoin', nickname: nick, rank: myRank, level: getMyLevel() }));
       };
       onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
@@ -8351,6 +8361,7 @@
       coopMyRole = 'odd';
       coopPartnerName = T('coop.bot.partner');
       coopPartnerRank = null;
+      coopPartnerLevel = null;
       coopPartnerCells = new Set();
       coopPartnerLastR = -1; coopPartnerLastC = -1;
       coopMyLastR = -1; coopMyLastC = -1;
@@ -8604,8 +8615,9 @@
         dot.style.borderColor = ['#60a5fa', '#fb7185', '#4ade80', '#facc15'][i] || '#60a5fa';
         const name = document.createElement('span');
         name.className = 'coop-name';
+        const lvlSuffix = p?.level ? ` · Lv ${p.level}` : '';
         name.textContent = (i === coop4TurnIdx && coop4ActivePlayers.has(i) ? '▶ ' : '')
-          + (p?.nickname || `P${i + 1}`);
+          + (p?.nickname || `P${i + 1}`) + lvlSuffix;
         card.append(dot, name);
         row.appendChild(card);
       });
@@ -8684,7 +8696,7 @@
         closeOnlineWaiting();
         showToast({ icon: '❌', name: T('online.error'), xp: 0, type: 'error' }); return;
       }
-      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'coop4Join', nickname: nick, rank: myRank }));
+      onlineSocket.onopen = () => onlineSocket.send(JSON.stringify({ type: 'coop4Join', nickname: nick, rank: myRank, level: getMyLevel() }));
       onlineSocket.onmessage = (e) => { try { handleOnlineMessage(JSON.parse(e.data)); } catch (err) { console.error('[ws msg]', err, e.data); } };
       onlineSocket.onerror = () => {
         closeOnlineWaiting(); isCoop4Mode = false; isCoopMode = false; onlineSocket = null;
@@ -8765,9 +8777,11 @@
       if (row) {
         const myName = localStorage.getItem(NICK_KEY) || T('race.player.you');
         const partnerName = coopPartnerName || T('coop.bot.partner');
+        const myLabel = `${myName} · Lv ${getMyLevel()}`;
+        const partnerLabel = coopPartnerLevel ? `${partnerName} · Lv ${coopPartnerLevel}` : partnerName;
         const players = [
-          { name: myName, className: 'coop-color-me', active: coopIsMyTurn },
-          { name: partnerName, className: 'coop-color-partner', active: !coopIsMyTurn },
+          { name: myLabel, className: 'coop-color-me', active: coopIsMyTurn },
+          { name: partnerLabel, className: 'coop-color-partner', active: !coopIsMyTurn },
         ];
         row.innerHTML = '';
         players.forEach(p => {

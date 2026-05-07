@@ -146,8 +146,8 @@ function createCoopRoom(p1, p2) {
   // player 0 = odd (1,3,5...), player 1 = even (2,4,6...)
   setTimeout(() => {
     if (!rooms.has(id)) return;
-    wsSend(p1.ws, { type: 'coopMatched', opponentNickname: p2.nickname, opponentRank: p2.rank || null, yourRole: 'odd' });
-    wsSend(p2.ws, { type: 'coopMatched', opponentNickname: p1.nickname, opponentRank: p1.rank || null, yourRole: 'even' });
+    wsSend(p1.ws, { type: 'coopMatched', opponentNickname: p2.nickname, opponentRank: p2.rank || null, opponentLevel: p2.level || 1, yourRole: 'odd' });
+    wsSend(p2.ws, { type: 'coopMatched', opponentNickname: p1.nickname, opponentRank: p1.rank || null, opponentLevel: p1.level || 1, yourRole: 'even' });
   }, 500);
 
   setTimeout(() => {
@@ -172,7 +172,7 @@ function createCoop4Room(players) {
 
   players.forEach((p, i) => wsSend(p.ws, {
     type: 'coop4Matched', playerIdx: i,
-    players: players.map(pl => ({ nickname: pl.nickname, rank: pl.rank || null })),
+    players: players.map(pl => ({ nickname: pl.nickname, rank: pl.rank || null, level: pl.level || 1 })),
   }));
 
   setTimeout(() => {
@@ -206,8 +206,8 @@ function createRoom(p1, p2) {
 function startRoomGame(room) {
   const [p1, p2] = room.players;
 
-  wsSend(p1.ws, { type: 'matched', opponentNickname: p2.nickname, opponentRank: p2.rank || null });
-  wsSend(p2.ws, { type: 'matched', opponentNickname: p1.nickname, opponentRank: p1.rank || null });
+  wsSend(p1.ws, { type: 'matched', opponentNickname: p2.nickname, opponentRank: p2.rank || null, opponentLevel: p2.level || 1 });
+  wsSend(p2.ws, { type: 'matched', opponentNickname: p1.nickname, opponentRank: p1.rank || null, opponentLevel: p1.level || 1 });
 
   setTimeout(() => {
     if (!rooms.has(room.id)) return;
@@ -277,7 +277,7 @@ function notifyCoop4Queue() {
 
 function blockPayload(room) {
   return {
-    players: room.players.map((p, i) => ({ nickname: p.nickname, rank: p.rank || null, alive: room.alive[i], score: room.scores[i] })),
+    players: room.players.map((p, i) => ({ nickname: p.nickname, rank: p.rank || null, level: p.level || 1, alive: room.alive[i], score: room.scores[i] })),
     turnIndex: room.turnIndex,
     board: room.board,
   };
@@ -374,7 +374,7 @@ function createBlockRoom(players) {
     wsSend(p.ws, {
       type: 'blockMatched',
       playerCount: count,
-      players: players.map(x => ({ nickname: x.nickname, rank: x.rank || null })),
+      players: players.map(x => ({ nickname: x.nickname, rank: x.rank || null, level: x.level || 1 })),
       yourIndex: i,
     });
   });
@@ -399,19 +399,21 @@ wss.on('connection', (ws) => {
     if (data.type === 'createPrivate') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
+      ws._level = level;
       const mode = data.mode === 'coop' ? 'coop' : data.mode === 'block' ? 'block' : 'race';
       const code = genCode();
       const timeout = setTimeout(() => privateRooms.delete(code), 5 * 60 * 1000);
       if (mode === 'block') {
         const playerCount = getBlockPlayerCount(data.playerCount);
-        privateRooms.set(code, { ws, nickname, rank, timeout, mode, playerCount, players: [{ ws, nickname, rank }] });
+        privateRooms.set(code, { ws, nickname, rank, level, timeout, mode, playerCount, players: [{ ws, nickname, rank, level }] });
       } else if (mode === 'coop') {
         const playerCount = Number(data.playerCount) === 4 ? 4 : 2;
-        privateRooms.set(code, { ws, nickname, rank, timeout, mode, playerCount, players: [{ ws, nickname, rank }] });
+        privateRooms.set(code, { ws, nickname, rank, level, timeout, mode, playerCount, players: [{ ws, nickname, rank, level }] });
       } else {
-        privateRooms.set(code, { ws, nickname, rank, timeout, mode });
+        privateRooms.set(code, { ws, nickname, rank, level, timeout, mode });
       }
       wsSend(ws, { type: 'privateCreated', code, playerCount: privateRooms.get(code)?.playerCount || 2, joined: 1 });
     }
@@ -426,12 +428,14 @@ wss.on('connection', (ws) => {
       }
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
+      ws._level = level;
       if (host.mode === 'block') {
-        host.players = (host.players || [{ ws: host.ws, nickname: host.nickname, rank: host.rank }]).filter(p => p.ws.readyState === WebSocket.OPEN);
+        host.players = (host.players || [{ ws: host.ws, nickname: host.nickname, rank: host.rank, level: host.level }]).filter(p => p.ws.readyState === WebSocket.OPEN);
         if (host.players.some(p => p.ws === ws)) return;
-        host.players.push({ ws, nickname, rank });
+        host.players.push({ ws, nickname, rank, level });
         host.players.forEach((p, i) => wsSend(p.ws, { type: 'blockPrivateWaiting', code, joined: host.players.length, playerCount: host.playerCount, yourIndex: i }));
         if (host.players.length >= host.playerCount) {
           clearTimeout(host.timeout);
@@ -439,9 +443,9 @@ wss.on('connection', (ws) => {
           createBlockRoom(host.players.slice(0, host.playerCount));
         }
       } else if (host.mode === 'coop' && host.playerCount === 4) {
-        host.players = (host.players || [{ ws: host.ws, nickname: host.nickname, rank: host.rank }]).filter(p => p.ws.readyState === WebSocket.OPEN);
+        host.players = (host.players || [{ ws: host.ws, nickname: host.nickname, rank: host.rank, level: host.level }]).filter(p => p.ws.readyState === WebSocket.OPEN);
         if (host.players.some(p => p.ws === ws)) return;
-        host.players.push({ ws, nickname, rank });
+        host.players.push({ ws, nickname, rank, level });
         host.players.forEach((p, i) => wsSend(p.ws, { type: 'coopPrivateWaiting', code, joined: host.players.length, playerCount: host.playerCount, playerIdx: i }));
         if (host.players.length >= host.playerCount) {
           clearTimeout(host.timeout);
@@ -452,9 +456,9 @@ wss.on('connection', (ws) => {
         clearTimeout(host.timeout);
         privateRooms.delete(code);
         if (host.mode === 'coop') {
-          createCoopRoom({ ws, nickname, rank }, { ws: host.ws, nickname: host.nickname, rank: host.rank });
+          createCoopRoom({ ws, nickname, rank, level }, { ws: host.ws, nickname: host.nickname, rank: host.rank, level: host.level });
         } else {
-          createRoom({ ws, nickname, rank }, { ws: host.ws, nickname: host.nickname, rank: host.rank });
+          createRoom({ ws, nickname, rank, level }, { ws: host.ws, nickname: host.nickname, rank: host.rank, level: host.level });
         }
       }
     }
@@ -463,8 +467,10 @@ wss.on('connection', (ws) => {
     else if (data.type === 'join') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
+      ws._level = level;
 
       // Clean stale entries from queue
       for (let i = queue.length - 1; i >= 0; i--) {
@@ -473,10 +479,10 @@ wss.on('connection', (ws) => {
 
       if (queue.length > 0) {
         const opponent = queue.shift();
-        createRoom({ ws, nickname, rank }, opponent);
+        createRoom({ ws, nickname, rank, level }, opponent);
       } else {
         wsSend(ws, { type: 'waiting' });
-        queue.push({ ws, nickname, rank });
+        queue.push({ ws, nickname, rank, level });
       }
     }
 
@@ -562,8 +568,10 @@ wss.on('connection', (ws) => {
     else if (data.type === 'blockJoin') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
+      ws._level = level;
       const playerCount = getBlockPlayerCount(data.playerCount);
       const blockQueue = getBlockQueue(playerCount);
       for (let i = blockQueue.length - 1; i >= 0; i--) if (blockQueue[i].ws.readyState !== WebSocket.OPEN) blockQueue.splice(i, 1);
@@ -572,7 +580,7 @@ wss.on('connection', (ws) => {
         notifyBlockQueue(blockQueue, playerCount);
         return;
       }
-      blockQueue.push({ ws, nickname, rank });
+      blockQueue.push({ ws, nickname, rank, level });
       notifyBlockQueue(blockQueue, playerCount);
       if (blockQueue.length >= playerCount) {
         const players = blockQueue.splice(0, playerCount);
@@ -682,8 +690,10 @@ wss.on('connection', (ws) => {
     else if (data.type === 'coopJoin') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
+      const level = Math.max(1, parseInt(data.level) || 1);
       ws._nickname = nickname;
       ws._rank = rank;
+      ws._level = level;
 
       for (let i = coopQueue.length - 1; i >= 0; i--) {
         if (coopQueue[i].ws.readyState !== WebSocket.OPEN) coopQueue.splice(i, 1);
@@ -691,10 +701,10 @@ wss.on('connection', (ws) => {
 
       if (coopQueue.length > 0) {
         const partner = coopQueue.shift();
-        createCoopRoom({ ws, nickname, rank }, partner);
+        createCoopRoom({ ws, nickname, rank, level }, partner);
       } else {
         wsSend(ws, { type: 'coopWaiting' });
-        coopQueue.push({ ws, nickname, rank });
+        coopQueue.push({ ws, nickname, rank, level });
       }
     }
 
@@ -754,13 +764,14 @@ wss.on('connection', (ws) => {
     else if (data.type === 'coop4Join') {
       const nickname = String(data.nickname || 'Player').trim().slice(0, 20) || 'Player';
       const rank = (data.rank && typeof data.rank.name === 'string') ? { icon: String(data.rank.icon || '').slice(0, 8), name: String(data.rank.name).slice(0, 20) } : null;
-      ws._nickname = nickname; ws._rank = rank;
+      const level = Math.max(1, parseInt(data.level) || 1);
+      ws._nickname = nickname; ws._rank = rank; ws._level = level;
       for (let i = coopQueue4.length - 1; i >= 0; i--) if (coopQueue4[i].ws.readyState !== WebSocket.OPEN) coopQueue4.splice(i, 1);
       if (coopQueue4.some(p => p.ws === ws)) {
         notifyCoop4Queue();
         return;
       }
-      coopQueue4.push({ ws, nickname, rank });
+      coopQueue4.push({ ws, nickname, rank, level });
       notifyCoop4Queue();
       if (coopQueue4.length >= 4) {
         const players = coopQueue4.splice(0, 4);
