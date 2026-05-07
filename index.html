@@ -7352,20 +7352,27 @@
     }
 
     function getBestMove() {
-      // Mini Grid için saf Warnsdorff, en az çıkış yolu olan hücreyi seç
+      // Warnsdorff: en az çıkış yolu olan hücreyi seç, ama dead-end (0 çıkış) varsa
+      // ve alternatif varsa onu eleme — yoksa intihar hamlesi öneririz.
       const valid = [];
       for (let r = 0; r < activeRows; r++)
         for (let c = 0; c < activeCols; c++)
           if (isValidMove(r, c)) valid.push({r, c});
       if (!valid.length) return null;
-      let best = null, bestScore = Infinity;
-      for (const mv of valid) {
+      const scored = valid.map(mv => {
         grid[mv.r][mv.c] = -1;
         const score = warnsdorffScore(mv.r, mv.c);
         grid[mv.r][mv.c] = 0;
-        if (score < bestScore) { bestScore = score; best = mv; }
+        return { r: mv.r, c: mv.c, score };
+      });
+      const isLast = currentNumber >= activeRows * activeCols;
+      let candidates = scored;
+      if (!isLast) {
+        const nonDead = scored.filter(s => s.score > 0);
+        if (nonDead.length > 0) candidates = nonDead;
       }
-      return best;
+      candidates.sort((a, b) => a.score - b.score);
+      return { r: candidates[0].r, c: candidates[0].c };
     }
 
     // ════════════════════════════════════════════════════════════
