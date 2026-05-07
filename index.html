@@ -929,11 +929,11 @@
       padding: 6px 10px;
       border-radius: 6px;
       border: 1px solid var(--border);
-      font-size: 0.7rem;
-      font-weight: 500;
-      white-space: normal;
-      max-width: min(80vw, 280px);
-      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: normal;
+      text-transform: none;
+      white-space: nowrap;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s;
@@ -6353,8 +6353,9 @@
         const info = getClassicRankInfo();
         if (info) avg = info.avg;
       }
-      if (avg == null) return ` ${rank.icon}`;
-      const safe = escapeHtml(String(avg));
+      const tooltipText = (avg != null) ? String(avg) : (rank.name || '');
+      if (!tooltipText) return ` ${rank.icon}`;
+      const safe = escapeHtml(tooltipText);
       return ` <span class="rank-tip" data-tooltip="${safe}" title="${safe}">${rank.icon}</span>`;
     }
 
