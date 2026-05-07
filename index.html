@@ -4763,6 +4763,22 @@
       return 5;
     }
 
+    function awardComboAndXP(r, c, multiplier = 1) {
+      comboCount++;
+      if (comboCount > maxComboThisGame) maxComboThisGame = comboCount;
+      if (comboCount >= 5) soundCombo();
+      updateComboDisplay();
+      const xpGain = comboXP() * multiplier;
+      const { leveled, newLevel } = addXP(xpGain);
+      const cells = document.querySelectorAll('.cell');
+      const cellEl = cells[r * activeCols + c];
+      if (cellEl) {
+        const rect = cellEl.getBoundingClientRect();
+        showXPFloat(xpGain, rect.left + rect.width / 2, rect.top);
+      }
+      if (leveled) showToast({ icon: '⬆️', name: T('level.up', { n: newLevel }), xp: 0 });
+    }
+
     // ════════════════════════════════════════════════════════════
     //  AUDIO
     // ════════════════════════════════════════════════════════════
@@ -5209,6 +5225,7 @@
       document.getElementById('btn-restart').style.display     = ((isYaris && isOnlineRace) || isBlock) ? 'none' : '';
       document.getElementById('btn-online-leave').style.display = ((isYaris && isOnlineRace) || isBlock) ? '' : 'none';
       document.getElementById('hint').style.display             = (isBlock || currentMode === 'coop') ? 'none' : '';
+      document.getElementById('combo-display').style.display    = '';
       const focusAllowed = false;
       document.getElementById('btn-focus').style.display        = 'none';
       if (focusMode) exitFocusMode();
@@ -5940,10 +5957,14 @@
         checkAchievements({ blockMove: true });
         if (blockVsBot) {
           soundPlace((blockPlayers[blockMyIndex]?.score || 0) + 1);
-          if (applyLocalBlockMove(blockMyIndex, r, c)) advanceLocalBlockTurn();
+          if (applyLocalBlockMove(blockMyIndex, r, c)) {
+            awardComboAndXP(r, c);
+            advanceLocalBlockTurn();
+          }
           return;
         }
         if (onlineSocket?.readyState === WebSocket.OPEN) {
+          awardComboAndXP(r, c);
           onlineSocket.send(JSON.stringify({ type: 'blockMove', r, c }));
           return;
         }
