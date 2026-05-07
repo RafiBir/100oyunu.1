@@ -5063,7 +5063,16 @@
         document.getElementById('race-bot-side').style.display = 'none';
         document.getElementById('race-score-bar').style.display = '';
         document.getElementById('race-player-label').style.display = '';
-        document.getElementById('race-player-label').textContent = blockPlayers[blockMyIndex]?.nickname || 'SEN';
+        const _blockLabels = blockPlayers.map((p, i) => {
+          const name = p.nickname || (i === blockMyIndex ? 'SEN' : `P${i + 1}`);
+          let icon = p.rank?.icon ? ` ${p.rank.icon}` : '';
+          if (i === blockMyIndex && !icon) {
+            const myRankInfo = getClassicRankInfo();
+            if (myRankInfo) icon = ` ${myRankInfo.tier.icon}`;
+          }
+          return name + icon;
+        });
+        document.getElementById('race-player-label').textContent = _blockLabels.join(' vs ');
         document.getElementById('race-undo-bar').style.display = 'none';
         document.getElementById('emoji-panel').style.display = 'none';
         document.getElementById('race-player-score').textContent = blockPlayers[blockMyIndex]?.score || 0;
