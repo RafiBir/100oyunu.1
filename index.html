@@ -917,9 +917,30 @@
     }
     #rank-badge { cursor: pointer; }
     #rank-badge:hover { opacity: 0.85; }
-    .rank-tip { cursor: pointer; display: inline-block; transition: transform 0.15s; user-select: none; }
-    .rank-tip:hover { transform: scale(1.25); }
-    .rank-tip:active { transform: scale(0.9); }
+    .rank-tip { position: relative; cursor: help; display: inline-block; user-select: none; }
+    .rank-tip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.96);
+      color: #fde8ff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.7rem;
+      font-weight: 500;
+      white-space: normal;
+      max-width: min(80vw, 280px);
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    }
+    .rank-tip:hover::after, .rank-tip:active::after, .rank-tip:focus::after { opacity: 1; }
 
     /* ── İstatistik Modalı ───────────────────────────── */
     #stats-modal {
@@ -6327,27 +6348,19 @@
 
     function makeRankTipHtml(rank, isMe) {
       if (!rank?.icon) return '';
-      const safeName = escapeHtml(rank.name || '');
-      return ` <span class="rank-tip" data-is-me="${isMe ? '1' : '0'}" data-tier-name="${safeName}" title="${safeName}">${rank.icon}</span>`;
-    }
-
-    document.addEventListener('click', (e) => {
-      const tip = e.target?.closest?.('.rank-tip');
-      if (!tip) return;
-      e.stopPropagation();
-      const isMe = tip.dataset.isMe === '1';
-      const tierName = tip.dataset.tierName || '';
+      const name = rank.name || '';
+      let tooltipText = name;
       if (isMe) {
         const info = getClassicRankInfo();
         if (info) {
-          showHintToast(`${tierName} · ${T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg })}`);
-        } else {
-          showHintToast(tierName || T('rank.tooltip.norank'));
+          tooltipText = `${name} · ${T('rank.badge.title', { n: Math.min(info.total, 10), avg: info.avg })}`;
         }
       } else {
-        showHintToast(`${tierName} · ${T('rank.tooltip.opp')}`);
+        tooltipText = `${name} · ${T('rank.tooltip.opp')}`;
       }
-    });
+      const safe = escapeHtml(tooltipText);
+      return ` <span class="rank-tip" data-tooltip="${safe}" title="${safe}">${rank.icon}</span>`;
+    }
 
     const RANK_TIER_DESCS = [0,1,2,3,4,5,6,7,8].map(i => () => T(`rank.tier.desc.${i}`));
 
