@@ -4768,6 +4768,7 @@
     let maxComboThisGame = 0;
     let noUndoPlaced = 0;      // geri almadan yapılan hamle sayısı
     let hintsUsedThisGame = 0;
+    let hintUsedThisTurn  = false;
     const FREE_HINTS_PER_GAME = 3;
     const FREE_UNDOS_PER_GAME = 3;
     let undosUsedThisGame = 0;
@@ -4985,6 +4986,7 @@
       maxComboThisGame = 0;
       noUndoPlaced     = 0;
       hintsUsedThisGame = 0;
+      hintUsedThisTurn  = false;
       undosUsedThisGame = 0;
       gameOverUndoUsedThisGame = false;
       timeBoostFreeUsed = false;
@@ -5288,7 +5290,9 @@
       const remaining = Math.max(0, FREE_HINTS_PER_GAME - hintsUsedThisGame);
       const baseText  = currentMode === 'serbest' ? T('btn.hint.best') : T('btn.hint.take');
       btn.textContent = remaining > 0 ? `${baseText} (${remaining})` : `${baseText} 📺`;
-      btn.style.opacity = remaining > 0 ? '' : '0.7';
+      btn.disabled = hintUsedThisTurn;
+      btn.style.opacity = hintUsedThisTurn ? '0.45' : (remaining > 0 ? '' : '0.7');
+      btn.style.cursor = hintUsedThisTurn ? 'not-allowed' : '';
     }
 
     // ════════════════════════════════════════════════════════════
@@ -6028,6 +6032,8 @@
       lastR = r; lastC = c;
       if (isCoopMode) { coopMyLastR = r; coopMyLastC = c; }
       currentNumber++;
+      hintUsedThisTurn = false;
+      updateHintBtnLabel();
       if (currentMode === 'yaris') document.getElementById('race-player-score').textContent = currentNumber - 1;
       comboCount++;
       noUndoPlaced++;
@@ -7011,6 +7017,8 @@
       }
       undosUsedThisGame++;
       hintCell = null;
+      hintUsedThisTurn = false;
+      updateHintBtnLabel();
       const snap    = history.pop();
       grid          = snap.grid;
       currentNumber = snap.currentNumber;
@@ -9241,12 +9249,14 @@
 
     function getHint() {
       if (!gameActive) return;
+      if (hintUsedThisTurn) return;
 
       if (hintsUsedThisGame >= FREE_HINTS_PER_GAME) {
         openAdModal();
         return;
       }
       hintsUsedThisGame++;
+      hintUsedThisTurn = true;
       updateHintBtnLabel();
 
       const isFull = activePuzzle?.type === 'full';
@@ -9254,7 +9264,7 @@
       // ── Serbest / Zaman / Coop (bot): sadece Warnsdorff ─────────
       if (currentMode === 'serbest' || currentMode === 'zaman' || currentMode === 'coop') {
         const best = getBestMove();
-        if (!best) { hintsUsedThisGame--; updateHintBtnLabel(); return; }
+        if (!best) { hintsUsedThisGame--; hintUsedThisTurn = false; updateHintBtnLabel(); return; }
         hintCell = best;
         document.getElementById('hint').textContent = T('hint.best');
         renderGrid();
@@ -9280,7 +9290,7 @@
           best = solveMiniGrid();
         }
 
-        if (!best) { hintsUsedThisGame--; updateHintBtnLabel(); return; }
+        if (!best) { hintsUsedThisGame--; hintUsedThisTurn = false; updateHintBtnLabel(); return; }
 
         hintCell = best;
         if (undoneCount > 0) {
@@ -9321,7 +9331,7 @@
       }
 
       if (!best) {
-        hintsUsedThisGame--; updateHintBtnLabel();
+        hintsUsedThisGame--; hintUsedThisTurn = false; updateHintBtnLabel();
         document.getElementById('hint').textContent = T('hint.notfound');
         return;
       }
